@@ -8,7 +8,7 @@ import sqlalchemy as db
 metadata_obj = db.MetaData()
 
 class meGusta:
-    profile = db.Table(
+    meGustas = db.Table(
         'meGustas',
         metadata_obj,
         db.Column('id', Integer, primary_key=True),

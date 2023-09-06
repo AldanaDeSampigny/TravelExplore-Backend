@@ -9,13 +9,12 @@ from sqlalchemy.orm import relationship
 metadata_obj = db.MetaData()
 
 class Agenda():
-   profile = db.Table(
+   agendas = db.Table(
       'agendas',
       metadata_obj,
       db.Column('id',Integer, primary_key=True),
       db.Column('horaInicio',db.TIMESTAMP),
-      db.Column('horaFin',db.TIMESTAMP),
-      sitios_turisticos = relationship("SitioTuristico", secondary="agenda_sitio_turistico")
+      db.Column('horaFin',db.TIMESTAMP)
 
    ) 
    
