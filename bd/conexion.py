@@ -8,5 +8,3 @@ def getEngine():
 
 def getSession():
     return sessionmaker(bind=getEngine())
-
-

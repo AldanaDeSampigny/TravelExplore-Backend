@@ -1,13 +1,13 @@
 from flask import Flask
 from .bd.conexion import getSession,getEngine
-from .models.SitioTuristico import SitioTuristico # Reemplaza 'mi_modelo' y 'MiTabla' con tu propio modelo y tabla
+#from .models.meGusta import meGusta #SitioTuristico # Reemplaza 'mi_modelo' y 'MiTabla' con tu propio modelo y tabla
 #import requests
 
 app = Flask(__name__)
 
-baseDeDatos = getSession()
+#baseDeDatos = getSession()
 
-nuevo_registro = SitioTuristico()
+#nuevo_registro = SitioTuristico()
 
 
 # url = 'https://developers.google.com/maps/documentation/places/web-service?hl=es-419'  # Reemplaza esto con la URL de la API que deseas usar
