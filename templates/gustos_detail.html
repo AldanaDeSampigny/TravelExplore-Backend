@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Actividades Turísticas</title>
+</head>
+<body>
+    <h1>Actividades Turísticas en Puerto Madryn</h1>
+    <ul>
+        {% for activity in activities %}
+            <li>{{ activity.nombre }} - {{ activity.descripcion }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

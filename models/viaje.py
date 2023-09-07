@@ -1,22 +1,18 @@
 from tkinter import Image
-from sqlalchemy import ForeignKey, Integer
+from sqlalchemy import DATE, Column, Date, ForeignKey, Integer
 from sqlalchemy.ext.declarative import declarative_base
-from ..bd.conexion import getEngine
+from ..bd.conexion import getEngine, Base
 import sqlalchemy as db
 
 #base = declarative_base()
 metadata_obj = db.MetaData()
 
-class viajes():
-   viajes = db.Table(
-      'viajes',
-      metadata_obj,
-      db.Column('id',Integer, primary_key=True),
-      db.Column('nombre',db.String),
-      db.column('fechaDesde', db.Date),
-      db.column('fechaHasta', db.Date),
-      db.column('usuario_id', db.Integer, ForeignKey('usuarios.id')),
-      db.column('destino_id', db.Integer, ForeignKey('destinos.id'))
-      )
+class viajes(Base):
+    __tablename__ = 'viajes'
+    id = Column(Integer, primary_key=True)
+    fechaDesde = Column(DATE)
+    fechaHasta = Column(Date)
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
+    destino_id = Column(Integer, ForeignKey('destinos.id'))
    
-   metadata_obj.create_all(getEngine())
+    metadata_obj.create_all(getEngine())

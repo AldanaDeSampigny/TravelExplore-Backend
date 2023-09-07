@@ -23,7 +23,7 @@ class AgendaService:
                             agenda[con] = {} #inicializa el indice del dia
                         agenda[con][(hora, hora + m.duracion)] = m.id
 
-                if m.horaInicio < hora < m.horaFin: #si en ese momento esta abierto se agrega a la lista
+                if m.horaApertura < hora < m.horarioCierre: #si en ese momento esta abierto se agrega a la lista
                     if con not in agenda:
                         agenda[con] = {} #inicializa el indice del dia
                     agenda[con][(hora, hora + m.duracion)] = m.id

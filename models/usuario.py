@@ -1,20 +1,17 @@
 from tkinter import Image
-from sqlalchemy import Integer
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from ..bd.conexion import getEngine
+from ..bd.conexion import getEngine, Base
 import sqlalchemy as db
 
 #base = declarative_base()
 metadata_obj = db.MetaData()
 
-class usuario():
-   usuarios = db.Table(
-      'usuarios',
-      metadata_obj,
-      db.Column('id',Integer, primary_key=True),
-      db.Column('nombre',db.String),
-      db.Column('gmail',db.String),
-      db.Column('contraseña',db.String),
-      )
+class usuario(Base):
+   __tablename__ = 'usuarios'
+   id = Column(Integer, primary_key=True)
+   nombre = Column(String)
+   gmail = Column(String)
+   contraseña = Column(String)
    
    metadata_obj.create_all(getEngine())

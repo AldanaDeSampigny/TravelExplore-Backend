@@ -1,18 +1,15 @@
 from tkinter import Image
-from sqlalchemy import Integer
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from ..bd.conexion import getEngine
+from ..bd.conexion import getEngine, Base
 import sqlalchemy as db
 
 #base = declarative_base()
 metadata_obj = db.MetaData()
 
-class destino():
-   destinos = db.Table(
-      'destinos',
-      metadata_obj,
-      db.Column('id',Integer, primary_key=True),
-      db.Column('nombre',db.String),
-      )
+class destino(Base):
+   __tablename__ = 'destinos'
+   id = Column(Integer, primary_key=True)
+   nombre = Column(String)
    
    metadata_obj.create_all(getEngine())

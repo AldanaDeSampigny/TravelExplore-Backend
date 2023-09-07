@@ -1,27 +1,25 @@
 from tkinter import Image
-from sqlalchemy import ForeignKey, create_engine, Column, Integer, String
+from sqlalchemy import ForeignKey, create_engine, Column, Integer, String, Time
 from sqlalchemy.ext.declarative import declarative_base
-from ..bd.conexion import getEngine
+from ..bd.conexion import getEngine, Base
 import sqlalchemy as db
 
 #base = declarative_base()
 metadata_obj = db.MetaData()
 
-class meGusta:
-    meGustas = db.Table(
-        'meGustas',
-        metadata_obj,
-        db.Column('id', Integer, primary_key=True),
-        db.Column('imagen', db.String),
-        db.Column('nombre', db.String),
-        db.Column('descripcion', db.String),
-        db.Column('valoracion', db.Integer),
-        db.Column('horarioApertura', db.Time),
-        db.Column('horarioCierre', db.Time),
-        db.Column('direccion', db.String),
-        db.Column('duracion', db.Integer),
-        db.Column('viaje_id', db.Integer, ForeignKey('viajes.id')),
-        db.Column('agenda_id', db.Integer, ForeignKey('agendas.id'))
-    )
+class meGusta(Base):
+    __tablename__ = 'meGustas'
+
+    id = Column(Integer, primary_key=True)
+    imagen = Column(String)
+    nombre = Column(String)
+    descripcion = Column(String)
+    valoracion = Column(Integer)
+    horarioApertura = Column(Time)
+    horarioCierre = Column(Time)
+    direccion = Column(String)
+    duracion = Column(Integer)
+    viaje_id = Column(Integer, ForeignKey('viajes.id'))
+    agenda_id = Column(Integer, ForeignKey('agendas.id'))
 
 metadata_obj.create_all(getEngine())
