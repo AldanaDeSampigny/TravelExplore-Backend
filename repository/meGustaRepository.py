@@ -1,4 +1,3 @@
-from models.meGusta import SitioTuristico
 from sqlalchemy.orm import sessionmaker
 
 class meGustaRepository:

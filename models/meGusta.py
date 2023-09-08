@@ -7,18 +7,19 @@ import sqlalchemy as db
 #base = declarative_base()
 metadata_obj = db.MetaData()
 
-class meGusta(Base):
+class meGustas(Base):
     __tablename__ = 'meGustas'
 
     id = Column(Integer, primary_key=True)
     imagen = Column(String)
     nombre = Column(String)
     descripcion = Column(String)
+    tipo = Column(String)
     valoracion = Column(Integer)
     horarioApertura = Column(Time)
     horarioCierre = Column(Time)
     direccion = Column(String)
-    duracion = Column(Integer)
+    duracion = Column(Time)
     viaje_id = Column(Integer, ForeignKey('viajes.id'))
     agenda_id = Column(Integer, ForeignKey('agendas.id'))
 

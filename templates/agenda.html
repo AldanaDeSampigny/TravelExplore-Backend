@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Agenda</title>
+</head>
+
+<body>
+    <h1>Agenda Generada</h1>
+    <table border="1">
+        <tr>
+            <th>Día</th>
+            <th>Hora</th>
+            <th>Actividad</th>
+        </tr>
+        {% for actividad_data in agenda %}
+        <tr>
+            <td>{{ actividad_data.dia }}</td>
+            <td>{{ actividad_data.hora_inicio.strftime('%H:%M') }} - {{ actividad_data.hora_fin.strftime('%H:%M') }}
+            </td>
+            <td>{{ actividad_data.actividad.nombre }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>

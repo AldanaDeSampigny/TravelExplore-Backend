@@ -7,7 +7,7 @@ import sqlalchemy as db
 #base = declarative_base()
 metadata_obj = db.MetaData()
 
-class usuario(Base):
+class usuarios(Base):
    __tablename__ = 'usuarios'
    id = Column(Integer, primary_key=True)
    nombre = Column(String)
