@@ -10,58 +10,62 @@ from datetime import datetime, timedelta
 class AgendaService:
     def __init__(self, db_session):
         self.db_session = db_session
-        
+
     def generar_agenda(self, usuarioID, viajeID):
         with Session(getEngine()) as session:
-            print(usuarioID, viajeID, "service")
             agenda_repo = AgendaRepository(session)
-            meGustas_ids = agenda_repo.buscarGustos(usuarioID, viajeID)
             agenda = []
             horas = {datetime.strptime('09:00:00', '%H:%M:%S').time(): datetime.strptime('11:00:00', '%H:%M:%S').time(),
-                    datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('15:00:00', '%H:%M:%S').time(),
+                    datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('14:00:00', '%H:%M:%S').time(),
                     datetime.strptime('17:00:00', '%H:%M:%S').time(): datetime.strptime('19:00:00', '%H:%M:%S').time(),
                     datetime.strptime('21:00:00', '%H:%M:%S').time(): datetime.strptime('23:00:00', '%H:%M:%S').time()}
 
             dias_semana = list(range(1, 8))
+            hora_inicio = datetime.strptime('14:00:00', '%H:%M:%S').time() 
+            inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute 
+            finNumerico = datetime.strptime('23:00:00', '%H:%M:%S').time().hour * 60 + datetime.strptime('23:00:00', '%H:%M:%S').time().minute
 
             for dia in dias_semana:
-                hora_inicio = datetime.strptime('14:00:00', '%H:%M:%S').time()  # diavierte la hora inicial a datetime.time
-                while hora_inicio < datetime.strptime('23:00:00', '%H:%M:%S').time():
+                meGustas_ids = agenda_repo.buscarGustos(usuarioID, viajeID)
+                hora_inicio = datetime.strptime('14:00:00', '%H:%M:%S').time() 
+                inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute 
+                gustos_agregados = set()
+                while inicioNumerico < finNumerico:
                     for m_id in meGustas_ids:
+
                         m = session.query(MeGustas).get(m_id[0])
-
-                        horario_apertura = m.horarioApertura
-                        horario_cierre = m.horarioCierre
-                        hora_actual = datetime.combine(datetime.today(), hora_inicio)
                         minutos_duracion = m.duracion.hour * 60 + m.duracion.minute
-                        hora_cierre_intervalo = hora_actual + timedelta(minutes=minutos_duracion)
+                        hora_cierre_intervalo = (datetime.combine(datetime.today(), hora_inicio)) + timedelta(minutes=minutos_duracion)
 
-                        if m.tipo == 'restaurant' and hora_inicio in horas and horario_apertura < hora_inicio < horario_cierre:
-                            
-                            actividad_data = {
-                                'dia': dia,
-                                'hora_inicio': hora_inicio,
-                                'hora_fin': hora_cierre_intervalo,
-                                'actividad': m
-                            }
-                            agenda.append(actividad_data)
-                            break
+                        if m.tipo == 'restaurant' and hora_inicio in horas and m.horarioApertura < hora_inicio < m.horarioCierre:
+                            if m.id not in gustos_agregados:
+                                actividad_data = {
+                                    'dia': dia,
+                                    'hora_inicio': hora_inicio,
+                                    'hora_fin': hora_cierre_intervalo,
+                                    'actividad': m
+                                }
+                                agenda.append(actividad_data)
+                                gustos_agregados.add(m.id)
+                                break
                         
-                        if horario_apertura < hora_inicio < horario_cierre:
-                            actividad_data = {
-                                'dia': dia,
-                                'hora_inicio': hora_inicio,
-                                'hora_fin': hora_cierre_intervalo,
-                                'actividad': m
-                            }
-                            agenda.append(actividad_data)
-                            break
-                        
-                    if hora_inicio == datetime.strptime('23:00:00', '%H:%M:%S').time():
+                        if m.horarioApertura < hora_inicio < m.horarioCierre:
+                            if m.id not in gustos_agregados:
+                                actividad_data = {
+                                    'dia': dia,
+                                    'hora_inicio': hora_inicio,
+                                    'hora_fin': hora_cierre_intervalo,
+                                    'actividad': m
+                                }
+                                agenda.append(actividad_data)
+                                gustos_agregados.add(m.id)
+                                break
+
+                    if datetime.strptime('00:00:00', '%H:%M:%S').time() <= hora_inicio <= datetime.strptime('04:00:00', '%H:%M:%S').time():
                         break
-                    
-                    hora_cierre_intervalo += timedelta(minutes=30)
-                    hora_inicio = hora_cierre_intervalo.time()
+
+                    hora_inicio = (hora_cierre_intervalo + timedelta(minutes=30)).time()
+                    inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute
 
             return agenda
 
@@ -101,7 +105,7 @@ class AgendaService:
         with Session(getEngine()) as session:
             print(usuarioID, horariosElegidos, "service")
             agenda_repo = AgendaRepository(session)
-            meGustas_ids = agenda_repo.buscarGustos(usuarioID, self.buscarViaje(usuarioID))
+            meGustas_ids = agenda_repo.buscarGustosPersonalizado(usuarioID, self.buscarViaje(usuarioID))
             agenda = {}
 
             for dia, (hora_inicio, hora_fin) in horariosElegidos.items():

@@ -1,4 +1,5 @@
-from flask import Flask, render_template
+from collections import defaultdict
+from flask import Flask, jsonify, render_template
 
 import json
 
@@ -44,13 +45,35 @@ def show_activity():
 
 @app.route('/generar_agenda/<int:usuarioID>/<int:viajeID>', methods=['GET'])
 def generar_y_mostrar_agenda(usuarioID, viajeID):
-    # Llama a tu función generar_agenda con los parámetros usuarioID y viajeID
-    print(usuarioID, viajeID)
     agenda_service = AgendaService(getEngine())
     agenda = agenda_service.generar_agenda(usuarioID, viajeID)
+    # Crear un diccionario para agrupar las actividades por día
+    agenda_por_dia = defaultdict(list)
+    for actividad_data in agenda:
+        dia = actividad_data['dia']
+        agenda_por_dia[dia].append(actividad_data)
     
-    # Renderiza la plantilla HTML y pasa la agenda como contexto
-    return render_template('agenda.html', agenda=agenda)
+    # Crear una lista de diccionarios serializables a JSON ordenados por día
+    agenda_json = []
+    for dia, actividades in sorted(agenda_por_dia.items()):
+        dia_json = {
+            'dia': dia,
+            'actividades': []
+        }
+        for actividad_data in actividades:
+            actividad_json = {
+                'id': actividad_data['actividad'].id,
+                'nombre': actividad_data['actividad'].nombre,
+                'tipo': actividad_data['actividad'].tipo,
+                'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
+                'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S')
+            }
+            dia_json['actividades'].append(actividad_json)
+        agenda_json.append(dia_json)
+
+    # Devolver la lista de días y actividades serializadas a JSON
+    return jsonify(agenda_json)
+
 
 """ @app.route('/query', methods=['GET'])
 def query():
