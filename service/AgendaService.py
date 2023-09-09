@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 class AgendaService:
     def __init__(self, db_session):
         self.db_session = db_session
-
+        
     def generar_agenda(self, usuarioID, viajeID):
         with Session(getEngine()) as session:
             print(usuarioID, viajeID, "service")
@@ -65,26 +65,27 @@ class AgendaService:
 
             return agenda
 
-    def horariosDias(self,fechaDesde, fechaHasta, horaDesde, horaHasta):
-            diasHorarios = {}
-            
-            fechaDesde = datetime.strptime(fechaDesde, "%Y-%m-%d")
-            fechaHasta = datetime.strptime(fechaHasta, "%Y-%m-%d")
+    def horariosDias(self, fechaDesde, fechaHasta, horaDesde, horaHasta):
+        diasHorarios = {}
 
-            # Inicializa un diatador de días
-            fechaActual = fechaDesde
+        fechaDesdeDate = datetime.strptime(fechaDesde, "%Y-%m-%d")
+        fechaHastaDate = datetime.strptime(fechaHasta, "%Y-%m-%d")
 
-            while fechaActual <= fechaHasta:
-                # Obtiene el nombre del día de la semana
-                diaSemana = fechaActual.strftime("%A")
+        fechaActual = fechaDesdeDate
 
-                # Agrega el rango horario al diccionario
-                diasHorarios[diaSemana] = (horaDesde, horaHasta)
+        # "11-9-22" al "20-9-22" desde las "9:00" hasta las "13:00"
 
-                # Avanza al siguiente día
-                fechaActual += timedelta(days=1)
+        while fechaActual <= fechaHastaDate:
+            # Obtiene el nombre del día de la semana
+            diaSemana = fechaActual.strftime("%A")
 
-            return diasHorarios
+            # Agrega el rango horario al diccionario
+            diasHorarios[diaSemana] = (horaDesde, horaHasta)
+
+            # Avanza al siguiente día
+            fechaActual += timedelta(days=1)
+
+        return diasHorarios
     
     def buscarViaje(self, usuario_id):
         session = Session(self.db_session)

@@ -11,7 +11,9 @@ from .service.GustaService import GustaService
 from .models.Usuarios import Usuarios
 from .models.Destinos import Destinos
 from .models.Viajes import Viajes
+from .models.Actividad import Actividad
 from .models.Agendas import Agendas
+from .models.DiaViaje import DiaViaje
 from .bd.conexion import getSession, getEngine, Base
 
 app = Flask(__name__)
@@ -22,6 +24,8 @@ Base.metadata.create_all(engine)
 nuevo_usuario = Usuarios()
 nuevo_destino = Destinos()
 nuevo_viaje = Viajes()
+nuevo_dia_viaje = DiaViaje()
+nueva_actividad = Actividad()
 nueva_agenda = Agendas()
 nuevo_meGusta = MeGustas()
 
@@ -48,7 +52,7 @@ def generar_y_mostrar_agenda(usuarioID, viajeID):
     # Renderiza la plantilla HTML y pasa la agenda como contexto
     return render_template('agenda.html', agenda=agenda)
 
-@app.route('/query', methods=['GET'])
+""" @app.route('/query', methods=['GET'])
 def query():
     agenda_service = AgendaService(getEngine())
 
@@ -59,15 +63,23 @@ def query():
         viajes = viaje.to_dict()
         print(type(viaje.to_dict()))
 
-    return viajes
+    return viajes """
 
-""" @app.route('/generarAgendaPersonalizadas/<int:usuarioID>', methods=['GET'])
+@app.route('/generarAgendaPersonalizadas/<int:usuarioID>', methods=['GET'])
 def generarYmostrarAgenda(usuarioID):
     # Llama a tu función generar_agenda con los parámetros usuarioID y viajeID
     agenda_service = AgendaService(getEngine())
     horariosPersonalizados = agenda_service.horariosDias("2023-09-01", "2023-09-06", "10:00:00", "18:00:00")
-    print(usuarioID)
-    agendaPersonalizada = agenda_service.generarAgendaPersonalizada(usuarioID,horariosPersonalizados)
+
+    print(horariosPersonalizados)
+    """ agendaPersonalizada = agenda_service.generarAgendaPersonalizada(usuarioID,horariosPersonalizados)
+
+    def to_dict(obj):
+        return {column.name: getattr(obj, column.name) for column in obj.__table__.columns} 
     
+    for agenda in agendaPersonalizada:
+        agendaCreada = agenda.to_dict()
+        print(type(agenda.to_dict())) """
+
     # Renderiza la plantilla HTML y pasa la agenda como contexto
-    return render_template('agenda.html', agenda=agendaPersonalizada) """
+    return {}

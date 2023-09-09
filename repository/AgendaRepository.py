@@ -1,3 +1,4 @@
+from requests import Session
 from ..models.MeGustas import MeGustas
 from ..models.Agendas import Agendas
 from sqlalchemy.orm import sessionmaker
@@ -15,8 +16,18 @@ class AgendaRepository:
         return agenda
 
     def buscarGustos(self, usuarioID, viajeID):
+        session = Session(self.db_session)
         print(usuarioID, viajeID,"llego")
-        # Consulta SQL utilizando SQLAlchemy
+
+        result = session.query(MeGustas)\
+            .join(Viajes)\
+            .join(Usuarios)\
+            .filter(Viajes.id == viajeID)\
+            .filter(Usuarios.usuario_id == usuarioID)\
+            .all()
+        
+        return result
+    """  # Consulta SQL utilizando SQLAlchemy
         query = self.db_session.query(MeGustas.id).\
             join(Viajes, MeGustas.viaje_id == Viajes.id).\
             join(Usuarios, Viajes.usuario_id == Usuarios.id).\
@@ -27,6 +38,5 @@ class AgendaRepository:
         gustos = query.all()
         #print(gustos)
 
-        # Retornar los resultados como una lista de IDs de gustos
-        return gustos
+        # Retornar los resultados como una lista de IDs de gustos """
         
