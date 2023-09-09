@@ -7,11 +7,9 @@ import sqlalchemy as db
 #base = declarative_base()
 metadata_obj = db.MetaData()
 
-class usuarios(Base):
-   __tablename__ = 'usuarios'
+class Destinos(Base):
+   __tablename__ = 'destinos'
    id = Column(Integer, primary_key=True)
    nombre = Column(String)
-   gmail = Column(String)
-   contraseña = Column(String)
    
    metadata_obj.create_all(getEngine())

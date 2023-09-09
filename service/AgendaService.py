@@ -1,10 +1,11 @@
-from ..models.usuario import usuarios
-from ..repository.meGustaRepository import meGustaRepository
-from ..models.meGusta import meGustas
+from ..repository.MeGustaRepository import MeGustaRepository
+from ..models.MeGustas import MeGustas
+from ..models.Viajes import Viajes
+from ..models.Usuarios import Usuarios
 from ..repository.AgendaRepository import AgendaRepository
-from datetime import datetime, timedelta
 from ..bd.conexion import getEngine
 from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
 
 class AgendaService:
     def __init__(self, db_session):
@@ -24,10 +25,10 @@ class AgendaService:
             dias_semana = list(range(1, 8))
 
             for dia in dias_semana:
-                hora_inicio = datetime.strptime('14:00:00', '%H:%M:%S').time()  # Convierte la hora inicial a datetime.time
+                hora_inicio = datetime.strptime('14:00:00', '%H:%M:%S').time()  # diavierte la hora inicial a datetime.time
                 while hora_inicio < datetime.strptime('23:00:00', '%H:%M:%S').time():
                     for m_id in meGustas_ids:
-                        m = session.query(meGustas).get(m_id[0])
+                        m = session.query(MeGustas).get(m_id[0])
 
                         horario_apertura = m.horarioApertura
                         horario_cierre = m.horarioCierre
@@ -64,13 +65,13 @@ class AgendaService:
 
             return agenda
 
-    def horariosDias(fechaDesde, fechaHasta, horaDesde, horaHasta):
+    def horariosDias(self,fechaDesde, fechaHasta, horaDesde, horaHasta):
             diasHorarios = {}
             
             fechaDesde = datetime.strptime(fechaDesde, "%Y-%m-%d")
             fechaHasta = datetime.strptime(fechaHasta, "%Y-%m-%d")
 
-            # Inicializa un contador de días
+            # Inicializa un diatador de días
             fechaActual = fechaDesde
 
             while fechaActual <= fechaHasta:
@@ -84,41 +85,46 @@ class AgendaService:
                 fechaActual += timedelta(days=1)
 
             return diasHorarios
+    
+    def buscarViaje(self, usuario_id):
+        session = Session(self.db_session)
 
-    def generarAgendaPersonalizada(usuarioID, viajeID,horariosDias):
+        result = session.query(Viajes)\
+                .join(Usuarios)\
+                .filter(Viajes.usuario_id == usuario_id)\
+                .all()
+                
+        return result
+    
+    def generarAgendaPersonalizada(self, usuarioID, horariosElegidos):
         with Session(getEngine()) as session:
-            meGusta_repo = meGustaRepository(session)
-            meGustas = meGusta_repo.buscarGustas(usuarioID, viajeID)
-            con = 1
+            print(usuarioID, horariosElegidos, "service")
+            agenda_repo = AgendaRepository(session)
+            meGustas_ids = agenda_repo.buscarGustos(usuarioID, self.buscarViaje(usuarioID))
             agenda = {}
-        
-            for dia, (hora_inicio, hora_fin) in horariosDias.items():
+
+            for dia, (hora_inicio, hora_fin) in horariosElegidos.items():
                 hora = hora_inicio
-                agenda[con] = {}  # Inicializa el diccionario del día
-                while hora <= hora_fin:
-                    for m in meGustas:
+                agenda[dia] = {}  # Inicializa el diccionario del día
+
+                while hora < hora_fin:
+                    for m_id in meGustas_ids:
+                        m = session.query(MeGustas).get(m_id[0])
+
                         if m.tipo == 'restaurant':
-                            if (hora, hora + m.duracion) not in agenda[con]:
-                                agenda[con][(hora, hora + m.duracion)] = m.id
+                            if (hora, hora + m.duracion) not in agenda[dia]:
+                                agenda[dia][(hora, hora + m.duracion)] = m.id
 
                         if m.horaApertura < hora < m.horaCierre:
-                            if (hora, hora + m.duracion) not in agenda[con]:
-                                agenda[con][(hora, hora + m.duracion)] = m.id
+                            if (hora, hora + m.duracion) not in agenda[dia]:
+                                agenda[dia][(hora, hora + m.duracion)] = m.id
+
                         hora += m.duracion + 0.5
-                    con += 1
-            return agenda 
+
+                    dia += 1
+
+        return agenda
         
-    def buscarViaje(self, usuario_id):
-        # Consulta SQL utilizando SQLAlchemy
-        query = self.db_session.query(meGustas.id).\
-            join(viajes, meGustas.viaje_id == viajes.id).\
-            join(usuarios, viajes.usuario_id == usuarios.id).\
-            filter(usuarios.id == usuario_id)
-
-        # Ejecutar la consulta y obtener los resultados
-        viajes  = query.all()
-
-        return viajes
 
 
     #viaje = buscarViaje(usuarioID=123)

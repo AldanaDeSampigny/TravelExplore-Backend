@@ -1,6 +1,6 @@
 from sqlalchemy.orm import sessionmaker
 
-class meGustaRepository:
+class MeGustaRepository:
     def __init__(self, db_session): #esto seria un constructor
         self.db_session = db_session
 

@@ -6,7 +6,7 @@ Base = declarative_base()
 
 def getEngine():
     database_url = 'postgresql://sofia:clavesofiaIF012@if012atur.fi.mdn.unp.edu.ar:28001/if012'
-    engine = create_engine(database_url, echo=True)
+    engine = create_engine(database_url, echo=False)
     return engine
 
 def getSession():

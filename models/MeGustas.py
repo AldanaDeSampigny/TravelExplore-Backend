@@ -1,4 +1,3 @@
-from tkinter import Image
 from sqlalchemy import ForeignKey, create_engine, Column, Integer, String, Time
 from sqlalchemy.ext.declarative import declarative_base
 from ..bd.conexion import getEngine, Base
@@ -7,7 +6,7 @@ import sqlalchemy as db
 #base = declarative_base()
 metadata_obj = db.MetaData()
 
-class meGustas(Base):
+class MeGustas(Base):
     __tablename__ = 'meGustas'
 
     id = Column(Integer, primary_key=True)

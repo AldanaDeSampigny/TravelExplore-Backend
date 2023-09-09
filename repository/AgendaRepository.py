@@ -1,8 +1,8 @@
-from ..models.meGusta import meGustas
-from ..models.agenda import Agenda
+from ..models.MeGustas import MeGustas
+from ..models.Agendas import Agendas
 from sqlalchemy.orm import sessionmaker
-from ..models.usuario import usuarios
-from ..models.viaje import viajes
+from ..models.Usuarios import Usuarios
+from ..models.Viajes import Viajes
 
 class AgendaRepository:
     def __init__(self, db_session): #esto seria un constructor
@@ -17,11 +17,11 @@ class AgendaRepository:
     def buscarGustos(self, usuarioID, viajeID):
         print(usuarioID, viajeID,"llego")
         # Consulta SQL utilizando SQLAlchemy
-        query = self.db_session.query(meGustas.id).\
-            join(viajes, meGustas.viaje_id == viajes.id).\
-            join(usuarios, viajes.usuario_id == usuarios.id).\
-            filter(usuarios.id == usuarioID).\
-            filter(viajes.id == viajeID)
+        query = self.db_session.query(MeGustas.id).\
+            join(Viajes, MeGustas.viaje_id == Viajes.id).\
+            join(Usuarios, Viajes.usuario_id == Usuarios.id).\
+            filter(Usuarios.id == usuarioID).\
+            filter(Viajes.id == viajeID)
 
         # Ejecutar la consulta y obtener los resultados
         gustos = query.all()
