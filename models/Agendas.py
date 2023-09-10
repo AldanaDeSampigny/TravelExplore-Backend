@@ -11,8 +11,8 @@ metadata_obj = db.MetaData()
 class Agendas(Base):
    __tablename__ = 'agendas'
    id = Column(Integer, primary_key=True)
-   fechaInicio = Column(Date)
-   fechaFin = Column(Date)
+   horaInicio = Column(Time)
+   horaInicioFin = Column(Time)
    destino_id = Column(Integer,ForeignKey('destinos.id'))
 
    metadata_obj.create_all(getEngine())

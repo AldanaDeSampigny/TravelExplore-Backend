@@ -69,7 +69,7 @@ class AgendaService:
 
             return agenda
 
-    def horariosDias(self, fechaDesde, fechaHasta, horaDesde, horaHasta):
+    """ def horariosDias(self, fechaDesde, fechaHasta, horaDesde, horaHasta):
         diasHorarios = {}
 
         fechaDesdeDate = datetime.strptime(fechaDesde, "%Y-%m-%d")
@@ -90,8 +90,68 @@ class AgendaService:
             fechaActual += timedelta(days=1)
 
         return diasHorarios
-    
-    def buscarViaje(self, usuario_id):
+    """
+
+    def generarAgendaPersonalizada(self, usuarioID, viajeID, horariosElegidos):
+        with Session(getEngine()) as session:
+            agenda_repo = AgendaRepository(session)
+            agenda = []
+            dias_semana = list(range(1, 8))
+            horas = {
+                datetime.strptime('09:00:00', '%H:%M:%S').time(): datetime.strptime('11:00:00', '%H:%M:%S').time(),
+                datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('14:00:00', '%H:%M:%S').time(),
+                datetime.strptime('17:00:00', '%H:%M:%S').time(): datetime.strptime('19:00:00', '%H:%M:%S').time(),
+                datetime.strptime('21:00:00', '%H:%M:%S').time(): datetime.strptime('23:00:00', '%H:%M:%S').time()
+            }
+
+            for dia in dias_semana:
+                meGustas_ids = agenda_repo.buscarGustos(usuarioID, viajeID)
+
+                if dia in horariosElegidos:
+                    horario_inicio = datetime.strptime(horariosElegidos[dia][0], '%H:%M:%S').time()
+                    horario_fin = datetime.strptime(horariosElegidos[dia][1], '%H:%M:%S').time()
+                else:
+                    horario_inicio = datetime.strptime('14:00:00', '%H:%M:%S').time()
+                    horario_fin = datetime.strptime('23:00:00', '%H:%M:%S').time()
+
+                hora_actual = horario_inicio
+                gustos_agregados = set()
+
+                while hora_actual < horario_fin:
+                    for m_id in meGustas_ids:
+                        m = session.query(MeGustas).get(m_id[0])
+                        minutos_duracion = m.duracion.hour * 60 + m.duracion.minute
+                        hora_cierre_intervalo = datetime.combine(datetime.today(), hora_actual) + timedelta(minutes=minutos_duracion)
+
+                        if m.tipo == 'restaurant' and hora_actual in horas and m.horarioApertura < hora_actual < m.horarioCierre:
+                            if m.id not in gustos_agregados:
+                                actividad_data = {
+                                    'dia': dia,
+                                    'hora_inicio': hora_actual,
+                                    'hora_fin': hora_cierre_intervalo.time(),
+                                    'actividad': m
+                                }
+                                agenda.append(actividad_data)
+                                gustos_agregados.add(m.id)
+                                break
+
+                        if m.horarioApertura < hora_actual < m.horarioCierre:
+                            if m.id not in gustos_agregados:
+                                actividad_data = {
+                                    'dia': dia,
+                                    'hora_inicio': hora_actual,
+                                    'hora_fin': hora_cierre_intervalo.time(),
+                                    'actividad': m
+                                }
+                                agenda.append(actividad_data)
+                                gustos_agregados.add(m.id)
+                                break
+
+                    hora_actual = (hora_cierre_intervalo + timedelta(minutes=30)).time()
+        return agenda
+
+
+    """  def buscarViaje(self, usuario_id):
         session = Session(self.db_session)
 
         result = session.query(Viajes)\
@@ -99,9 +159,9 @@ class AgendaService:
                 .filter(Viajes.usuario_id == usuario_id)\
                 .all()
                 
-        return result
+        return result """
     
-    def generarAgendaPersonalizada(self, usuarioID, horariosElegidos):
+    """def generarAgendaPersonalizada(self, usuarioID, horariosElegidos):
         with Session(getEngine()) as session:
             print(usuarioID, horariosElegidos, "service")
             agenda_repo = AgendaRepository(session)
@@ -128,7 +188,7 @@ class AgendaService:
 
                     dia += 1
 
-        return agenda
+        return agenda """
         
 
 

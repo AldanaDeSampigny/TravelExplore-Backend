@@ -118,21 +118,33 @@ def query():
 
     return viajes """
 
-@app.route('/generarAgendaPersonalizadas/<int:usuarioID>', methods=['GET'])
-def generarYmostrarAgenda(usuarioID):
-    # Llama a tu función generar_agenda con los parámetros usuarioID y viajeID
+@app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:viajeID>', methods=['GET'])
+def generarYmostrarAgendaPersonalizada(usuarioID,viajeID):
     agenda_service = AgendaService(getEngine())
-    horariosPersonalizados = agenda_service.horariosDias("2023-09-01", "2023-09-06", "10:00:00", "18:00:00")
+    horariosElegidos = { 2: ('12:00:00' , '14:00:00' ), 5 : ('19:00:00' , '22:00:00')}
+    agenda = agenda_service.generarAgendaPersonalizada(usuarioID, viajeID, horariosElegidos)
 
-    print(horariosPersonalizados)
-    """ agendaPersonalizada = agenda_service.generarAgendaPersonalizada(usuarioID,horariosPersonalizados)
-
-    def to_dict(obj):
-        return {column.name: getattr(obj, column.name) for column in obj.__table__.columns} 
+    agenda_por_dia = defaultdict(list)
+    for actividad_data in agenda:
+        dia = actividad_data['dia']
+        agenda_por_dia[dia].append(actividad_data)
     
-    for agenda in agendaPersonalizada:
-        agendaCreada = agenda.to_dict()
-        print(type(agenda.to_dict())) """
+    agenda_json = []
+    for dia, actividades in sorted(agenda_por_dia.items()):
+        dia_json = {
+            'dia': dia,
+            'actividades': []
+        }
+        for actividad_data in actividades:
+            actividad_json = {
+                'id': actividad_data['actividad'].id,
+                'nombre': actividad_data['actividad'].nombre,
+                'tipo': actividad_data['actividad'].tipo,
+                'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
+                'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S')
+            }
+            dia_json['actividades'].append(actividad_json)
+        agenda_json.append(dia_json)
 
-    # Renderiza la plantilla HTML y pasa la agenda como contexto
-    return {}
+    return jsonify(agenda_json)
+    
