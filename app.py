@@ -77,7 +77,7 @@ def generar_y_mostrar_agenda(usuarioID, viajeID):
 @app.route('/generar/agenda/ocupada/<int:usuarioID>/<int:viajeID>', methods=['GET'])
 def generar_y_mostrar_agendaOcupada(usuarioID, viajeID):
     agenda_service = AgendaService(getEngine())
-    ocupado = { 1 : ('15:00:00' , '17:00:00' ), 3 : ('20:00:00' , '23:00:00')}
+    ocupado = { 1 : ('17:00:00' , '18:00:00' ), 3 : ('20:00:00' , '23:00:00')}
     agenda = agenda_service.generar_agendaOcupada(usuarioID, viajeID, ocupado)
 
     agenda_por_dia = defaultdict(list)

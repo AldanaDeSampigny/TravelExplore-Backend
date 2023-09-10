@@ -235,7 +235,9 @@ class AgendaService:
                             inicio = datetime.strptime(diasOcupados[dia][0], '%H:%M:%S').time()
                             fin = datetime.strptime(diasOcupados[dia][1], '%H:%M:%S').time()
                             if inicio <= hora_inicio <= fin or inicio <= hora_cierre_intervalo.time() <= fin:
-                                continue
+                                #print("dia: ",dia ,"inicio: ", hora_inicio, "fin: ", hora_cierre_intervalo)
+                                hora_cierre_intervalo = (datetime.combine(datetime.today(), hora_inicio))
+                                break
                             else:
                                 if m.tipo == 'restaurant' and hora_inicio in horas and m.horarioApertura < hora_inicio < m.horarioCierre:
                                     if m.id not in gustos_agregados:
