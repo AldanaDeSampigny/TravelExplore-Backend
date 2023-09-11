@@ -19,7 +19,8 @@ class MeGustas(Base):
     horarioCierre = Column(Time)
     direccion = Column(String)
     duracion = Column(Time)
-    viaje_id = Column(Integer, ForeignKey('viajes.id'))
+    usuario_id = Column(Integer, ForeignKey('usuarios.id'))
+    destino_id = Column(Integer, ForeignKey('destinos.id'))
     agenda_id = Column(Integer, ForeignKey('agendas.id'))
 
     metadata_obj.create_all(getEngine())
@@ -35,6 +36,7 @@ class MeGustas(Base):
         "horarioCierre": self.horarioCierre,
         "direccion": self.direccion,
         "duracion": self.duracion,
-        "viaje_id": self.viaje_id,
+        "usuario_id": self.usuario_id,
+        "destino_id": self.destino_id,
         "agenda_id": self.agenda_id
       }

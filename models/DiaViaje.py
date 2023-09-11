@@ -10,7 +10,7 @@ class DiaViaje(Base):
   __tablename__ = 'dias_viajes'
   id = Column(Integer, primary_key=True)
   fecha = Column(String)
-  viaje = Column(db.ForeignKey("viajes.id"))
+  agenda = Column(db.ForeignKey("agendas.id"))
 
   metadata_obj.create_all(getEngine())
 

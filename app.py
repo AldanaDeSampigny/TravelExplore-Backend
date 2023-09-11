@@ -11,7 +11,6 @@ from .service.GustaService import GustaService
 
 from .models.Usuarios import Usuarios
 from .models.Destinos import Destinos
-from .models.Viajes import Viajes
 from .models.Actividad import Actividad
 from .models.Agendas import Agendas
 from .models.DiaViaje import DiaViaje
@@ -24,7 +23,6 @@ Base.metadata.create_all(engine)
 
 nuevo_usuario = Usuarios()
 nuevo_destino = Destinos()
-nuevo_viaje = Viajes()
 nuevo_dia_viaje = DiaViaje()
 nueva_actividad = Actividad()
 nueva_agenda = Agendas()
@@ -43,10 +41,10 @@ def show_activity():
     #print (gustos)
     return render_template('gustos_detail.html', activities=gustos)
 
-@app.route('/generar_agenda/<int:usuarioID>/<int:viajeID>', methods=['GET'])
-def generar_y_mostrar_agenda(usuarioID, viajeID):
+@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+def generar_y_mostrar_agenda(usuarioID, destinoID):
     agenda_service = AgendaService(getEngine())
-    agenda = agenda_service.generar_agenda(usuarioID, viajeID)
+    agenda = agenda_service.generar_agenda(usuarioID, destinoID)
     # Crear un diccionario para agrupar las actividades por día
     agenda_por_dia = defaultdict(list)
     for actividad_data in agenda:
@@ -74,11 +72,11 @@ def generar_y_mostrar_agenda(usuarioID, viajeID):
     # Devolver la lista de días y actividades serializadas a JSON
     return jsonify(agenda_json)
 
-@app.route('/generar/agenda/ocupada/<int:usuarioID>/<int:viajeID>', methods=['GET'])
-def generar_y_mostrar_agendaOcupada(usuarioID, viajeID):
+@app.route('/generar/agenda/ocupada/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+def generar_y_mostrar_agendaOcupada(usuarioID, destinoID):
     agenda_service = AgendaService(getEngine())
-    ocupado = { 1 : ('17:00:00' , '18:00:00' ), 3 : ('20:00:00' , '23:00:00')}
-    agenda = agenda_service.generar_agendaOcupada(usuarioID, viajeID, ocupado)
+    ocupado = { 1 : ('17:00:00' , '19:00:00' ), 3 : ('21:00:00' , '23:00:00')}
+    agenda = agenda_service.generar_agendaOcupada(usuarioID, destinoID, ocupado)
 
     agenda_por_dia = defaultdict(list)
     for actividad_data in agenda:
@@ -118,11 +116,11 @@ def query():
 
     return viajes """
 
-@app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:viajeID>', methods=['GET'])
-def generarYmostrarAgendaPersonalizada(usuarioID,viajeID):
+@app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
     agenda_service = AgendaService(getEngine())
     horariosElegidos = { 2: ('12:00:00' , '14:00:00' ), 5 : ('19:00:00' , '22:00:00')}
-    agenda = agenda_service.generarAgendaPersonalizada(usuarioID, viajeID, horariosElegidos)
+    agenda = agenda_service.generarAgendaPersonalizada(usuarioID, destinoID, horariosElegidos)
 
     agenda_por_dia = defaultdict(list)
     for actividad_data in agenda:

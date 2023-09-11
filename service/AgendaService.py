@@ -1,7 +1,5 @@
 from ..repository.MeGustaRepository import MeGustaRepository
 from ..models.MeGustas import MeGustas
-from ..models.Viajes import Viajes
-from ..models.Usuarios import Usuarios
 from ..repository.AgendaRepository import AgendaRepository
 from ..bd.conexion import getEngine
 from sqlalchemy.orm import Session
@@ -146,6 +144,8 @@ class AgendaService:
                                 agenda.append(actividad_data)
                                 gustos_agregados.add(m.id)
                                 break
+                    if datetime.strptime('00:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('04:00:00', '%H:%M:%S').time():
+                        break
 
                     hora_actual = (hora_cierre_intervalo + timedelta(minutes=30)).time()
         return agenda
@@ -235,9 +235,9 @@ class AgendaService:
                             inicio = datetime.strptime(diasOcupados[dia][0], '%H:%M:%S').time()
                             fin = datetime.strptime(diasOcupados[dia][1], '%H:%M:%S').time()
                             if inicio <= hora_inicio <= fin or inicio <= hora_cierre_intervalo.time() <= fin:
-                                #print("dia: ",dia ,"inicio: ", hora_inicio, "fin: ", hora_cierre_intervalo)
+                                print("dia: ",dia ,"inicio: ", hora_inicio, "fin: ", hora_cierre_intervalo, "gusto: ", m.nombre)
                                 hora_cierre_intervalo = (datetime.combine(datetime.today(), hora_inicio))
-                                break
+                                #break
                             else:
                                 if m.tipo == 'restaurant' and hora_inicio in horas and m.horarioApertura < hora_inicio < m.horarioCierre:
                                     if m.id not in gustos_agregados:

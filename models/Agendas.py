@@ -13,7 +13,9 @@ class Agendas(Base):
    id = Column(Integer, primary_key=True)
    horaInicio = Column(Time)
    horaInicioFin = Column(Time)
-   destino_id = Column(Integer,ForeignKey('destinos.id'))
+   fechaDesde = Column(Date)
+   fechaHasta = Column(Date)
+   usuario_id = Column(Integer, ForeignKey('usuarios.id'))
 
    metadata_obj.create_all(getEngine())
 
@@ -22,4 +24,7 @@ class Agendas(Base):
          "id": self.id,
          "horaInicio": self.horaInicio,
          "horaFin": self.horaFin,
+         "fechaDesde": self.fechaDesde,
+         "fechaHasta": self.fechaHasta,
+         "usuario_id": self.usuario_id
       }
