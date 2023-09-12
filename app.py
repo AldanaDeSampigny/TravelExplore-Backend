@@ -146,3 +146,8 @@ def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
 
     return jsonify(agenda_json)
     
+@app.route('/lugar', methods=['GET'])
+def placesRoutes():
+    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+
+    return gmaps.places(query="restaurant",location= (-42.6852871,-65.3535526), radius=3000)
