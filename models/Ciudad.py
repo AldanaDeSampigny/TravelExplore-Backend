@@ -1,4 +1,3 @@
-from tkinter import Image
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from ..bd.conexion import getEngine, Base
@@ -6,20 +5,15 @@ import sqlalchemy as db
 
 metadata_obj = db.MetaData()
 
-class Usuarios(Base):
-   
-   __tablename__ = 'usuarios'
+class Ciudad(Base):
+   __tablename__ = 'ciudades'
    id = Column(Integer, primary_key=True)
    nombre = Column(String)
-   gmail = Column(String)
-   contraseña = Column(String)
    
    metadata_obj.create_all(getEngine())
 
    def to_dict(self):
       return {
-         "id": self.id,
-         "nombre": self.nombre,
-         "gmail": self.gmail,
-         "contraseña": self.contraseña,
+        "id": self.id,
+        "nombre": self.nombre,
       }

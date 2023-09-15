@@ -1,4 +1,4 @@
-from sqlalchemy.orm import sessionmaker
+""" from sqlalchemy.orm import sessionmaker
 
 class MeGustaRepository:
     def __init__(self, db_session): #esto seria un constructor
@@ -10,4 +10,4 @@ class MeGustaRepository:
         self.db_session.add(actividad)
         self.db_session.commit()
         return actividad
-
+ """

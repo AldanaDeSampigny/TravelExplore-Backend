@@ -6,19 +6,23 @@ import sqlalchemy as db
 metadata_obj = db.MetaData()
 
 class Actividad(Base):
-   __tablename__ = 'actividades_agenda'
+   __tablename__ = 'actividades'
    id = Column(Integer, primary_key=True)
    nombre = Column(String)
-   horaDesde = Column(String)
-   horaHasta = Column(String)
-   dia_viaje_id = Column(db.ForeignKey("dias_viajes.id"))
+   horaInicio = Column(String)
+   horaFin = Column(String)
+   valoracion = Column(Integer)
+   id_agenda_diaria = Column(db.ForeignKey("agendas_diarias.id"))
+   id_lugar = Column(db.ForeignKey("lugares.id"))
   
    metadata_obj.create_all(getEngine())
 
    def to_dict(self):
       return {
         "id": self.id,
-        "nombre": self.horaDesde,
-        "horaDesde": self.horaDesde,
-        "horaHasta": self.horaHasta,
+        "nombre": self.nombre,
+        "horaInicio": self.horaInicio,
+        "horaFin": self.horaFin,
+        "valoracion": self.valoracion,
+        "id_agenda_diaria": self.id_agenda_diaria,
       }

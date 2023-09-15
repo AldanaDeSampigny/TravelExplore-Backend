@@ -3,45 +3,59 @@ from flask import Flask, jsonify, render_template
 
 import json
 
+import googlemaps
+
+from .models import UsuarioCategoria
+
+from .models import Ciudad
+
+from .models import Categoria
+
+
+from .models import Itinerario, Lugar,LugarCategoria
+
 from .utils.AlchemyEncoder import AlchemyEncoder
-from .models.MeGustas import MeGustas
 
-from .service.AgendaService import AgendaService
-from .service.GustaService import GustaService
+""" from .service.AgendaService import AgendaService
+from .service.GustaService import GustaService """
 
-from .models.Usuarios import Usuarios
-from .models.Destinos import Destinos
+from .models.Usuario import Usuario
 from .models.Actividad import Actividad
-from .models.Agendas import Agendas
-from .models.DiaViaje import DiaViaje
+from .models.AgendaDiaria import AgendaDiaria
+from .models.Viaje import Viaje
 from .bd.conexion import getSession, getEngine, Base
+
 
 app = Flask(__name__)
 DeDatos = getSession()
 engine = getEngine()
 Base.metadata.create_all(engine)
 
-nuevo_usuario = Usuarios()
-nuevo_destino = Destinos()
-nuevo_dia_viaje = DiaViaje()
-nueva_actividad = Actividad()
-nueva_agenda = Agendas()
-nuevo_meGusta = MeGustas()
+nuevoUsuarioCategoria = UsuarioCategoria()
+nuevoUsuario = Usuario()
+nuevoViaje = Viaje()
+nuevaCiudad = Ciudad()
+nuevoItinerario = Itinerario()
+nuevaAgendaDiaria = AgendaDiaria()
+nuevoCategoriaLugar = LugarCategoria()
+nuevoLugar = Lugar()
+nuevaCategoria = Categoria()
+nuevaActividad = Actividad()
 
 @app.route('/', methods=['GET'])
 def clean_publications():
     return "Hola mundo!"
 
-if __name__ == '__main__':
-    app.run(debug=True)
+""" if __name__ == '__main__':
+    app.run(debug=True) """
 
-@app.route('/gustos', methods=['GET'])
+""" @app.route('/gustos', methods=['GET'])
 def show_activity():
     gustos = GustaService().get_activities()  # Llama al método get_activities para obtener los datos
     #print (gustos)
     return render_template('gustos_detail.html', activities=gustos)
-
-@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+ """
+""" @app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['GET'])
 def generar_y_mostrar_agenda(usuarioID, destinoID):
     agenda_service = AgendaService(getEngine())
     agenda = agenda_service.generar_agenda(usuarioID, destinoID)
@@ -71,8 +85,8 @@ def generar_y_mostrar_agenda(usuarioID, destinoID):
 
     # Devolver la lista de días y actividades serializadas a JSON
     return jsonify(agenda_json)
-
-@app.route('/generar/agenda/ocupada/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+ """
+""" @app.route('/generar/agenda/ocupada/<int:usuarioID>/<int:destinoID>', methods=['GET'])
 def generar_y_mostrar_agendaOcupada(usuarioID, destinoID):
     agenda_service = AgendaService(getEngine())
     ocupado = { 1 : ('17:00:00' , '19:00:00' ), 3 : ('21:00:00' , '23:00:00')}
@@ -100,7 +114,7 @@ def generar_y_mostrar_agendaOcupada(usuarioID, destinoID):
             dia_json['actividades'].append(actividad_json)
         agenda_json.append(dia_json)
 
-    return jsonify(agenda_json)
+    return jsonify(agenda_json) """
 
 
 """ @app.route('/query', methods=['GET'])
@@ -116,7 +130,7 @@ def query():
 
     return viajes """
 
-@app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+""" @app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:destinoID>', methods=['GET'])
 def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
     agenda_service = AgendaService(getEngine())
     horariosElegidos = { 2: ('12:00:00' , '14:00:00' ), 5 : ('19:00:00' , '22:00:00')}
@@ -144,10 +158,33 @@ def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
             dia_json['actividades'].append(actividad_json)
         agenda_json.append(dia_json)
 
-    return jsonify(agenda_json)
+    return jsonify(agenda_json) """
     
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
+
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
-    return gmaps.places(query="restaurant",location= (-42.6852871,-65.3535526), radius=3000)
+    return gmaps.places(query="restaurant",location= (-42.6852871,-65.3535526), radius=3000) 
+    
+    # Geocoding an address
+    #geocode_result = gmaps.geocode('1600 , Mountain View, CA')
+
+    # Look up an address with reverse geocoding
+    """ reverse_geocode_result = gmaps.reverse_geocode((-42.6852871,-65.3535526))
+
+    # Request directions via public transit
+    now = datetime.now() """
+"""  directions_result = gmaps.directions("Sydney Town Hall",
+                                        "Parramatta, NSW",
+                                        mode="transit",
+                                        departure_time=now)
+
+    # Validate an address with address validation
+    addressvalidation_result =  gmaps.addressvalidation(['1600 Amphitheatre Pk'], 
+                                                        regionCode='US',
+                                                        locality='Mountain View', 
+                                                        enableUspsCass=True) """
+
+
+#schedule_automatic_trains()

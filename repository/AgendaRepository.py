@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from ..models.Destinos import Destinos
 from ..models.MeGustas import MeGustas
 from sqlalchemy.orm import sessionmaker
-from ..models.Usuarios import Usuarios
+from ..models.Usuario import Usuarios
 from sqlalchemy import func
 
 class AgendaRepository:

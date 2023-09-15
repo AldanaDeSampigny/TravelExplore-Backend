@@ -8,14 +8,15 @@ from sqlalchemy.orm import relationship
 #base = declarative_base()
 metadata_obj = db.MetaData()
 
-class Agendas(Base):
-   __tablename__ = 'agendas'
+class AgendaDiaria(Base):
+   __tablename__ = 'agendas_diarias'
    id = Column(Integer, primary_key=True)
    horaInicio = Column(Time)
-   horaInicioFin = Column(Time)
-   fechaDesde = Column(Date)
-   fechaHasta = Column(Date)
-   usuario_id = Column(Integer, ForeignKey('usuarios.id'))
+   horaFin = Column(Time)
+   dia = Column(Date)
+   itinerario_id = Column(db.ForeignKey("itinerarios.id"))
+   #fechaDesde = Column(Date)
+   #fechaHasta = Column(Date)
 
    metadata_obj.create_all(getEngine())
 
@@ -24,7 +25,5 @@ class Agendas(Base):
          "id": self.id,
          "horaInicio": self.horaInicio,
          "horaFin": self.horaFin,
-         "fechaDesde": self.fechaDesde,
-         "fechaHasta": self.fechaHasta,
-         "usuario_id": self.usuario_id
+         "itinerario": self.itinerario_id
       }
