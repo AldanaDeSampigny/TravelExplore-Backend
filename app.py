@@ -5,14 +5,16 @@ import json
 
 import googlemaps
 
-from .models import UsuarioCategoria
+from .models.ActividadCategoria import ActividadCategoria
 
-from .models import Ciudad
+from .models.UsuarioCategoria import UsuarioCategoria
 
-from .models import Categoria
+from .models.Ciudad import Ciudad
 
-
-from .models import Itinerario, Lugar,LugarCategoria
+from .models.Categoria import Categoria
+from .models.Itinerario import Itinerario
+from .models.Lugar import Lugar
+from .models.LugarCategoria import LugarCategoria
 
 from .utils.AlchemyEncoder import AlchemyEncoder
 
@@ -31,16 +33,17 @@ DeDatos = getSession()
 engine = getEngine()
 Base.metadata.create_all(engine)
 
-nuevoUsuarioCategoria = UsuarioCategoria()
 nuevoUsuario = Usuario()
 nuevoViaje = Viaje()
 nuevaCiudad = Ciudad()
 nuevoItinerario = Itinerario()
 nuevaAgendaDiaria = AgendaDiaria()
-nuevoCategoriaLugar = LugarCategoria()
 nuevoLugar = Lugar()
-nuevaCategoria = Categoria()
 nuevaActividad = Actividad()
+nuevaCategoria = Categoria()
+nuevoCategoriaLugar = LugarCategoria()
+nuevoUsuarioCategoria = UsuarioCategoria()
+nuevaActividadCategoria = ActividadCategoria()
 
 @app.route('/', methods=['GET'])
 def clean_publications():

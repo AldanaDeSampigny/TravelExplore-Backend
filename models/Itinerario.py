@@ -6,7 +6,7 @@ from sqlalchemy.orm import relationship
 
 metadata_obj = db.MetaData()
 
-class Itinario(Base):
+class Itinerario(Base):
   __tablename__ = 'itinerarios'
   id = Column(Integer, primary_key=True)
   fechaDesde = Column(Date)
