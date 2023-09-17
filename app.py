@@ -5,6 +5,7 @@ import json
 
 import googlemaps
 
+from .models.Usuario import Usuario
 from .models.ActividadCategoria import ActividadCategoria
 
 from .models.UsuarioCategoria import UsuarioCategoria
@@ -18,10 +19,9 @@ from .models.LugarCategoria import LugarCategoria
 
 from .utils.AlchemyEncoder import AlchemyEncoder
 
-""" from .service.AgendaService import AgendaService
-from .service.GustaService import GustaService """
+from .service.AgendaService import AgendaService
+"""from .service.GustaService import GustaService """
 
-from .models.Usuario import Usuario
 from .models.Actividad import Actividad
 from .models.AgendaDiaria import AgendaDiaria
 from .models.Viaje import Viaje
@@ -57,11 +57,11 @@ def show_activity():
     gustos = GustaService().get_activities()  # Llama al método get_activities para obtener los datos
     #print (gustos)
     return render_template('gustos_detail.html', activities=gustos)
- """
-""" @app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+"""
+@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['GET'])
 def generar_y_mostrar_agenda(usuarioID, destinoID):
     agenda_service = AgendaService(getEngine())
-    agenda = agenda_service.generar_agenda(usuarioID, destinoID)
+    agenda = agenda_service.generar_agenda(usuarioID, destinoID, '2023-01-01', '2023-01-04', '13:00:00','19:00:00')
     # Crear un diccionario para agrupar las actividades por día
     agenda_por_dia = defaultdict(list)
     for actividad_data in agenda:
@@ -72,14 +72,14 @@ def generar_y_mostrar_agenda(usuarioID, destinoID):
     agenda_json = []
     for dia, actividades in sorted(agenda_por_dia.items()):
         dia_json = {
-            'dia': dia,
+            'dia': dia.strftime('%d-%m-%Y'),
             'actividades': []
         }
         for actividad_data in actividades:
             actividad_json = {
                 'id': actividad_data['actividad'].id,
-                'nombre': actividad_data['actividad'].nombre,
-                'tipo': actividad_data['actividad'].tipo,
+                'actividad': actividad_data['actividad'].nombre,
+                'lugar': actividad_data['lugar'],
                 'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
                 'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S')
             }
@@ -88,7 +88,7 @@ def generar_y_mostrar_agenda(usuarioID, destinoID):
 
     # Devolver la lista de días y actividades serializadas a JSON
     return jsonify(agenda_json)
- """
+
 """ @app.route('/generar/agenda/ocupada/<int:usuarioID>/<int:destinoID>', methods=['GET'])
 def generar_y_mostrar_agendaOcupada(usuarioID, destinoID):
     agenda_service = AgendaService(getEngine())
@@ -133,11 +133,11 @@ def query():
 
     return viajes """
 
-""" @app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+@app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:destinoID>', methods=['GET'])
 def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
     agenda_service = AgendaService(getEngine())
-    horariosElegidos = { 2: ('12:00:00' , '14:00:00' ), 5 : ('19:00:00' , '22:00:00')}
-    agenda = agenda_service.generarAgendaPersonalizada(usuarioID, destinoID, horariosElegidos)
+    horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-02': ('19:00:00' , '22:00:00')}
+    agenda = agenda_service.generarAgendaPersonalizada(usuarioID, destinoID, horariosElegidos, '2023-01-01', '2023-01-04', '13:00:00','19:00:00')
 
     agenda_por_dia = defaultdict(list)
     for actividad_data in agenda:
@@ -154,15 +154,15 @@ def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
             actividad_json = {
                 'id': actividad_data['actividad'].id,
                 'nombre': actividad_data['actividad'].nombre,
-                'tipo': actividad_data['actividad'].tipo,
+                'lugar': actividad_data['lugar'],
                 'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
                 'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S')
             }
             dia_json['actividades'].append(actividad_json)
         agenda_json.append(dia_json)
 
-    return jsonify(agenda_json) """
-    
+    return jsonify(agenda_json) 
+"""
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
 
@@ -174,7 +174,7 @@ def placesRoutes():
     #geocode_result = gmaps.geocode('1600 , Mountain View, CA')
 
     # Look up an address with reverse geocoding
-    """ reverse_geocode_result = gmaps.reverse_geocode((-42.6852871,-65.3535526))
+    reverse_geocode_result = gmaps.reverse_geocode((-42.6852871,-65.3535526))
 
     # Request directions via public transit
     now = datetime.now() """

@@ -12,8 +12,6 @@ class Categoria(Base):
     id = Column(Integer, primary_key=True)
     codigo = Column(String)
     nombre = Column(String)
-    id_ciudad = Column(db.ForeignKey("ciudades.id"))
-    #lugares = relationship('Lugar', secondary='lugares_categorias', back_populates='categorias')
 
     metadata_obj.create_all(getEngine())
 

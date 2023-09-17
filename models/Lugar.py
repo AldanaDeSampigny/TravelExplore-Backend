@@ -1,5 +1,5 @@
 from ast import List
-from sqlalchemy import Column, Integer, String, false
+from sqlalchemy import Column, Integer, String, Time, false
 from sqlalchemy.ext.declarative import declarative_base
 from ..bd.conexion import getEngine, Base
 import sqlalchemy as db
@@ -11,6 +11,9 @@ class Lugar(Base):
   id = Column(Integer, primary_key=false) #el lugar puede ser nulo  
   codigo = Column(String)
   nombre = Column(String)
+  horaApertura = Column(Time)
+  horaCierre = Column(Time)
+  tipo = Column(String)
   id_ciudad = Column(db.ForeignKey("ciudades.id"))
   #categorias = relationship('Categoria', secondary='lugares_categorias', back_populates='lugares')
 
@@ -22,4 +25,7 @@ class Lugar(Base):
       "id": self.id,
       "nombre": self.nombre,
       "codigo": self.codigo,
+      "horaApertura": self.horaApertura,
+      "horaCierre": self.horaCierre,
+      "tipo": self.tipo
     }

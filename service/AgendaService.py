@@ -1,6 +1,3 @@
-""" from ..repository.MeGustaRepository import MeGustaRepository
-from ..models.AgendaDiaria import Agendas
-from ..models.Viaje import Viaje
 from ..models.Actividad import Actividad
 from ..repository.AgendaRepository import AgendaRepository
 from ..bd.conexion import getEngine
@@ -11,7 +8,145 @@ class AgendaService:
     def __init__(self, db_session):
         self.db_session = db_session
 
+    def generar_agenda(self, usuarioID, viajeID, fechaDesde, fechaHasta, horaInicio, horaFin):
+        with Session(getEngine()) as session:
+            agenda_repo = AgendaRepository(session)
+            agenda = []
+            horas = {datetime.strptime('09:00:00', '%H:%M:%S').time(): datetime.strptime('11:00:00', '%H:%M:%S').time(),
+                    datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('14:00:00', '%H:%M:%S').time(),
+                    datetime.strptime('17:00:00', '%H:%M:%S').time(): datetime.strptime('19:00:00', '%H:%M:%S').time(),
+                    datetime.strptime('21:00:00', '%H:%M:%S').time(): datetime.strptime('23:00:00', '%H:%M:%S').time()}
 
+            hora_inicio = datetime.strptime(horaInicio, '%H:%M:%S').time() 
+            hora_cierre_intervalo = datetime.strptime('00:00:00', '%H:%M:%S').time() 
+            inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute 
+            finNumerico = datetime.strptime(horaFin, '%H:%M:%S').time().hour * 60 + datetime.strptime(horaFin, '%H:%M:%S').time().minute
+
+            fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
+            fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
+            delta_dias = timedelta(days=1)
+
+            while fecha_actual <= fecha_hasta:
+                meGustas_ids = agenda_repo.buscarActividad(usuarioID, viajeID)
+                hora_inicio = datetime.strptime(horaInicio, '%H:%M:%S').time() 
+                inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute 
+                gustos_agregados = set()
+                while inicioNumerico < finNumerico:
+                    for m_id in meGustas_ids:
+
+                        m = session.query(Actividad).get(m_id[0])
+                        lugar = agenda_repo.buscarLugar(m.id)
+                        minutos_duracion = m.duracion.hour * 60 + m.duracion.minute
+                        hora_cierre_intervalo = (datetime.combine(datetime.today(), hora_inicio)) + timedelta(minutes=minutos_duracion)
+
+                        if lugar.tipo == 'restaurant' and hora_inicio in horas and lugar.horaApertura < hora_inicio < lugar.horaCierre:
+                            if m.id not in gustos_agregados:
+                                actividad = {
+                                    'dia': fecha_actual,
+                                    'hora_inicio': hora_inicio,
+                                    'hora_fin': hora_cierre_intervalo,
+                                    'actividad': m,
+                                    'lugar': lugar.nombre
+                                }
+                                agenda.append(actividad)
+                                gustos_agregados.add(m.id)
+                                break
+                        
+                        if lugar.horaApertura <= hora_inicio < lugar.horaCierre:
+                            if m.id not in gustos_agregados:
+                                actividad = {
+                                    'dia': fecha_actual,
+                                    'hora_inicio': hora_inicio,
+                                    'hora_fin': hora_cierre_intervalo,
+                                    'actividad': m,
+                                    'lugar': lugar.nombre
+                                }
+                                agenda.append(actividad)
+                                gustos_agregados.add(m.id)
+                                break
+
+                    if datetime.strptime('00:00:00', '%H:%M:%S').time() <= hora_inicio <= datetime.strptime('04:00:00', '%H:%M:%S').time():
+                        break
+
+                    hora_inicio = (hora_cierre_intervalo + timedelta(minutes=30)).time()
+                    inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute
+
+                fecha_actual += delta_dias
+
+            return agenda
+
+
+    def generarAgendaPersonalizada(self, usuarioID, viajeID, horariosElegidos, fechaDesde, fechaHasta, horaInicio, horaFin):
+        with Session(getEngine()) as session:
+            agenda_repo = AgendaRepository(session)
+            agenda = []
+            dias_semana = list(range(1, 8))
+            horas = {
+                datetime.strptime('09:00:00', '%H:%M:%S').time(): datetime.strptime('11:00:00', '%H:%M:%S').time(),
+                datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('14:00:00', '%H:%M:%S').time(),
+                datetime.strptime('17:00:00', '%H:%M:%S').time(): datetime.strptime('19:00:00', '%H:%M:%S').time(),
+                datetime.strptime('21:00:00', '%H:%M:%S').time(): datetime.strptime('23:00:00', '%H:%M:%S').time()
+            }
+
+            fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
+            fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
+            delta_dias = timedelta(days=1)
+
+            while fecha_actual <= fecha_hasta:
+                meGustas_ids = agenda_repo.buscarActividad(usuarioID, viajeID)
+
+                if fecha_actual.date().strftime('%Y-%m-%d') in horariosElegidos:
+                    horario_inicio = datetime.strptime(horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][0], '%H:%M:%S').time()
+                    horario_fin = datetime.strptime(horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][1], '%H:%M:%S').time()
+                else:
+                    horario_inicio = datetime.strptime(horaInicio, '%H:%M:%S').time() 
+                    horario_fin = datetime.strptime(horaFin, '%H:%M:%S').time()
+
+                hora_actual = horario_inicio
+                gustos_agregados = set()
+
+                while hora_actual < horario_fin:
+                    for m_id in meGustas_ids:
+                        m = session.query(Actividad).get(m_id[0])
+                        lugar = agenda_repo.buscarLugar(m.id)
+                        minutos_duracion = m.duracion.hour * 60 + m.duracion.minute
+                        hora_cierre_intervalo = datetime.combine(datetime.today(), hora_actual) + timedelta(minutes=minutos_duracion)
+
+                        if lugar.tipo == 'restaurant' and horario_inicio in horas and lugar.horaApertura < horario_inicio < lugar.horaCierre:
+                            if m.id not in gustos_agregados:
+                                actividad = {
+                                    'dia': fecha_actual,
+                                    'hora_inicio': horario_inicio,
+                                    'hora_fin': hora_cierre_intervalo,
+                                    'actividad': m,
+                                    'lugar': lugar.nombre
+                                }
+                                agenda.append(actividad)
+                                gustos_agregados.add(m.id)
+                                break
+                        
+                        if lugar.horaApertura <= horario_inicio < lugar.horaCierre:
+                            if m.id not in gustos_agregados:
+                                actividad = {
+                                    'dia': fecha_actual,
+                                    'hora_inicio': horario_inicio,
+                                    'hora_fin': hora_cierre_intervalo,
+                                    'actividad': m,
+                                    'lugar': lugar.nombre
+                                }
+                                agenda.append(actividad)
+                                gustos_agregados.add(m.id)
+                                break
+                            
+                    if datetime.strptime('00:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('04:00:00', '%H:%M:%S').time():
+                        break
+
+                    hora_actual = (hora_cierre_intervalo + timedelta(minutes=30)).time()
+                
+                fecha_actual += delta_dias
+
+        return agenda
+"""
     def guardarAgendaEnBd(self, agenda):
         with Session(getEngine()) as session:
             agendaNueva = Agendas()
@@ -33,128 +168,10 @@ class AgendaService:
             
             finally:
                 # Cierra la sesión
-                session.close()
+                session.close()"""
 
 
-    def generar_agenda(self, usuarioID, viajeID):
-        with Session(getEngine()) as session:
-            agenda_repo = AgendaRepository(session)
-            agenda = []
-            horas = {datetime.strptime('09:00:00', '%H:%M:%S').time(): datetime.strptime('11:00:00', '%H:%M:%S').time(),
-                    datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('14:00:00', '%H:%M:%S').time(),
-                    datetime.strptime('17:00:00', '%H:%M:%S').time(): datetime.strptime('19:00:00', '%H:%M:%S').time(),
-                    datetime.strptime('21:00:00', '%H:%M:%S').time(): datetime.strptime('23:00:00', '%H:%M:%S').time()}
-
-            dias_semana = list(range(1, 8))
-            hora_inicio = datetime.strptime('14:00:00', '%H:%M:%S').time() 
-            inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute 
-            finNumerico = datetime.strptime('23:00:00', '%H:%M:%S').time().hour * 60 + datetime.strptime('23:00:00', '%H:%M:%S').time().minute
-
-            for dia in dias_semana:
-                meGustas_ids = agenda_repo.buscarGustos(usuarioID, viajeID)
-                hora_inicio = datetime.strptime('14:00:00', '%H:%M:%S').time() 
-                inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute 
-                gustos_agregados = set()
-                while inicioNumerico < finNumerico:
-                    for m_id in meGustas_ids:
-
-                        m = session.query(MeGustas).get(m_id[0])
-                        minutos_duracion = m.duracion.hour * 60 + m.duracion.minute
-                        hora_cierre_intervalo = (datetime.combine(datetime.today(), hora_inicio)) + timedelta(minutes=minutos_duracion)
-
-                        if m.tipo == 'restaurant' and hora_inicio in horas and m.horarioApertura < hora_inicio < m.horarioCierre:
-                            if m.id not in gustos_agregados:
-                                actividad = {
-                                    'dia': dia,
-                                    'hora_inicio': hora_inicio,
-                                    'hora_fin': hora_cierre_intervalo,
-                                    'actividad': m
-                                }
-                                agenda.append(actividad)
-                                gustos_agregados.add(m.id)
-                                break
-                        
-                        if m.horarioApertura < hora_inicio < m.horarioCierre:
-                            if m.id not in gustos_agregados:
-                                actividad = {
-                                    'dia': dia,
-                                    'hora_inicio': hora_inicio,
-                                    'hora_fin': hora_cierre_intervalo,
-                                    'actividad': m
-                                }
-                                agenda.append(actividad)
-                                gustos_agregados.add(m.id)
-                                break
-
-                    if datetime.strptime('00:00:00', '%H:%M:%S').time() <= hora_inicio <= datetime.strptime('04:00:00', '%H:%M:%S').time():
-                        break
-
-                    hora_inicio = (hora_cierre_intervalo + timedelta(minutes=30)).time()
-                    inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute
-
-            return agenda
-
-    def generarAgendaPersonalizada(self, usuarioID, viajeID, horariosElegidos):
-        with Session(getEngine()) as session:
-            agenda_repo = AgendaRepository(session)
-            agenda = []
-            dias_semana = list(range(1, 8))
-            horas = {
-                datetime.strptime('09:00:00', '%H:%M:%S').time(): datetime.strptime('11:00:00', '%H:%M:%S').time(),
-                datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('14:00:00', '%H:%M:%S').time(),
-                datetime.strptime('17:00:00', '%H:%M:%S').time(): datetime.strptime('19:00:00', '%H:%M:%S').time(),
-                datetime.strptime('21:00:00', '%H:%M:%S').time(): datetime.strptime('23:00:00', '%H:%M:%S').time()
-            }
-
-            for dia in dias_semana:
-                meGustas_ids = agenda_repo.buscarGustos(usuarioID, viajeID)
-
-                if dia in horariosElegidos:
-                    horario_inicio = datetime.strptime(horariosElegidos[dia][0], '%H:%M:%S').time()
-                    horario_fin = datetime.strptime(horariosElegidos[dia][1], '%H:%M:%S').time()
-                else:
-                    horario_inicio = datetime.strptime('14:00:00', '%H:%M:%S').time()
-                    horario_fin = datetime.strptime('23:00:00', '%H:%M:%S').time()
-
-                hora_actual = horario_inicio
-                gustos_agregados = set()
-
-                while hora_actual < horario_fin:
-                    for m_id in meGustas_ids:
-                        m = session.query(MeGustas).get(m_id[0])
-                        minutos_duracion = m.duracion.hour * 60 + m.duracion.minute
-                        hora_cierre_intervalo = datetime.combine(datetime.today(), hora_actual) + timedelta(minutes=minutos_duracion)
-
-                        if m.tipo == 'restaurant' and hora_actual in horas and m.horarioApertura < hora_actual < m.horarioCierre:
-                            if m.id not in gustos_agregados:
-                                actividad = {
-                                    'dia': dia,
-                                    'hora_inicio': hora_actual,
-                                    'hora_fin': hora_cierre_intervalo.time(),
-                                    'actividad': m
-                                }
-                                agenda.append(actividad)
-                                gustos_agregados.add(m.id)
-                                break
-
-                        if m.horarioApertura < hora_actual < m.horarioCierre:
-                            if m.id not in gustos_agregados:
-                                actividad = {
-                                    'dia': dia,
-                                    'hora_inicio': hora_actual,
-                                    'hora_fin': hora_cierre_intervalo.time(),
-                                    'actividad': m
-                                }
-                                agenda.append(actividad)
-                                gustos_agregados.add(m.id)
-                                break
-                    if datetime.strptime('00:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('04:00:00', '%H:%M:%S').time():
-                        break
-
-                    hora_actual = (hora_cierre_intervalo + timedelta(minutes=30)).time()
-        return agenda
-
-
+"""
     #viaje = buscarViaje(usuarioID=123)
     #fechaDesdeViaje = datetime.strptime(viaje.fechaDesde, "%Y-%m-%d")
     #fechaHastaViaje = datetime.strptime(viaje.fechaHasta, "%Y-%m-%d")
@@ -256,9 +273,4 @@ class AgendaService:
                     hora_inicio = (hora_cierre_intervalo + timedelta(minutes=30)).time()
                     inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute
    
-            return agenda
-
-   
-
-    
- """
+            return agenda """

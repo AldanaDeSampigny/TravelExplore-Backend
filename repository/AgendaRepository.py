@@ -1,10 +1,15 @@
 #from requests import Session
+from ..models.Actividad import Actividad
+from ..models.ActividadCategoria import ActividadCategoria
+from ..models.Categoria import Categoria
+from ..models.UsuarioCategoria import UsuarioCategoria
+from ..models.Lugar import Lugar
+from ..models.Ciudad import Ciudad
+
 from sqlalchemy.orm import Session
 
-from ..models.Destinos import Destinos
-from ..models.MeGustas import MeGustas
 from sqlalchemy.orm import sessionmaker
-from ..models.Usuario import Usuarios
+from ..models.Usuario import Usuario
 from sqlalchemy import func
 
 class AgendaRepository:
@@ -17,7 +22,7 @@ class AgendaRepository:
         self.db_session.commit()
         return agenda
 
-    def buscarGustosPersonalizado(self, usuarioID, destinosID):
+    """def buscarGustosPersonalizado(self, usuarioID, destinosID):
         session = Session(self.db_session)
         print(usuarioID, destinosID,"llego")
 
@@ -40,4 +45,50 @@ class AgendaRepository:
 
         query = query.order_by(func.random())
         gustos = query.all()
-        return gustos        
+        return gustos        """
+    
+
+    def buscarActividad(self, usuarioID, ciudadID):
+        subquery_cat_ids = self.db_session.query(Categoria.id).\
+            join(UsuarioCategoria, Categoria.id == UsuarioCategoria.id_categorias).\
+            filter(UsuarioCategoria.id_usuario == usuarioID).\
+            subquery()
+
+        query = self.db_session.query(Actividad.id).\
+            join(ActividadCategoria, Actividad.id == ActividadCategoria.id_actividad).\
+            join(Categoria, ActividadCategoria.id_categoria == Categoria.id).\
+            join(UsuarioCategoria, Categoria.id == UsuarioCategoria.id_categorias).\
+            join(Usuario, UsuarioCategoria.id_usuario == Usuario.id).\
+            join(Lugar, Actividad.id_lugar == Lugar.id).\
+            join(Ciudad, Lugar.id_ciudad == Ciudad.id).\
+            filter(Usuario.id == usuarioID).\
+            filter(Ciudad.id == ciudadID).\
+            filter(Categoria.id.in_(subquery_cat_ids))
+
+        result = query.all()  # Ejecutar la consulta
+
+        return result
+    
+    def buscarLugar(self, actividadID):
+        lugar = self.db_session.query(Lugar).\
+            join(Actividad, Actividad.id_lugar == Lugar.id).\
+            filter(Actividad.id == actividadID).first()
+        
+        return lugar
+#     SELECT a.actividad
+# FROM usuario u
+# JOIN categoriausuario uc ON u.id = uc.id_usuario ...........
+# JOIN categoria c ON uc.id_categoria = c.id  -----------------
+# JOIN categoriatividad ac ON c.id = ac.id_categoria ----------------
+# JOIN actividad a ON ac.id_actividad = a.id ---------------
+# JOIN lugar l ON a.id_lugar = l.id --------------------
+# JOIN ciudad ci ON l.id_ciudad = ci.id
+# WHERE u.id = <ID>
+# AND ci.id = <ID>
+# AND a.id_categoria IN (
+#   SELECT c.id
+#   FROM usuario u
+#   JOIN categoriausuario uc ON u.id = uc.id_usuario
+#   JOIN categoria c ON uc.id_categoria = c.id
+#   WHERE u.id = <ID>
+# );
