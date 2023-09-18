@@ -162,14 +162,26 @@ def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
         agenda_json.append(dia_json)
 
     return jsonify(agenda_json) 
-"""
+
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
 
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
-    return gmaps.places(query="restaurant",location= (-42.6852871,-65.3535526), radius=3000) 
+    places = gmaps.places(query="restaurant", location=(-42.6852871, -65.3535526), radius=3000)
     
+    lugares = []
+    for place in places['results']:
+        lugar = {
+            'nombre': place['name'],
+            'direccion': place['formatted_address'],
+            'valoracion': place.get('rating', 'N/A'),
+            'descripcion': place.get('types', ['N/A'])[0]
+        }
+        lugares.append(lugar)
+
+    return jsonify(lugares)
+"""    
     # Geocoding an address
     #geocode_result = gmaps.geocode('1600 , Mountain View, CA')
 
