@@ -26,9 +26,10 @@ from .models.Actividad import Actividad
 from .models.AgendaDiaria import AgendaDiaria
 from .models.Viaje import Viaje
 from .bd.conexion import getSession, getEngine, Base
-
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 DeDatos = getSession()
 engine = getEngine()
 Base.metadata.create_all(engine)
@@ -58,7 +59,7 @@ def show_activity():
     #print (gustos)
     return render_template('gustos_detail.html', activities=gustos)
 """
-@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID, destinoID):
     agenda_service = AgendaService(getEngine())
     agenda = agenda_service.generar_agenda(usuarioID, destinoID, '2023-01-01', '2023-01-04', '13:00:00','19:00:00')

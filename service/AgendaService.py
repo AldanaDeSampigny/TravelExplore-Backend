@@ -1,4 +1,8 @@
+from turtle import update
 from ..models.Actividad import Actividad
+from ..models.Viaje import Viaje
+from ..models.Itinerario import Itinerario
+from ..models.AgendaDiaria import AgendaDiaria
 from ..repository.AgendaRepository import AgendaRepository
 from ..bd.conexion import getEngine
 from sqlalchemy.orm import Session
@@ -7,6 +11,44 @@ from datetime import datetime, timedelta
 class AgendaService:
     def __init__(self, db_session):
         self.db_session = db_session
+
+    def saveAgenda(self, idUsuario,idCiudad,fechaDesde,fechaHasta, horaInicio, horaFin, dia):
+        with Session(getEngine()) as session:
+            nuevoViaje =  Viaje()
+            nuevoViaje.id_usuario=  idUsuario
+            nuevoViaje.fechaDesde = fechaDesde
+            nuevoViaje.fechaHasta = fechaHasta
+            
+            try:
+                session.add(nuevoViaje)
+                session.commit()
+
+                nuevoItinerario = Itinerario()
+                nuevoItinerario.id_ciudad= idCiudad
+                nuevoItinerario.fechaDesde = fechaDesde
+                nuevoItinerario.fechaHasta = fechaHasta
+                nuevoItinerario.id_viaje = nuevoViaje.id
+                session.add(nuevoItinerario)
+                session.commit()
+
+                nuevaAgendaDiaria = AgendaDiaria()
+                nuevaAgendaDiaria.horaInicio = horaInicio 
+                nuevaAgendaDiaria.horaFin = horaFin
+                nuevaAgendaDiaria.dia = dia
+                nuevaAgendaDiaria.itinerario_id = nuevoItinerario.id
+
+                session.add(nuevaAgendaDiaria)
+                session.commit()
+
+                actividad = Actividad()
+                actividad.id_agenda_diaria = 3
+                    
+                session.commit()
+                #session.update(actividad)
+            except Exception as e:
+                # En caso de error, realiza un rollback
+                session.rollback()
+                raise e
 
     def generar_agenda(self, usuarioID, viajeID, fechaDesde, fechaHasta, horaInicio, horaFin):
         with Session(getEngine()) as session:
@@ -71,9 +113,12 @@ class AgendaService:
                     hora_inicio = (hora_cierre_intervalo + timedelta(minutes=30)).time()
                     inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute
 
+                #!-CAMBIAR DELTA DAYS POR LA RESTA DE LAS FECHAS E INCREMENTAR A LA FECHA DESDE PARA PODER GUARDAR LA FECHA EN LA AGENDA
+                self.saveAgenda(usuarioID,viajeID,fechaDesde,fechaHasta,horaInicio,horaFin,fechaHasta)
                 fecha_actual += delta_dias
 
             return agenda
+
 
 
     def generarAgendaPersonalizada(self, usuarioID, viajeID, horariosElegidos, fechaDesde, fechaHasta, horaInicio, horaFin):

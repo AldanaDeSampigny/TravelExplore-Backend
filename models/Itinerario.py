@@ -12,7 +12,7 @@ class Itinerario(Base):
   fechaDesde = Column(Date)
   fechaHasta = Column(Date)
   id_viaje = Column(db.ForeignKey("viajes.id"))
-  id_ciudades = Column(db.ForeignKey("ciudades.id"))
+  id_ciudad = Column(db.ForeignKey("ciudades.id"))
   
   metadata_obj.create_all(getEngine())
 

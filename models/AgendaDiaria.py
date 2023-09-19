@@ -15,8 +15,6 @@ class AgendaDiaria(Base):
    horaFin = Column(Time)
    dia = Column(Date)
    itinerario_id = Column(db.ForeignKey("itinerarios.id"))
-   #fechaDesde = Column(Date)
-   #fechaHasta = Column(Date)
 
    metadata_obj.create_all(getEngine())
 
