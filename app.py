@@ -1,4 +1,5 @@
 from collections import defaultdict
+from .service.AgendaValidaciones import AgendaValidaciones
 from flask import Flask, jsonify, render_template, request
 
 import googlemaps
@@ -62,8 +63,21 @@ def show_activity():
 def serialize_timedelta(td):
     return str(td)
 
-@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['GET'])#'POST'])
-def generar_y_mostrar_agenda(usuarioID, destinoID):
+@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<horaInicio>/<horaFin>'
+            , methods=['POST'])
+def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, horaInicio, horaFin):
+    try:
+        AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
+        AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
+    except ValueError as e:
+        error_message = str(e)
+        response = jsonify({'error': error_message})
+        print("Error:", error_message)
+        print(response)
+        response.status_code = 400
+        response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
+        return response
+    
     agenda_service = AgendaService(getEngine())
     agenda = agenda_service.generar_agenda(usuarioID, destinoID, '2023-01-01', '2023-01-04', '13:00:00','19:00:00')
     # Crear un diccionario para agrupar las actividades por día
