@@ -20,14 +20,21 @@ class AgendaService:
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def saveAgenda(self, idUsuario,idCiudad,fechaDesde,fechaHasta, horaInicio, horaFin, dia):
+    def saveAgenda(self, idUsuario,idCiudad,fechaDesde,fechaHasta, horaInicio, horaFin, dia,agenda):
         with Session(getEngine()) as session:
+
             nuevoViaje =  Viaje()
-            nuevoViaje.id_usuario=  idUsuario
+            nuevoViaje.id_usuario = idUsuario
             nuevoViaje.fechaDesde = fechaDesde
             nuevoViaje.fechaHasta = fechaHasta
             
             try:
+                for actividadProgramada in agenda:
+                    actividad = actividadProgramada['actividad']
+                    print("Actividad" + str(actividad.to_dict()))
+                    actividad.id_agenda_diaria = 22
+                    session.commit()
+
                 session.add(nuevoViaje)
                 session.commit()
 
@@ -47,12 +54,7 @@ class AgendaService:
 
                 session.add(nuevaAgendaDiaria)
                 session.commit()
-
-                actividad = Actividad()
-                actividad.id_agenda_diaria = 3
-                    
-                session.commit()
-                #session.update(actividad)
+                #session.refresh(nuevaAgendaDiaria)
             except Exception as e:
                 # En caso de error, realiza un rollback
                 session.rollback()
@@ -73,6 +75,9 @@ class AgendaService:
             return direccion
 
 
+    """
+        Retorna un json de agenda 
+    """
     def generar_agenda(self, usuarioID, viajeID, fechaDesde, fechaHasta, horaInicio, horaFin):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
@@ -146,13 +151,18 @@ class AgendaService:
                     hora_inicio_datetime += direccion  # Sumar la dirección al objeto datetime
                     hora_inicio = hora_inicio_datetime.time() 
                     inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute
-
+                
                 #!-CAMBIAR DELTA DAYS POR LA RESTA DE LAS FECHAS E INCREMENTAR A LA FECHA DESDE PARA PODER GUARDAR LA FECHA EN LA AGENDA
-                self.saveAgenda(usuarioID,viajeID,fechaDesde,fechaHasta,horaInicio,horaFin,fechaHasta)
                 fecha_actual += delta_dias
+            session.commit()
+            session.close()
 
-            return agenda
+        self.saveAgenda(usuarioID,viajeID,fechaDesde,fechaHasta,horaInicio,horaFin,fechaHasta,agenda)
+        return agenda
 
+
+
+# print("Lista: "+ str(agenda))
 
 
     def generarAgendaPersonalizada(self, usuarioID, viajeID, horariosElegidos, fechaDesde, fechaHasta, horaInicio, horaFin):
@@ -231,29 +241,6 @@ class AgendaService:
                 fecha_actual += delta_dias
 
         return agenda
-"""
-    def guardarAgendaEnBd(self, agenda):
-        with Session(getEngine()) as session:
-            agendaNueva = Agendas()
-            agendaNueva.id = 105
-            agendaNueva.horaInicio = "12:00:00"
-            agendaNueva.horaFin = "15:00:00"
-            agendaNueva.fechaDesde = "2023-05-15"
-            agendaNueva.fechaHasta = "2023-05-17"
-            agendaNueva.usuario_id = 1
-
-            try:
-                session.add(agendaNueva)
-                session.commit()
-            
-            except Exception as e:
-                # En caso de error, realiza un rollback
-                session.rollback()
-                raise e
-            
-            finally:
-                # Cierra la sesión
-                session.close()"""
 
 
 """
