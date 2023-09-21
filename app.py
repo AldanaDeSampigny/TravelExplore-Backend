@@ -1,9 +1,9 @@
 from collections import defaultdict
-from flask import Flask, jsonify, render_template
-
-import json
+from flask import Flask, jsonify, render_template, request
 
 import googlemaps
+
+from .consultas import obtenerDirecciones
 
 from .models.Usuario import Usuario
 from .models.ActividadCategoria import ActividadCategoria
@@ -59,7 +59,10 @@ def show_activity():
     #print (gustos)
     return render_template('gustos_detail.html', activities=gustos)
 """
-@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['POST'])
+def serialize_timedelta(td):
+    return str(td)
+
+@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>', methods=['GET'])#'POST'])
 def generar_y_mostrar_agenda(usuarioID, destinoID):
     agenda_service = AgendaService(getEngine())
     agenda = agenda_service.generar_agenda(usuarioID, destinoID, '2023-01-01', '2023-01-04', '13:00:00','19:00:00')
@@ -82,7 +85,8 @@ def generar_y_mostrar_agenda(usuarioID, destinoID):
                 'actividad': actividad_data['actividad'].nombre,
                 'lugar': actividad_data['lugar'],
                 'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
-                'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S')
+                'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S'),
+                #'tiempo_traslado': actividad_data['tiempo_traslado'].strftime('%H:%M:%S')
             }
             dia_json['actividades'].append(actividad_json)
         agenda_json.append(dia_json)
@@ -182,6 +186,18 @@ def placesRoutes():
         lugares.append(lugar)
 
     return jsonify(lugares)
+
+@app.route('/directions', methods=['GET'])
+def directions():
+    origen = request.args.get('origen') 
+    destino = request.args.get('destino')
+    transporte = request.args.get('transporte', 'driving').strip()
+
+    # Llama a la función obtenerDirecciones desde direcciones.py
+    resultado = obtenerDirecciones(origen, destino, transporte)
+
+    return resultado
+
 """    
     # Geocoding an address
     #geocode_result = gmaps.geocode('1600 , Mountain View, CA')

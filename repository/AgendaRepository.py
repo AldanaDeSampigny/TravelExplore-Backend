@@ -75,20 +75,3 @@ class AgendaRepository:
             filter(Actividad.id == actividadID).first()
         
         return lugar
-#     SELECT a.actividad
-# FROM usuario u
-# JOIN categoriausuario uc ON u.id = uc.id_usuario ...........
-# JOIN categoria c ON uc.id_categoria = c.id  -----------------
-# JOIN categoriatividad ac ON c.id = ac.id_categoria ----------------
-# JOIN actividad a ON ac.id_actividad = a.id ---------------
-# JOIN lugar l ON a.id_lugar = l.id --------------------
-# JOIN ciudad ci ON l.id_ciudad = ci.id
-# WHERE u.id = <ID>
-# AND ci.id = <ID>
-# AND a.id_categoria IN (
-#   SELECT c.id
-#   FROM usuario u
-#   JOIN categoriausuario uc ON u.id = uc.id_usuario
-#   JOIN categoria c ON uc.id_categoria = c.id
-#   WHERE u.id = <ID>
-# );
