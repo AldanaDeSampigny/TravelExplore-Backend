@@ -152,7 +152,6 @@ class AgendaService:
                     hora_inicio = hora_inicio_datetime.time() 
                     inicioNumerico = hora_inicio.hour * 60 + hora_inicio.minute
                 
-                #!-CAMBIAR DELTA DAYS POR LA RESTA DE LAS FECHAS E INCREMENTAR A LA FECHA DESDE PARA PODER GUARDAR LA FECHA EN LA AGENDA
                 fecha_actual += delta_dias
             session.commit()
             session.close()
