@@ -208,7 +208,10 @@ def obtener_descripcion_lugar(nombre_lugar):
                 pages = data_pagina.get("query", {}).get("pages", {})
                 for page_id, page_info in pages.items():
                     if "extract" in page_info:
-                        return page_info["extract"]
+                        # Utiliza BeautifulSoup para eliminar etiquetas HTML
+                        soup = BeautifulSoup(page_info["extract"], "html.parser")
+                        text = soup.get_text()
+                        return text.strip()
 
     # Si no se encuentra una descripción, puedes devolver un valor predeterminado o "No disponible"
     return "No disponible"
@@ -218,7 +221,7 @@ def placesRoutes():
 
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
-    places = gmaps.places(query="places", location=(-42.6852871, -65.3535526), radius=3000)
+    places = gmaps.places(query="places", location=(-42.767470, -65.036549), radius=4000)
     
     lugares = []
     for place in places['results']:
@@ -232,6 +235,9 @@ def placesRoutes():
         }
         print(place['place_id'])
         lugares.append(lugar)
+    
+        # Ordenar la lista de lugares por valoración (rating) de mayor a menor
+    lugares = sorted(lugares, key=lambda x: x['valoracion'], reverse=True)
 
     return jsonify(lugares)
 
@@ -256,7 +262,8 @@ def lugarEspecifico(id):
             'valoracion': place.get('rating', 'N/A'),
             'direccion': place['formatted_address'],
             'horarios': place.get('opening_hours', {}).get('weekday_text', 'N/A'),
-            'descripcion': obtener_descripcion_lugar(place['name']) 
+            'descripcion': obtener_descripcion_lugar(place['name']), 
+            'website': place.get('website', None)
         }
         return jsonify(lugar)
     else:
