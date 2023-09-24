@@ -57,32 +57,32 @@ def clean_publications():
 """ if __name__ == '__main__':
     app.run(debug=True) """
 
-""" @app.route('/gustos', methods=['GET'])
-def show_activity():
-    gustos = GustaService().get_activities()  # Llama al método get_activities para obtener los datos
-    #print (gustos)
-    return render_template('gustos_detail.html', activities=gustos)
-"""
 def serialize_timedelta(td):
     return str(td)
 
 @app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<horaInicio>/<horaFin>'
             , methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, horaInicio, horaFin):
+    agenda_service = AgendaService(getEngine())
     try:
         AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
         AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
     except ValueError as e:
         error_message = str(e)
         response = jsonify({'error': error_message})
-        print("Error:", error_message)
-        print(response)
+        #print("Error:", error_message)
+        #print(response)
         response.status_code = 400
         response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
         return response
     
-    agenda_service = AgendaService(getEngine())
-    agenda = agenda_service.generar_agenda(usuarioID, destinoID, '2023-01-01', '2023-01-04', '13:00:00','19:00:00')
+    horariosOcupados = {
+    '2023-01-02': [('14:00:00', '16:00:00'), ('20:00:00', '22:00:00')],
+    '2023-01-05': [('21:00:00', '23:00:00')]
+    }
+    horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-03': ('19:00:00' , '22:00:00')}
+    
+    agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, '2023-01-01', '2023-01-06', '13:00:00','23:00:00')
     # Crear un diccionario para agrupar las actividades por día
     agenda_por_dia = defaultdict(list)
     for actividad_data in agenda:
@@ -103,7 +103,6 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, horaIn
                 'lugar': actividad_data['lugar'],
                 'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
                 'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S'),
-                #'tiempo_traslado': actividad_data['tiempo_traslado'].strftime('%H:%M:%S')
             }
             dia_json['actividades'].append(actividad_json)
         agenda_json.append(dia_json)
@@ -111,49 +110,56 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, horaIn
     # Devolver la lista de días y actividades serializadas a JSON
     return jsonify(agenda_json)
 
-""" @app.route('/generar/agenda/ocupada/<int:usuarioID>/<int:destinoID>', methods=['GET'])
-def generar_y_mostrar_agendaOcupada(usuarioID, destinoID):
-    agenda_service = AgendaService(getEngine())
-    ocupado = { 1 : ('17:00:00' , '19:00:00' ), 3 : ('21:00:00' , '23:00:00')}
-    agenda = agenda_service.generar_agendaOcupada(usuarioID, destinoID, ocupado)
-
-    agenda_por_dia = defaultdict(list)
-    for actividad_data in agenda:
-        dia = actividad_data['dia']
-        agenda_por_dia[dia].append(actividad_data)
+# @app.route('/generarAgenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<horaInicio>/<horaFin>'
+#             , methods=['GET'])
+# def generarMostrarAgenda(usuarioID, destinoID, fechaInicio, fechaFin, horaInicio, horaFin):
+#     agenda_service = AgendaService(getEngine())
+#     try:
+#         AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
+#         AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
+#     except ValueError as e:
+#         error_message = str(e)
+#         response = jsonify({'error': error_message})
+#         #print("Error:", error_message)
+#         #print(response)
+#         response.status_code = 400
+#         response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
+#         return response
     
-    agenda_json = []
-    for dia, actividades in sorted(agenda_por_dia.items()):
-        dia_json = {
-            'dia': dia,
-            'actividades': []
-        }
-        for actividad_data in actividades:
-            actividad_json = {
-                'id': actividad_data['actividad'].id,
-                'nombre': actividad_data['actividad'].nombre,
-                'tipo': actividad_data['actividad'].tipo,
-                'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
-                'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S')
-            }
-            dia_json['actividades'].append(actividad_json)
-        agenda_json.append(dia_json)
-
-    return jsonify(agenda_json) """
-
-
-""" @app.route('/query', methods=['GET'])
-def query():
-    agenda_service = AgendaService(getEngine())
-
-    def to_dict(obj):
-        return {column.name: getattr(obj, column.name) for column in obj.__table__.columns}
+#     horariosOcupados = {
+#     '2023-01-02': [('14:00:00', '16:00:00'), ('20:00:00', '22:00:00')],
+#     '2023-01-05': [('21:00:00', '23:00:00')]
+#     }
+#     horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-03': ('19:00:00' , '22:00:00')}
     
-    for viaje in agenda_service.buscarViaje(1):
-        viajes = viaje.to_dict()
-        print(type(viaje.to_dict()))
+#     agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, '2023-01-01', '2023-01-06', '13:00:00','23:00:00')
+#     # Crear un diccionario para agrupar las actividades por día
+#     agenda_por_dia = defaultdict(list)
+#     for actividad_data in agenda:
+#         dia = actividad_data['dia']
+#         agenda_por_dia[dia].append(actividad_data)
+    
+#     # Crear una lista de diccionarios serializables a JSON ordenados por día
+#     agenda_json = []
+#     for dia, actividades in sorted(agenda_por_dia.items()):
+#         dia_json = {
+#             'dia': dia.strftime('%d-%m-%Y'),
+#             'actividades': []
+#         }
+#         for actividad_data in actividades:
+#             actividad_json = {
+#                 'id': actividad_data['actividad'].id,
+#                 'actividad': actividad_data['actividad'].nombre,
+#                 'lugar': actividad_data['lugar'],
+#                 'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
+#                 'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S'),
+#             }
+#             dia_json['actividades'].append(actividad_json)
+#         agenda_json.append(dia_json)
 
-    return viajes """
+#     # Devolver la lista de días y actividades serializadas a JSON
+#     return jsonify(agenda_json)
+
 
 @app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:destinoID>', methods=['GET'])
 def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
@@ -233,7 +239,6 @@ def placesRoutes():
             'direccion': place['formatted_address'],
             'valoracion': place.get('rating', 'N/A'),
         }
-        print(place['place_id'])
         lugares.append(lugar)
     
         # Ordenar la lista de lugares por valoración (rating) de mayor a menor
@@ -299,6 +304,3 @@ def directions():
                                                         regionCode='US',
                                                         locality='Mountain View', 
                                                         enableUspsCass=True) """
-
-
-#schedule_automatic_trains()

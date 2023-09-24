@@ -10,7 +10,4 @@ def getEngine():
     return engine
 
 def getSession():
-    engine = getEngine()
-    Session = sessionmaker(bind=engine)
-    session = Session()
-    return session
+    return sessionmaker(bind=getEngine())
