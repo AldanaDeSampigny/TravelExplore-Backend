@@ -1,4 +1,7 @@
 from collections import defaultdict
+
+import requests
+from bs4 import BeautifulSoup
 from .service.AgendaValidaciones import AgendaValidaciones
 from flask import Flask, jsonify, render_template, request
 
@@ -182,24 +185,89 @@ def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
 
     return jsonify(agenda_json) 
 
+def obtener_descripcion_lugar(nombre_lugar):
+    # Utiliza la API de Wikipedia para buscar información sobre el lugar con coincidencias parciales
+    url = f"https://es.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&list=search&srsearch={nombre_lugar}"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        data = response.json()
+        search_results = data.get("query", {}).get("search", [])
+
+        if search_results:
+            # Obtiene el título de la primera página de resultados (la que mejor coincide)
+            primer_resultado = search_results[0]
+            titulo_pagina = primer_resultado.get("title")
+
+            # Utiliza el título de la página para obtener la descripción completa
+            url_pagina = f"https://es.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&titles={titulo_pagina}"
+            response_pagina = requests.get(url_pagina)
+
+            if response_pagina.status_code == 200:
+                data_pagina = response_pagina.json()
+                pages = data_pagina.get("query", {}).get("pages", {})
+                for page_id, page_info in pages.items():
+                    if "extract" in page_info:
+                        # Utiliza BeautifulSoup para eliminar etiquetas HTML
+                        soup = BeautifulSoup(page_info["extract"], "html.parser")
+                        text = soup.get_text()
+                        return text.strip()
+
+    # Si no se encuentra una descripción, puedes devolver un valor predeterminado o "No disponible"
+    return "No disponible"
+
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
 
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
-    places = gmaps.places(query="restaurant", location=(-42.6852871, -65.3535526), radius=3000)
+    places = gmaps.places(query="places", location=(-42.767470, -65.036549), radius=4000)
     
     lugares = []
     for place in places['results']:
         lugar = {
+            'id': place['place_id'],
+            'imagen': place['icon'],
             'nombre': place['name'],
+            'tipo': place.get('types', ['N/A'])[0],
             'direccion': place['formatted_address'],
             'valoracion': place.get('rating', 'N/A'),
-            'descripcion': place.get('types', ['N/A'])[0]
         }
+        print(place['place_id'])
         lugares.append(lugar)
+    
+        # Ordenar la lista de lugares por valoración (rating) de mayor a menor
+    lugares = sorted(lugares, key=lambda x: x['valoracion'], reverse=True)
 
     return jsonify(lugares)
+
+@app.route('/lugar/<id>', methods=['GET'])
+def lugarEspecifico(id):
+    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+
+    place = gmaps.place(place_id=id)
+
+    if 'result' in place:
+        place = place['result']
+        photo_reference = place.get('photos', [{}])[0].get('photo_reference', None)
+
+        if photo_reference:
+            # Construye la URL de la imagen utilizando la referencia de la foto
+            imagen_url = f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_reference}&key=AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
+
+        lugar = {
+            'nombre': place['name'],
+            'imagen': imagen_url if photo_reference else 'N/A',
+            'tipo': place.get('types', ['N/A'])[0],
+            'valoracion': place.get('rating', 'N/A'),
+            'direccion': place['formatted_address'],
+            'horarios': place.get('opening_hours', {}).get('weekday_text', 'N/A'),
+            'descripcion': obtener_descripcion_lugar(place['name']), 
+            'website': place.get('website', None)
+        }
+        return jsonify(lugar)
+    else:
+        return jsonify({'error': 'Place not found'})
 
 @app.route('/directions', methods=['GET'])
 def directions():
