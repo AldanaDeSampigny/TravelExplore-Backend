@@ -7,8 +7,8 @@ metadata_obj = db.MetaData()
 
 class LugarCategoria(Base):
     __tablename__ = 'lugares_categorias'
-    id_lugar = Column(db.ForeignKey("lugares.id"), primary_key=true)
-    id_categoria = Column(db.ForeignKey("categorias.id"), primary_key=true)
+    id_lugar = Column(db.ForeignKey("lugares.id"), primary_key=True)
+    id_categoria = Column(db.ForeignKey("categorias.id"), primary_key=True)
     
     metadata_obj.create_all(getEngine())
 

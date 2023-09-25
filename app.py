@@ -2,6 +2,8 @@ from collections import defaultdict
 
 import requests
 from bs4 import BeautifulSoup
+
+from .models.ActividadAgenda import ActividadAgenda
 from .service.AgendaValidaciones import AgendaValidaciones
 from flask import Flask, jsonify, render_template, request
 
@@ -46,6 +48,7 @@ nuevaAgendaDiaria = AgendaDiaria()
 nuevoLugar = Lugar()
 nuevaActividad = Actividad()
 nuevaCategoria = Categoria()
+nuevaActividadAgenda = ActividadAgenda()
 nuevoCategoriaLugar = LugarCategoria()
 nuevoUsuarioCategoria = UsuarioCategoria()
 nuevaActividadCategoria = ActividadCategoria()
@@ -161,7 +164,7 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, horaIn
 #     return jsonify(agenda_json)
 
 
-@app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:destinoID>', methods=['GET'])
+@app.route('/generarAgendaPersonalizadas/<int:usuarioID>/<int:destinoID>', methods=['POST'])
 def generarYmostrarAgendaPersonalizada(usuarioID,destinoID):
     agenda_service = AgendaService(getEngine())
     horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-02': ('19:00:00' , '22:00:00')}
