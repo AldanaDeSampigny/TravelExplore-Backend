@@ -1,0 +1,188 @@
+{
+    "agenda": [
+      {
+        "actividades": [
+          {
+            "actividad": "Pizza Tasting en Pizzería Italiana",
+            "hora_fin": "14:00:00",
+            "hora_inicio": "12:05:00",
+            "id": 11,
+            "lugar": "Rutas Naturales Senderismo"
+          }
+        ],
+        "dia": "01-01-2023"
+      },
+      {
+        "actividades": [
+          {
+            "actividad": "Pizza Tasting en Pizzería Italiana",
+            "hora_fin": "15:00:00",
+            "hora_inicio": "13:05:00",
+            "id": 11,
+            "lugar": "Rutas Naturales Senderismo"
+          },
+          {
+            "actividad": "Visita a Galería de Arte Contemporáneo",
+            "hora_fin": "18:05:00",
+            "hora_inicio": "16:10:00",
+            "id": 13,
+            "lugar": "Museo de Arte Contemporáneo"
+          },
+          {
+            "actividad": "Taller de Fotografía de Aves",
+            "hora_fin": "20:20:00",
+            "hora_inicio": "18:25:00",
+            "id": 15,
+            "lugar": "Surf`s Up Beach Shop"
+          },
+          {
+            "actividad": "Almuerzo en Trattoria Italiana",
+            "hora_fin": "00:15:00",
+            "hora_inicio": "22:20:00",
+            "id": 16,
+            "lugar": "Trattoria Bella Italia"
+          }
+        ],
+        "dia": "02-01-2023"
+      },
+      {
+        "actividades": [
+          {
+            "actividad": "Pizza Tasting en Pizzería Italiana",
+            "hora_fin": "21:00:00",
+            "hora_inicio": "19:05:00",
+            "id": 11,
+            "lugar": "Rutas Naturales Senderismo"
+          },
+          {
+            "actividad": "Visita a Galería de Arte Contemporáneo",
+            "hora_fin": "23:10:00",
+            "hora_inicio": "21:15:00",
+            "id": 13,
+            "lugar": "Museo de Arte Contemporáneo"
+          }
+        ],
+        "dia": "03-01-2023"
+      },
+      {
+        "actividades": [
+          {
+            "actividad": "Pizza Tasting en Pizzería Italiana",
+            "hora_fin": "15:00:00",
+            "hora_inicio": "13:05:00",
+            "id": 11,
+            "lugar": "Rutas Naturales Senderismo"
+          },
+          {
+            "actividad": "Visita a Galería de Arte Contemporáneo",
+            "hora_fin": "17:10:00",
+            "hora_inicio": "15:15:00",
+            "id": 13,
+            "lugar": "Museo de Arte Contemporáneo"
+          },
+          {
+            "actividad": "Taller de Fotografía de Aves",
+            "hora_fin": "19:25:00",
+            "hora_inicio": "17:30:00",
+            "id": 15,
+            "lugar": "Surf`s Up Beach Shop"
+          },
+          {
+            "actividad": "Almuerzo en Trattoria Italiana",
+            "hora_fin": "21:45:00",
+            "hora_inicio": "19:50:00",
+            "id": 16,
+            "lugar": "Trattoria Bella Italia"
+          },
+          {
+            "actividad": "Exploración de Museo de Arte Antiguo",
+            "hora_fin": "00:10:00",
+            "hora_inicio": "22:15:00",
+            "id": 18,
+            "lugar": "Pizzería Napoli"
+          }
+        ],
+        "dia": "04-01-2023"
+      },
+      {
+        "actividades": [
+          {
+            "actividad": "Pizza Tasting en Pizzería Italiana",
+            "hora_fin": "15:00:00",
+            "hora_inicio": "13:05:00",
+            "id": 11,
+            "lugar": "Rutas Naturales Senderismo"
+          },
+          {
+            "actividad": "Visita a Galería de Arte Contemporáneo",
+            "hora_fin": "17:10:00",
+            "hora_inicio": "15:15:00",
+            "id": 13,
+            "lugar": "Museo de Arte Contemporáneo"
+          },
+          {
+            "actividad": "Taller de Fotografía de Aves",
+            "hora_fin": "19:25:00",
+            "hora_inicio": "17:30:00",
+            "id": 15,
+            "lugar": "Surf`s Up Beach Shop"
+          },
+          {
+            "actividad": "Almuerzo en Trattoria Italiana",
+            "hora_fin": "21:45:00",
+            "hora_inicio": "19:50:00",
+            "id": 16,
+            "lugar": "Trattoria Bella Italia"
+          },
+          {
+            "actividad": "Exploración de Museo de Arte Antiguo",
+            "hora_fin": "01:20:00",
+            "hora_inicio": "23:25:00",
+            "id": 18,
+            "lugar": "Pizzería Napoli"
+          }
+        ],
+        "dia": "05-01-2023"
+      },
+      {
+        "actividades": [
+          {
+            "actividad": "Pizza Tasting en Pizzería Italiana",
+            "hora_fin": "15:00:00",
+            "hora_inicio": "13:05:00",
+            "id": 11,
+            "lugar": "Rutas Naturales Senderismo"
+          },
+          {
+            "actividad": "Visita a Galería de Arte Contemporáneo",
+            "hora_fin": "17:10:00",
+            "hora_inicio": "15:15:00",
+            "id": 13,
+            "lugar": "Museo de Arte Contemporáneo"
+          },
+          {
+            "actividad": "Taller de Fotografía de Aves",
+            "hora_fin": "19:25:00",
+            "hora_inicio": "17:30:00",
+            "id": 15,
+            "lugar": "Surf`s Up Beach Shop"
+          },
+          {
+            "actividad": "Almuerzo en Trattoria Italiana",
+            "hora_fin": "21:45:00",
+            "hora_inicio": "19:50:00",
+            "id": 16,
+            "lugar": "Trattoria Bella Italia"
+          },
+          {
+            "actividad": "Exploración de Museo de Arte Antiguo",
+            "hora_fin": "00:10:00",
+            "hora_inicio": "22:15:00",
+            "id": 18,
+            "lugar": "Pizzería Napoli"
+          }
+        ],
+        "dia": "06-01-2023"
+      }
+    ]
+  }

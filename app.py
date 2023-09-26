@@ -82,12 +82,12 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, horaIn
         return response
     
     horariosOcupados = {
-    '2023-01-02': [('14:00:00', '16:00:00'), ('20:00:00', '22:00:00')],
-    '2023-01-05': [('21:00:00', '23:00:00')]
+        '2023-01-02': [('14:00:00', '16:00:00'), ('20:00:00', '22:00:00')],
+        '2023-01-05': [('21:00:00', '23:00:00')]
     }
-    horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-03': ('19:00:00' , '22:00:00')}
+    horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-03': ('19:00:00' , '22:00:00')} 
     
-    agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, '2023-01-01', '2023-01-06', '13:00:00','23:00:00')
+    agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin)
     # Crear un diccionario para agrupar las actividades por día
     agenda_por_dia = defaultdict(list)
     for actividad_data in agenda:
