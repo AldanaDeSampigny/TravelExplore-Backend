@@ -15,6 +15,7 @@ class AgendaDiaria(Base):
    horaFin = Column(Time)
    dia = Column(Date)
    itinerario_id = Column(db.ForeignKey("itinerarios.id"))
+   id_agenda_viaje = Column(db.ForeignKey("agendas_viajes.id"))
 
    metadata_obj.create_all(getEngine())
 
@@ -23,5 +24,7 @@ class AgendaDiaria(Base):
          "id": self.id,
          "horaInicio": self.horaInicio,
          "horaFin": self.horaFin,
-         "itinerario": self.itinerario_id
+         "dia": self.dia,
+         "itinerario": self.itinerario_id,
+         "id_agenda_viaje": self.id_agenda_viaje
       }

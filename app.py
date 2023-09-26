@@ -13,6 +13,7 @@ from .consultas import obtenerDirecciones
 
 from .models.Usuario import Usuario
 from .models.ActividadCategoria import ActividadCategoria
+from .models.AgendaViaje import AgendaViaje
 
 from .models.UsuarioCategoria import UsuarioCategoria
 
@@ -45,6 +46,7 @@ nuevoViaje = Viaje()
 nuevaCiudad = Ciudad()
 nuevoItinerario = Itinerario()
 nuevaAgendaDiaria = AgendaDiaria()
+nuevaAgendaViaje = AgendaViaje()
 nuevoLugar = Lugar()
 nuevaActividad = Actividad()
 nuevaCategoria = Categoria()
@@ -110,6 +112,9 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, horaIn
             dia_json['actividades'].append(actividad_json)
         agenda_json.append(dia_json)
 
+    
+    agendaNueva = agenda_service.saveAgenda(usuarioID, destinoID, fechaInicio, fechaFin, horaInicio, horaFin,dia,agenda_json)
+        
     # Devolver la lista de días y actividades serializadas a JSON
     return jsonify(agenda_json)
 
@@ -276,6 +281,23 @@ def lugarEspecifico(id):
         return jsonify(lugar)
     else:
         return jsonify({'error': 'Place not found'})
+
+
+""" 
+    {
+        "fecha": "fds",
+        "hora": "213"
+    } 
+"""
+@app.route('/agendaCreada' ,methods = ['GET'])
+def getAgenda():
+    # Leer el json recibido
+    # agenda = request.get_json()
+
+    agendaService = AgendaService(getEngine())
+
+    return agendaService.getAgenda()
+
 
 @app.route('/directions', methods=['GET'])
 def directions():

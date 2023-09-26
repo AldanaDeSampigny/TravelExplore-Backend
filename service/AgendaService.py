@@ -1,7 +1,10 @@
 from turtle import update
+import json
+
+from ..models.AgendaViaje import AgendaViaje
 
 from ..models.ActividadAgenda import ActividadAgenda
-
+from sqlalchemy.sql.expression import func
 from ..consultas import obtenerDirecciones
 
 from ..models.Actividad import Actividad
@@ -22,10 +25,13 @@ class AgendaService:
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def saveAgenda(self, idUsuario,idCiudad,fechaDesde,fechaHasta, horaInicio, horaFin, dia,agenda):
+    def saveAgenda(self, idUsuario,idCiudad,fechaDesde,fechaHasta, horaInicio, horaFin, dia, agenda):
         with Session(getEngine()) as session:
+            print("Tipo Agenda: ",type(agenda))
 
-            nuevoViaje =  Viaje()
+            print("Agenda: ",str(agenda))
+
+            nuevoViaje = Viaje()
             nuevoViaje.id_usuario = idUsuario
             nuevoViaje.fechaDesde = fechaDesde
             nuevoViaje.fechaHasta = fechaHasta
@@ -35,6 +41,10 @@ class AgendaService:
                 session.add(nuevoViaje)
                 session.commit()
 
+                agendaViajeNueva = AgendaViaje()
+                session.add(agendaViajeNueva)
+                session.commit()
+
                 nuevoItinerario = Itinerario()
                 nuevoItinerario.id_ciudad= idCiudad
                 nuevoItinerario.fechaDesde = fechaDesde
@@ -42,22 +52,27 @@ class AgendaService:
                 nuevoItinerario.id_viaje = nuevoViaje.id
                 session.add(nuevoItinerario)
                 session.commit()
+                # session.commit()
 
-                nuevaAgendaDiaria = AgendaDiaria()
-                nuevaAgendaDiaria.horaInicio = horaInicio 
-                nuevaAgendaDiaria.horaFin = horaFin
-                nuevaAgendaDiaria.dia = dia
-                nuevaAgendaDiaria.itinerario_id = nuevoItinerario.id
 
-                session.add(nuevaAgendaDiaria)
-                session.commit()
+                for agendaDiaria in agenda:
+                    nuevaAgendaDiaria = AgendaDiaria()
+                    nuevaAgendaDiaria.horaInicio = horaInicio 
+                    nuevaAgendaDiaria.horaFin = horaFin
+                    nuevaAgendaDiaria.dia = dia
+                    nuevaAgendaDiaria.itinerario_id = nuevoItinerario.id
+                    nuevaAgendaDiaria.id_agenda_viaje = agendaViajeNueva.id
+                    
+                    session.add(nuevaAgendaDiaria)
+                    session.commit()
 
-                
-                actividadAgenda = ActividadAgenda()
-                for actividadProgramada in agenda:
-                    actividadAgenda.id_agenda = nuevaAgendaDiaria.id
-                    actividadAgenda.id_actividad = actividadProgramada['actividad'].id
-                    session.add(actividadAgenda)
+                    
+                    for actividadAgenda in agendaDiaria['actividades']:
+                        actividadAgendaNueva = ActividadAgenda()
+                        actividadAgendaNueva.id_actividad = actividadAgenda['id']
+                        actividadAgendaNueva.id_agenda = nuevaAgendaDiaria.id
+                        session.add(actividadAgendaNueva)
+                    
                 session.commit()
            
            
@@ -79,7 +94,18 @@ class AgendaService:
             else:
                 direccion = None
             return direccion
+        
+    def getAgenda(self):
+        with Session(getEngine()) as session:
+            result = session.query(func.max(AgendaViaje.id).group_by(AgendaViaje.id))
 
+            # Ejecuta la consulta
+            resultados = result.all()
+
+        return resultados
+
+            #result = session.query(AgendaViaje.id == func.max(AgendaViaje.id)).first()
+        #    return session.query(func.max(AgendaViaje.id))
         
 #generador de agenda diaria con dias ocupados, y horarios especificos
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin):
@@ -172,5 +198,5 @@ class AgendaService:
             #session.commit()
             #session.close()
 
-        self.saveAgenda(usuarioID,destinoID,fechaDesde,fechaHasta,horaInicio,horaFin,fechaHasta,agenda)
+        # self.saveAgenda(usuarioID,destinoID,fechaDesde,fechaHasta,horaInicio,horaFin,fechaHasta,agenda)
         return agenda

@@ -14,7 +14,6 @@ class Actividad(Base):
   horaFin = Column(Time)
   valoracion = Column(Integer)
   duracion = Column(Time)
-  id_agenda_diaria = Column(db.ForeignKey("agendas_diarias.id"))
   id_lugar = Column(db.ForeignKey("lugares.id"))
   
   metadata_obj.create_all(getEngine())
@@ -27,5 +26,4 @@ class Actividad(Base):
         "horaFin": self.horaFin,
         "valoracion": self.valoracion,
         "duracion": self.duracion,
-        "id_agenda_diaria": self.id_agenda_diaria,
       }
