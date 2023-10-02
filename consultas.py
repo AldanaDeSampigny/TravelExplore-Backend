@@ -33,6 +33,9 @@ def obtenerDirecciones(origen, destino, transporte):
 
         # Crear un objeto timedelta con los valores calculados
         tiempo_traslado = timedelta(hours=horas, minutes=minutos, seconds=segundos)
-        tiempo_traslado += timedelta(minutes=5)
+        if(transporte == "transit"):
+            tiempo_traslado += timedelta(minutes=20)
+        else:
+            tiempo_traslado += timedelta(minutes=5)
 
         return tiempo_traslado
