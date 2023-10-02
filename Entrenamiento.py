@@ -70,7 +70,7 @@ modelo = tf.keras.Sequential([
 modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # Entrenar el modelo
-modelo.fit(usuarios, actividades, epochs=1000)
+modelo.fit(usuarios_map, actividades, epochs=1000)
 #"Usuario 3": [0, 0, 0, 0, 0]
 # Realizar predicciones para un usuario
 usuario_nuevo = np.array([0, 0, 1, 0, 1])#usuarios_map["Usuario 1"])
@@ -84,8 +84,6 @@ for i, probabilidad in enumerate(recomendaciones_probabilidades[0]):
 
 # Imprimir las recomendaciones de actividades
 print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
-
-
 
 # Guardar el modelo entrenado se guarda en h5 porque es un archivo compatible con tensorflow
 modelo.save('modelo_entrenado.h5')
