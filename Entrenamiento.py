@@ -1,6 +1,10 @@
+from collections import defaultdict
 import numpy as np
+from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
+from .repository.ActividadRepository import ActividadRepository
 from .models import Usuario, Viaje, Actividad, Lugar, AgendaDiaria
 from .bd.conexion import getSession, getEngine
 from .repository.UsuarioRepository import UsuarioRepository
@@ -9,84 +13,92 @@ import tensorflow as tf
 import numpy as np
 import tensorflow_recommenders as tfrs
 from typing import Dict, Text
+from sqlalchemy.orm import sessionmaker
 
-import numpy as np
-import tensorflow as tf
-from typing import Dict, Text
+engine = getEngine()
 
-usuario = []
-categoria = []
-usuario.append(UsuarioRepository(getEngine()).getUsuarios())
+deDatos= getSession()
 
-datos = []
-for u in usuario:
-    datos.append(u.id, CategoriaRepository(getEngine()).getCategoriaUsuario(u.id))
-    #categoria = CategoriaRepository.getCategoriaUsuario(u.id)
+#class Entrenamiento:
+with Session(getEngine()) as session:
+    usuarios = []
+    categoria = []
+    uRepo = UsuarioRepository(session)
+    actividades= []
 
-# Crear mapas de palabras a números
-categorias_map = {
-    "Comida Italiana": 0,
-    "Deportes Acuáticos": 1,
-    "Senderismo": 2,
-    "Museos de Arte": 3,
-    "Fotografía de Naturaleza": 4
-}
+    datos = defaultdict(list)
+    cRepo = CategoriaRepository(session)
+    usuarios.append(uRepo.getUsuarios())
+    #for usuario in usuarios:
+    print("categorias ", cRepo.getCategoriaUsuario(5))
+        #datos[usuario.id].extend(categorias_usuario)
 
-actividades_map = {
-    0: "Almuerzo en Trattoria Italiana",
-    1: "Paseo en Bote por el Lago",
-    2: "Escalada en Montaña"
-    # Agrega más actividades según sea necesario
-}
+    # Crear mapas de palabras a números
+    categorias_map = {
+        "Comida Italiana": 0,
+        "Deportes Acuáticos": 1,
+        "Senderismo": 2,
+        "Museos de Arte": 3,
+        "Fotografía de Naturaleza": 4
+    }
 
-usuarios_map = {
-    "Usuario 1": [0, 1, 0, 0, 1],
-    "Usuario 2": [0, 0, 0, 1, 0],
-    "Usuario 3": [0, 0, 0, 0, 0]
-    # Agrega más usuarios según sea necesario
-}
+    actividades_map = {
+        0: "Almuerzo en Trattoria Italiana",
+        1: "Paseo en Bote por el Lago",
+        2: "Escalada en Montaña"
+        # Agrega más actividades según sea necesario
+    }
 
-# Reemplazar datos numéricos por palabras
-categorias = np.array([
-    [1, 0, 0, 0, 0],  # Categoría 1: Comida Italiana
-    [0, 1, 1, 0, 0],  # Categoría 2: Deportes Acuáticos y Senderismo
-    [0, 0, 0, 1, 1]   # Categoría 3: Museos de Arte y Fotografía de Naturaleza
-])
+    usuarios_map = { #usuarios relacionados con categorias
+        "Usuario 1": [0, 1, 0, 0, 1],
+        "Usuario 2": [0, 0, 0, 1, 0],
+        "Usuario 3": [0, 0, 0, 0, 0]
+        # Agrega más usuarios según sea necesario
+    }
 
-actividades = np.array([
-    [1, 0, 0],  # Almuerzo en Trattoria Italiana
-    [0, 1, 0],  # Paseo en Bote por el Lago
-    [0, 0, 1]   # Escalada en Montaña
-])
+    # Reemplazar datos numéricos por palabras
+    categorias = np.array([
+        [1, 0, 0, 0, 0],  # Categoría 1: Comida Italiana
+        [0, 1, 1, 0, 0],  # Categoría 2: Deportes Acuáticos y Senderismo
+        [0, 0, 0, 1, 1]   # Categoría 3: Museos de Arte y Fotografía de Naturaleza
+    ])
 
-# Crear un modelo de recomendación con TensorFlow
-modelo = tf.keras.Sequential([
-    tf.keras.layers.Input(shape=(categorias.shape[1],)),
-    tf.keras.layers.Dense(16, activation='relu'),
-    tf.keras.layers.Dense(actividades.shape[1], activation='sigmoid')
-])
+    actividades = np.array([
+        [1, 0, 0],  # Almuerzo en Trattoria Italiana
+        [0, 1, 0],  # Paseo en Bote por el Lago
+        [0, 0, 1]   # Escalada en Montaña
+    ])
 
-# Compilar el modelo
-modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    # Crear un modelo de recomendación con TensorFlow
+    modelo = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(categorias.shape[1],)),
+        tf.keras.layers.Dense(16, activation='relu'),
+        tf.keras.layers.Dense(actividades.shape[1], activation='sigmoid')
+    ])
 
-# Entrenar el modelo
-modelo.fit(usuarios_map, actividades, epochs=1000)
-#"Usuario 3": [0, 0, 0, 0, 0]
-# Realizar predicciones para un usuario
-usuario_nuevo = np.array([0, 0, 1, 0, 1])#usuarios_map["Usuario 1"])
-recomendaciones_probabilidades = modelo.predict(np.array([usuario_nuevo]))
+    # Compilar el modelo
+    modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-# Obtener las actividades recomendadas en palabras
-actividades_recomendadas = []
-for i, probabilidad in enumerate(recomendaciones_probabilidades[0]):
-    if probabilidad > 0.5:  # Puedes ajustar este umbral según tus preferencias
-        actividades_recomendadas.append(actividades_map[i])
+    # Entrenar el modelo
+    modelo.fit(datos, actividades, epochs = 1000)
+    #modelo.fit(usuarios_map, actividades, epochs=1000)
+    #"Usuario 3": [0, 0, 0, 0, 0]
+    # Realizar predicciones para un usuario
 
-# Imprimir las recomendaciones de actividades
-print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
+    usuario_nuevo = np.array(UsuarioRepository(session)).getUsuarioCategoria(5)#[0, 0, 1, 0, 1])
+    recomendaciones_probabilidades = modelo.predict(np.array([usuario_nuevo]))
 
-# Guardar el modelo entrenado se guarda en h5 porque es un archivo compatible con tensorflow
-modelo.save('modelo_entrenado.h5')
+    # Obtener las actividades recomendadas en palabras
+    actividades_recomendadas = []
+    for i, probabilidad in enumerate(recomendaciones_probabilidades[0]):
+        if probabilidad > 0.5:  # Puedes ajustar este umbral según tus preferencias
+            actividades_recomendadas.append(actividades_map[i])
+
+    # Imprimir las recomendaciones de actividades
+    print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
+
+    # Guardar el modelo entrenado se guarda en h5 porque es un archivo compatible con tensorflow
+    modelo.save('modelo_entrenado.h5')
 
 
 # # Ratings data.

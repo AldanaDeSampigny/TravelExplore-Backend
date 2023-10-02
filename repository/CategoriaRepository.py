@@ -8,9 +8,22 @@ class CategoriaRepository:
         self.db_session = db_session
 
     def getCategoriaUsuario(self, usuarioID):
-        categoriasUsuario = self.db_session.query(Categoria.nombre).\
-            join(Usuario, Usuario.id == UsuarioCategoria.id_usuario).\
-            join(Categoria, Categoria.id == UsuarioCategoria.id_categoria).\
-                filter(Usuario.id == usuarioID).all()
-        
-        return categoriasUsuario
+        id = int(usuarioID)
+        categorias = self.db_session.query(Categoria.id).\
+            join(UsuarioCategoria, Categoria.id == UsuarioCategoria.id_categorias).\
+            filter(UsuarioCategoria.id_usuario == id)
+
+        result = categorias.all()
+        return result
+
+
+    """ def getUsuarioCategoria(self, usuarioID):
+        categorias = self.db_session.query(Categoria.id).\
+            join(UsuarioCategoria, Categoria.id == UsuarioCategoria.id_categorias).\
+            filter(UsuarioCategoria.id_usuarios == usuarioID).all()
+            return categorias """
+
+    def getCategorias(self):
+        categorias = self.db_session.query().all
+
+        return categorias
