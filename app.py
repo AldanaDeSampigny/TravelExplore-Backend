@@ -77,17 +77,41 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transp
     except ValueError as e:
         error_message = str(e)
         response = jsonify({'error': error_message})
-        #print("Error:", error_message)
-        #print(response)
         response.status_code = 400
         response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
         return response
     
-    horariosOcupados = {
-        '2023-01-02': [('14:00:00', '16:00:00'), ('20:00:00', '22:00:00')],
-        '2023-01-05': [('21:00:00', '23:00:00')]
-    }
-    horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-03': ('19:00:00' , '22:00:00')} 
+    data = request.get_json()
+
+    ocupados = data.get('horariosOcupado')
+    elegidos = data.get('horariosActividad')
+
+    horariosOcupados = defaultdict(list)
+    horariosElegidos = defaultdict(tuple)
+
+    for item in ocupados:
+        dia = item['dia']
+        hora_desde = item['horaDesdeOcupado']
+        hora_hasta = item['horaHastaOcupado']
+        hora_desde += ':00'
+        hora_hasta += ':00'
+        horariosOcupados[dia].append((hora_desde, hora_hasta))
+
+    # Procesar los datos de 'elegidos'
+    for item in elegidos:
+        if dia != 'Horario General':
+            dia = item['dia']
+            hora_desde = item['horaDesdeActividad']
+            hora_hasta = item['horaHastaActividad']
+            hora_desde += ':00'
+            hora_hasta += ':00'
+            horariosElegidos[dia] = (hora_desde, hora_hasta)
+
+    horariosOcupados = dict(horariosOcupados)
+    horariosElegidos = dict(horariosElegidos)
+
+    print('ócupados: ',horariosOcupados)
+    print('elegidos: ', horariosElegidos)
     
     print(transporte)
     agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
