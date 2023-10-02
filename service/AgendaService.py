@@ -37,7 +37,6 @@ class AgendaService:
             nuevoViaje.fechaHasta = fechaHasta
             
             try:
-
                 session.add(nuevoViaje)
                 session.commit()
 
@@ -57,23 +56,22 @@ class AgendaService:
 
                 for agendaDiaria in agenda:
                     nuevaAgendaDiaria = AgendaDiaria()
-                    nuevaAgendaDiaria.horaInicio = horaInicio 
-                    nuevaAgendaDiaria.horaFin = horaFin
-                    nuevaAgendaDiaria.dia = dia
+                    nuevaAgendaDiaria.horaInicio = horaInicio if horaInicio is not None else None
+                    nuevaAgendaDiaria.horaFin = horaFin if horaFin is not None else None
+                    nuevaAgendaDiaria.dia = dia if dia is not None else None
                     nuevaAgendaDiaria.itinerario_id = nuevoItinerario.id
                     nuevaAgendaDiaria.id_agenda_viaje = agendaViajeNueva.id
-                    
+
                     session.add(nuevaAgendaDiaria)
                     session.commit()
 
-                    
-                    for actividadAgenda in agendaDiaria['actividades']:
+                    for actividadAgenda in agendaDiaria.get('actividades', []):
                         actividadAgendaNueva = ActividadAgenda()
-                        actividadAgendaNueva.id_actividad = actividadAgenda['id']
+                        actividadAgendaNueva.id_actividad = actividadAgenda.get('id', None)
                         actividadAgendaNueva.id_agenda = nuevaAgendaDiaria.id
                         session.add(actividadAgendaNueva)
-                    
-                session.commit()
+
+                    session.commit()
            
            
             except Exception as e:
