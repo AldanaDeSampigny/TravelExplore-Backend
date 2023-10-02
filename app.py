@@ -9,7 +9,7 @@ from flask import Flask, jsonify, render_template, request
 
 import googlemaps
 
-from .consultas import obtenerDirecciones
+from .consultas import obtenerDirecciones, validacionTransporte
 
 from .models.Usuario import Usuario
 from .models.ActividadCategoria import ActividadCategoria
@@ -69,9 +69,11 @@ def serialize_timedelta(td):
             , methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transporte, horaInicio, horaFin):
     agenda_service = AgendaService(getEngine())
+    print(transporte)
     try:
         AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
         AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
+        validacionTransporte(-42.767470, -65.036549, transporte)
     except ValueError as e:
         error_message = str(e)
         response = jsonify({'error': error_message})

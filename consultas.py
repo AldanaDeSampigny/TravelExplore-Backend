@@ -3,6 +3,21 @@ from flask import jsonify
 import googlemaps
 from datetime import datetime, timedelta
 
+def validacionTransporte(latitud, longitud, transporte):
+    gmaps = googlemaps.Client(key='AIzaSyAQ2FMwWtoGGlOE5Urq3QmyX7hHG8G0wi0')
+
+    origen = (latitud, longitud)
+    destino = (latitud + 0.01, longitud + 0.01)
+
+    # Realiza una solicitud para buscar lugares cercanos
+    directions_result = gmaps.directions(origen, destino, mode=transporte)
+
+    # Analiza la respuesta para verificar la disponibilidad
+    if not directions_result:
+        raise ValueError(f"El transporte '{transporte}' no esta disponible en esta zona.")
+
+
+
 def obtenerDirecciones(origen, destino, transporte):
     if not origen or not destino:
         return jsonify({'error': 'Se requieren las coordenadas de origen y destino'})
