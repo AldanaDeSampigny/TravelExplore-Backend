@@ -83,7 +83,6 @@ class AgendaService:
             
     def calcularTiempoTraslado(self,origenM, destinoM, transporteM):
         with Session(getEngine()) as session:
-            #siguiente_actividad = meGustas_ids[idx + 1] if idx + 1 < len(meGustas_ids) else None
             if destinoM:
                 direccion = obtenerDirecciones(
                     origen=str(origenM.latitud) + "," + str(origenM.longitud),
@@ -93,6 +92,8 @@ class AgendaService:
                 #print(direccion)
             else:
                 direccion = None
+
+            print(direccion)
             return direccion
         
     def getAgenda(self):
@@ -108,7 +109,7 @@ class AgendaService:
         #    return session.query(func.max(AgendaViaje.id))
         
 #generador de agenda diaria con dias ocupados, y horarios especificos
-    def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin):
+    def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             agenda = []
@@ -145,15 +146,6 @@ class AgendaService:
                         minutos_duracion = m.duracion.hour * 60 + m.duracion.minute
                         hora_cierre_intervalo = hora_actual.replace(hour=(hora_actual.hour + (minutos_duracion // 60)) % 24, minute=(hora_actual.minute + minutos_duracion % 60) % 60)
 
-                        siguiente_actividad = actividadIds[idx + 1] if idx + 1 < len(actividadIds) else None
-                        if siguiente_actividad:
-                            siguiente_actividad_obj = session.query(Actividad).get(siguiente_actividad[0])
-                            siguiente_lugar = agenda_repo.buscarLugar(siguiente_actividad_obj.id)
-
-                        direccion = self.calcularTiempoTraslado(lugar, siguiente_lugar, 'driving')
-                        if direccion:
-                            hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
-                            hora_actual = (hora_inicio_datetime + direccion).time()
                         
                         #podria traer una query que traiga un lugar de tipo restaurante y los meta aca
                         # if hora_actual in self.horas:
@@ -173,6 +165,17 @@ class AgendaService:
                         #             break
                         
                         if lugar.horaApertura <= hora_actual < lugar.horaCierre:
+
+                            siguiente_actividad = actividadIds[idx + 1] if idx + 1 < len(actividadIds) else None
+                            if siguiente_actividad:
+                                siguiente_actividad_obj = session.query(Actividad).get(siguiente_actividad[0])
+                                siguiente_lugar = agenda_repo.buscarLugar(siguiente_actividad_obj.id)
+
+                            direccion = self.calcularTiempoTraslado(lugar, siguiente_lugar, transporte)
+                            if direccion:
+                                hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
+                                hora_actual = (hora_inicio_datetime + direccion).time()
+        
                             if m.id not in gustos_agregados:
                                 actividad = {
                                     'dia': fecha_actual,
@@ -193,7 +196,7 @@ class AgendaService:
                     hora_actual = hora_inicio_datetime.time() 
                 
                 fecha_actual += delta_dias
-                print(fecha_actual)
+                #print(fecha_actual)
 
             #session.commit()
             #session.close()

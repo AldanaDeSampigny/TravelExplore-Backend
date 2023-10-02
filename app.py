@@ -65,9 +65,9 @@ def clean_publications():
 def serialize_timedelta(td):
     return str(td)
 
-@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<horaInicio>/<horaFin>'
+@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<transporte>/<horaInicio>/<horaFin>'
             , methods=['POST'])
-def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, horaInicio, horaFin):
+def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transporte, horaInicio, horaFin):
     agenda_service = AgendaService(getEngine())
     try:
         AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
@@ -87,7 +87,8 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, horaIn
     }
     horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-03': ('19:00:00' , '22:00:00')} 
     
-    agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin)
+    print(transporte)
+    agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
     # Crear un diccionario para agrupar las actividades por día
     agenda_por_dia = defaultdict(list)
     for actividad_data in agenda:
