@@ -32,8 +32,9 @@ class UsuarioRepository:
                 filter(Usuario.id == usuarioID).group_by(Usuario.id)
 
         indiceAgenda = subquery.all()[0][0]
+        
         print(str(subquery.all()))
-        query = self.db_session.query(AgendaDiaria.dia, Actividad.id, Actividad.nombre, AgendaDiaria.horaInicio, AgendaDiaria.horaFin).distinct().\
+        query = self.db_session.query.(AgendaDiaria.dia, Actividad.id, Actividad.nombre, AgendaDiaria.horaInicio, AgendaDiaria.horaFin).distinct()\
                 join(ActividadAgenda, AgendaDiaria.id == ActividadAgenda.id_agenda).\
                 join(Actividad, ActividadAgenda.id_actividad == Actividad.id).\
                 filter(AgendaViaje.id == indiceAgenda)
