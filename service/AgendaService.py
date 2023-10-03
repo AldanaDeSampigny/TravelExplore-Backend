@@ -1,6 +1,8 @@
 from turtle import update
 import json
 
+from ..repository.UsuarioRepository import UsuarioRepository
+
 from ..models.AgendaViaje import AgendaViaje
 
 from ..models.ActividadAgenda import ActividadAgenda
@@ -94,17 +96,13 @@ class AgendaService:
             print(direccion)
             return direccion
         
-    def getAgenda(self):
+    def getAgenda(self,usuario):
         with Session(getEngine()) as session:
-            result = session.query(func.max(AgendaViaje.id).group_by(AgendaViaje.id))
+            agenda = UsuarioRepository(session)
 
-            # Ejecuta la consulta
-            resultados = result.all()
+            agendaUsuario = agenda.getAgendaUsuario(usuario)
 
-        return resultados
-
-            #result = session.query(AgendaViaje.id == func.max(AgendaViaje.id)).first()
-        #    return session.query(func.max(AgendaViaje.id))
+        return agendaUsuario;
         
 #generador de agenda diaria con dias ocupados, y horarios especificos
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
