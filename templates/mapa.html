@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Leaflet</title>
+    <!-- Importa las bibliotecas de Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <!-- Crea un contenedor para el mapa -->
+    <div id="map" style="width: 800px; height: 600px;"></div>
+
+    <!-- Agrega el código JavaScript para inicializar el mapa aquí -->
+    <script>
+        var initialLatitude = 42.1234; // Latitud inicial
+            var initialLongitude = -65.5678; // Longitud inicial
+
+            var map = L.map('map').setView([initialLatitude, initialLongitude], 15);
+  // Reemplaza TU_LATITUD y TU_LONGITUD con las coordenadas deseadas
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Puedes agregar marcadores, polígonos, líneas, etc., según tus necesidades.
+    </script>
+</body>
+
+</html>

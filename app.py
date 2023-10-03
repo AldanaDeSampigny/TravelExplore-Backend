@@ -66,7 +66,7 @@ def serialize_timedelta(td):
     return str(td)
 
 @app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<transporte>/<horaInicio>/<horaFin>'
-            , methods=['POST'])
+            , methods=['GET'])#'POST'])
 def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transporte, horaInicio, horaFin):
     agenda_service = AgendaService(getEngine())
     print(transporte)
@@ -81,37 +81,43 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transp
         response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
         return response
     
-    data = request.get_json()
+    # data = request.get_json()
 
-    ocupados = data.get('horariosOcupado')
-    elegidos = data.get('horariosActividad')
+    # ocupados = data.get('horariosOcupado')
+    # elegidos = data.get('horariosActividad')
 
-    horariosOcupados = defaultdict(list)
-    horariosElegidos = defaultdict(tuple)
+    # horariosOcupados = defaultdict(list)
+    # horariosElegidos = defaultdict(tuple)
 
-    for item in ocupados:
-        dia = item['dia']
-        hora_desde = item['horaDesdeOcupado']
-        hora_hasta = item['horaHastaOcupado']
-        hora_desde += ':00'
-        hora_hasta += ':00'
-        horariosOcupados[dia].append((hora_desde, hora_hasta))
+    # for item in ocupados:
+    #     dia = item['dia']
+    #     hora_desde = item['horaDesdeOcupado']
+    #     hora_hasta = item['horaHastaOcupado']
+    #     hora_desde += ':00'
+    #     hora_hasta += ':00'
+    #     horariosOcupados[dia].append((hora_desde, hora_hasta))
 
-    # Procesar los datos de 'elegidos'
-    for item in elegidos:
-        if dia != 'Horario General':
-            dia = item['dia']
-            hora_desde = item['horaDesdeActividad']
-            hora_hasta = item['horaHastaActividad']
-            hora_desde += ':00'
-            hora_hasta += ':00'
-            horariosElegidos[dia] = (hora_desde, hora_hasta)
+    # # Procesar los datos de 'elegidos'
+    # for item in elegidos:
+    #     if dia != 'Horario General':
+    #         dia = item['dia']
+    #         hora_desde = item['horaDesdeActividad']
+    #         hora_hasta = item['horaHastaActividad']
+    #         hora_desde += ':00'
+    #         hora_hasta += ':00'
+    #         horariosElegidos[dia] = (hora_desde, hora_hasta)
 
-    horariosOcupados = dict(horariosOcupados)
-    horariosElegidos = dict(horariosElegidos)
+    # horariosOcupados = dict(horariosOcupados)
+    # horariosElegidos = dict(horariosElegidos)
 
-    print('ócupados: ',horariosOcupados)
-    print('elegidos: ', horariosElegidos)
+    # print('ócupados: ',horariosOcupados)
+    # print('elegidos: ', horariosElegidos)
+
+    horariosOcupados = {
+        '2023-01-02': [('14:00:00', '16:00:00'), ('20:00:00', '22:00:00')],
+        '2023-01-05': [('21:00:00', '23:00:00')]
+    }
+    horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-03': ('19:00:00' , '22:00:00')} 
     
     print(transporte)
     agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
@@ -301,6 +307,8 @@ def lugarEspecifico(id):
             'tipo': place.get('types', ['N/A'])[0],
             'valoracion': place.get('rating', 'N/A'),
             'direccion': place['formatted_address'],
+            'latitud': place.get('geometry', {}).get('location', {}).get('lat', 'N/A'),
+            'longitud': place.get('geometry', {}).get('location', {}).get('lng', 'N/A'),
             'horarios': place.get('opening_hours', {}).get('weekday_text', 'N/A'),
             'descripcion': obtener_descripcion_lugar(place['name']), 
             'website': place.get('website', None)
@@ -336,6 +344,10 @@ def directions():
     resultado = obtenerDirecciones(origen, destino, transporte)
 
     return resultado
+
+@app.route('/mostrar_mapa', methods=['GET'])
+def mostrar_mapa():
+    return render_template('mapa.html') 
 
 """    
     # Geocoding an address

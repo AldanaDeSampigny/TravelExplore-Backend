@@ -21,7 +21,7 @@ class AgendaRepository:
         self.db_session.add(agenda)
         self.db_session.commit()
         return agenda
-    
+
     def buscarActividad(self, usuarioID, ciudadID):
         subquery_cat_ids = self.db_session.query(Categoria.id).\
             join(UsuarioCategoria, Categoria.id == UsuarioCategoria.id_categorias).\
@@ -37,12 +37,14 @@ class AgendaRepository:
             join(Ciudad, Lugar.id_ciudad == Ciudad.id).\
             filter(Usuario.id == usuarioID).\
             filter(Ciudad.id == ciudadID).\
-            filter(Categoria.id.in_(subquery_cat_ids))
+            filter(Categoria.id.in_(subquery_cat_ids)).\
+            group_by(Categoria.id, Actividad.id).\
+            order_by(func.max(Actividad.valoracion))
 
         result = query.all()  # Ejecutar la consulta
 
         return result
-    
+
     def buscarLugar(self, actividadID):
         lugar = self.db_session.query(Lugar).\
             join(Actividad, Actividad.id_lugar == Lugar.id).\
