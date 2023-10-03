@@ -151,6 +151,9 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transp
     # Devolver la lista de días y actividades serializadas a JSON
     return jsonify(agenda_json)
 
+
+
+
 # @app.route('/generarAgenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<horaInicio>/<horaFin>'
 #             , methods=['GET'])
 # def generarMostrarAgenda(usuarioID, destinoID, fechaInicio, fechaFin, horaInicio, horaFin):
@@ -324,14 +327,16 @@ def lugarEspecifico(id):
         "hora": "213"
     } 
 """
-@app.route('/agendaCreada' ,methods = ['GET'])
-def getAgenda():
+@app.route('/agendaCreada/<int:usuarioID>' ,methods = ['GET'])
+def getAgenda(usuarioID):
     # Leer el json recibido
     # agenda = request.get_json()
 
     agendaService = AgendaService(getEngine())
 
-    return agendaService.getAgenda()
+    agendaUsuario = agendaService.getAgenda(usuarioID)
+  
+    return str(agendaUsuario)
 
 
 @app.route('/directions', methods=['GET'])
