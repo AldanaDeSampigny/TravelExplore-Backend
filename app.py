@@ -321,12 +321,6 @@ def lugarEspecifico(id):
         return jsonify({'error': 'Place not found'})
 
 
-""" 
-    {
-        "fecha": "fds",
-        "hora": "213"
-    } 
-"""
 @app.route('/agendaCreada/<int:usuarioID>' ,methods = ['GET'])
 def getAgenda(usuarioID):
     # Leer el json recibido

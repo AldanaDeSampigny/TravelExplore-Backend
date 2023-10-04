@@ -22,68 +22,60 @@ deDatos= getSession()
 #class Entrenamiento:
 with Session(getEngine()) as session:
     usuarios = []
-    categoria = []
-    uRepo = UsuarioRepository(session)
+    categorias = []
     actividades= []
+    userRepo = UsuarioRepository(session)
+    aRepo = ActividadRepository(session)
+    CRepo = CategoriaRepository(session)
 
     datos = defaultdict(list)
     cRepo = CategoriaRepository(session)
-    usuarios.append(uRepo.getUsuarios())
-    #for usuario in usuarios:
-    print("categorias ", cRepo.getCategoriaUsuario(5))
-        #datos[usuario.id].extend(categorias_usuario)
+    usuarios = userRepo.getUsuarios()
 
-    # Crear mapas de palabras a números
-    categorias_map = {
-        "Comida Italiana": 0,
-        "Deportes Acuáticos": 1,
-        "Senderismo": 2,
-        "Museos de Arte": 3,
-        "Fotografía de Naturaleza": 4
-    }
+    for user in usuarios:
+        datos[user.id].append(cRepo.getCategoriaUsuario(user.id))
 
-    actividades_map = {
-        0: "Almuerzo en Trattoria Italiana",
-        1: "Paseo en Bote por el Lago",
-        2: "Escalada en Montaña"
-        # Agrega más actividades según sea necesario
-    }
+    actividades = aRepo.getActividades()
 
-    usuarios_map = { #usuarios relacionados con categorias
-        "Usuario 1": [0, 1, 0, 0, 1],
-        "Usuario 2": [0, 0, 0, 1, 0],
-        "Usuario 3": [0, 0, 0, 0, 0]
-        # Agrega más usuarios según sea necesario
-    }
+    categorias = CRepo.getCategorias()
 
-    # Reemplazar datos numéricos por palabras
-    categorias = np.array([
-        [1, 0, 0, 0, 0],  # Categoría 1: Comida Italiana
-        [0, 1, 1, 0, 0],  # Categoría 2: Deportes Acuáticos y Senderismo
-        [0, 0, 0, 1, 1]   # Categoría 3: Museos de Arte y Fotografía de Naturaleza
-    ])
+    categorias = np.array(categorias)
+    actividades = np.array(actividades)
 
-    actividades = np.array([
-        [1, 0, 0],  # Almuerzo en Trattoria Italiana
-        [0, 1, 0],  # Paseo en Bote por el Lago
-        [0, 0, 1]   # Escalada en Montaña
-    ])
+
+    # Ahora puedes acceder a las dimensiones de las matrices
+    num_categorias = len(categorias)#.shape[1]
+    num_actividades = len(actividades)#.shape[1]
+
+    print('tipo: ',str(type(categorias)))
+    
+    num_usuarios = len(datos)
+    preferencias_usuarios = np.zeros((num_usuarios, num_categorias))
+    claves_datos = list(datos.keys())
+
+    for i, user_id in enumerate(claves_datos):
+        for c in range(0, num_categorias):
+            if c in datos[user]:
+                preferencias_usuarios[i, c] = 1
+            else:
+                preferencias_usuarios[i, c] = 0
+
+    # Crear matrices NumPy para las actividades y preferencias
+    preferencias_usuarios = np.array(preferencias_usuarios)
 
     # Crear un modelo de recomendación con TensorFlow
     modelo = tf.keras.Sequential([
-        tf.keras.layers.Input(shape=(categorias.shape[1],)),
+        tf.keras.layers.Input(shape=(num_categorias,)), #num_categorias
         tf.keras.layers.Dense(16, activation='relu'),
-        tf.keras.layers.Dense(actividades.shape[1], activation='sigmoid')
+        tf.keras.layers.Dense(num_actividades, activation='sigmoid') #num_actividades
     ])
 
     # Compilar el modelo
     modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     # Entrenar el modelo
-    modelo.fit(datos, actividades, epochs = 1000)
+    modelo.fit(preferencias_usuarios, actividades, epochs = 1000)
     #modelo.fit(usuarios_map, actividades, epochs=1000)
-    #"Usuario 3": [0, 0, 0, 0, 0]
-    # Realizar predicciones para un usuario
 
     usuario_nuevo = np.array(UsuarioRepository(session)).getUsuarioCategoria(5)#[0, 0, 1, 0, 1])
     recomendaciones_probabilidades = modelo.predict(np.array([usuario_nuevo]))
@@ -92,7 +84,8 @@ with Session(getEngine()) as session:
     actividades_recomendadas = []
     for i, probabilidad in enumerate(recomendaciones_probabilidades[0]):
         if probabilidad > 0.5:  # Puedes ajustar este umbral según tus preferencias
-            actividades_recomendadas.append(actividades_map[i])
+            actividad = aRepo.getActividad(i)
+            actividades_recomendadas.append(actividad)
 
     # Imprimir las recomendaciones de actividades
     print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
@@ -171,3 +164,40 @@ for u in usuario:
     datos.append(u.id, CategoriaRepository(getEngine()).getCategoriaUsuario(u.id))
     #categoria = CategoriaRepository.getCategoriaUsuario(u.id)"""
 
+
+
+    # Crear mapas de palabras a números
+    # categorias_map = {
+    #     "Comida Italiana": 0,
+    #     "Deportes Acuáticos": 1,
+    #     "Senderismo": 2,
+    #     "Museos de Arte": 3,
+    #     "Fotografía de Naturaleza": 4
+    # }
+
+    # actividades_map = {
+    #     0: "Almuerzo en Trattoria Italiana",
+    #     1: "Paseo en Bote por el Lago",
+    #     2: "Escalada en Montaña"
+    #     # Agrega más actividades según sea necesario
+    # }
+
+    # usuarios_map = { #usuarios relacionados con categorias
+    #     "Usuario 1": [0, 1, 0, 0, 1],
+    #     "Usuario 2": [0, 0, 0, 1, 0],
+    #     "Usuario 3": [0, 0, 0, 0, 0]
+    #     # Agrega más usuarios según sea necesario
+    # }
+
+    # # Reemplazar datos numéricos por palabras
+    # categorias = np.array([
+    #     [1, 0, 0, 0, 0],  # Categoría 1: Comida Italiana
+    #     [0, 1, 1, 0, 0],  # Categoría 2: Deportes Acuáticos y Senderismo
+    #     [0, 0, 0, 1, 1]   # Categoría 3: Museos de Arte y Fotografía de Naturaleza
+    # ])
+
+    # actividades = np.array([
+    #     [1, 0, 0],  # Almuerzo en Trattoria Italiana
+    #     [0, 1, 0],  # Paseo en Bote por el Lago
+    #     [0, 0, 1]   # Escalada en Montaña
+    # ])

@@ -1,6 +1,8 @@
 from turtle import update
 import json
 
+import numpy as np
+
 from ..repository.UsuarioRepository import UsuarioRepository
 
 from ..models.AgendaViaje import AgendaViaje
@@ -114,8 +116,9 @@ class AgendaService:
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
             delta_dias = timedelta(days=1)
 
+            gustos_agregados = set()
+            actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
             while fecha_actual <= fecha_hasta:
-                actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
 
                 if fecha_actual.date().strftime('%Y-%m-%d') in horariosElegidos:
                     hora_actual = datetime.strptime(horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][0], '%H:%M:%S').time()
@@ -124,7 +127,10 @@ class AgendaService:
                     hora_actual = datetime.strptime(horaInicio, '%H:%M:%S').time() 
                     horario_fin = datetime.strptime(horaFin, '%H:%M:%S').time()
 
-                gustos_agregados = set()
+                actividadIds_set = set(np.array(actividadIds).flatten())
+
+                if gustos_agregados == actividadIds_set:
+                    gustos_agregados.clear()
 
                 while hora_actual < horario_fin:
                     for idx, m_id in enumerate(actividadIds):

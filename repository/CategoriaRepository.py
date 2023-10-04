@@ -1,3 +1,4 @@
+from ..models.ActividadCategoria import ActividadCategoria
 from ..models.Categoria import Categoria
 from ..models.UsuarioCategoria import UsuarioCategoria
 from ..models.Usuario import Usuario
@@ -15,15 +16,15 @@ class CategoriaRepository:
 
         result = categorias.all()
         return result
-
-
-    """ def getUsuarioCategoria(self, usuarioID):
-        categorias = self.db_session.query(Categoria.id).\
-            join(UsuarioCategoria, Categoria.id == UsuarioCategoria.id_categorias).\
-            filter(UsuarioCategoria.id_usuarios == usuarioID).all()
-            return categorias """
+    
+    def getCategoriaActividad(self, actividadID):
+        catActividad = self.db_session.query(Categoria.id).\
+            join(ActividadCategoria, Categoria.id == ActividadCategoria.id_categoria).\
+            filter(ActividadCategoria.id_actividad == actividadID)
+        
+        return catActividad
 
     def getCategorias(self):
-        categorias = self.db_session.query().all
+        categorias = self.db_session.query(Categoria).all()
 
         return categorias

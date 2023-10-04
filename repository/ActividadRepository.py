@@ -8,9 +8,15 @@ class ActividadRepository:
         self.db_session = db_session
 
     def getActividades(self):
-        actividades = self.db_session.query(Actividad.id).all()
+        actividades = self.db_session.query(Actividad).all()
 
         return actividades
+    
+    def getActividad(self, id):
+        actividad = self.db_session.query(Actividad.nombre).\
+            filter(Actividad, Actividad.id == id)
+
+        return actividad
 
     def getActividadCategoria(self, categoriaID):
         actividad = self.db_session.query(Actividad.id).\

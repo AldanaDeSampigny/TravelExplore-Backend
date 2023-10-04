@@ -19,9 +19,9 @@ class UsuarioRepository:
         self.db_session = db_session
 
     def getUsuarios(self):
-        usuarios = self.db_session.query(Usuario)
+        usuarios = self.db_session.query(Usuario).all()
         
-        return usuarios.all()
+        return usuarios
 
     def getAgendaUsuario(self,usuarioID):
         subquery = self.db_session.query(func.max(AgendaViaje.id)).\
@@ -34,7 +34,7 @@ class UsuarioRepository:
         indiceAgenda = subquery.all()[0][0]
         
         print(str(subquery.all()))
-        query = self.db_session.query.(AgendaDiaria.dia, Actividad.id, Actividad.nombre, AgendaDiaria.horaInicio, AgendaDiaria.horaFin).distinct()\
+        query = self.db_session.query(AgendaDiaria.dia, Actividad.id, Actividad.nombre, AgendaDiaria.horaInicio, AgendaDiaria.horaFin).distinct().\
                 join(ActividadAgenda, AgendaDiaria.id == ActividadAgenda.id_agenda).\
                 join(Actividad, ActividadAgenda.id_actividad == Actividad.id).\
                 filter(AgendaViaje.id == indiceAgenda)
