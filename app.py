@@ -325,12 +325,33 @@ def lugarEspecifico(id):
 def getAgenda(usuarioID):
     # Leer el json recibido
     # agenda = request.get_json()
-
     agendaService = AgendaService(getEngine())
-
     agendaUsuario = agendaService.getAgenda(usuarioID)
-  
-    return str(agendaUsuario)
+
+    agenda_json = []
+    agenda_por_dia = defaultdict(list)
+    for actividad_data in agendaUsuario:
+        dia = actividad_data[0]  # Acceder al valor de la primera columna (dia)
+        actividad_id = actividad_data[1]  # Acceder al valor de la segunda columna (actividad_id)
+        nombre_actividad = actividad_data[2]  # Acceder al valor de la tercera columna (nombre_actividad)
+        horaInicio = actividad_data[3].strftime('%H:%M:%S')  # Convertir a cadena de texto
+        horaFin = actividad_data[4].strftime('%H:%M:%S')  # Convertir a cadena de texto
+
+        agenda_por_dia[dia].append({
+            'actividad_id': actividad_id,
+            'nombre_actividad': nombre_actividad,
+            'horaInicio': horaInicio,
+            'horaFin': horaFin
+        })
+
+    for dia, actividades in sorted(agenda_por_dia.items()):
+        dia_json = {
+            'dia': dia,
+            'actividades': actividades
+        }
+        agenda_json.append(dia_json)
+
+    return jsonify(agenda_json)
 
 
 @app.route('/directions', methods=['GET'])
