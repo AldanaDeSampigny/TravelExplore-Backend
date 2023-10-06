@@ -27,15 +27,18 @@ with Session(getEngine()) as session:
     userRepo = UsuarioRepository(session)
     aRepo = ActividadRepository(session)
     CRepo = CategoriaRepository(session)
+    cRepo = CategoriaRepository(session)
 
     datos = defaultdict(list)
-    cRepo = CategoriaRepository(session)
-    usuarios = userRepo.getUsuarios()
+    datosActividad = defaultdict(list)
 
+    usuarios = userRepo.getUsuarios()
     for user in usuarios:
         datos[user.id].append(cRepo.getCategoriaUsuario(user.id))
 
     actividades = aRepo.getActividades()
+    for activity in actividades:
+        datosActividad[activity.id].append(CRepo.getCategoriaActividad(activity.id))
 
     categorias = CRepo.getCategorias()
 
@@ -60,8 +63,19 @@ with Session(getEngine()) as session:
             else:
                 preferencias_usuarios[i, c] = 0
 
+    actividades_categorias = np.zeros((num_actividades, num_categorias))
+    claves_actividades = list(datosActividad.keys())
+
+    for i, actividad in enumerate(claves_actividades):
+        for j in range(0, num_categorias):
+            if j in datosActividad[actividad]:  # Ajusta esto según la estructura de tu modelo de datos
+                actividades_categorias[i, j] = 1
+            else:
+                actividades_categorias[i, j] = 0
+
     # Crear matrices NumPy para las actividades y preferencias
     preferencias_usuarios = np.array(preferencias_usuarios)
+    actividades_categorias = np.array(actividades_categorias)
 
     # Crear un modelo de recomendación con TensorFlow
     modelo = tf.keras.Sequential([
@@ -74,7 +88,7 @@ with Session(getEngine()) as session:
     modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     # Entrenar el modelo
-    modelo.fit(preferencias_usuarios, actividades, epochs = 1000)
+    modelo.fit(preferencias_usuarios, actividades_categorias, epochs = 1000)
     #modelo.fit(usuarios_map, actividades, epochs=1000)
 
     usuario_nuevo = np.array(UsuarioRepository(session)).getUsuarioCategoria(5)#[0, 0, 1, 0, 1])

@@ -22,7 +22,9 @@ class CategoriaRepository:
             join(ActividadCategoria, Categoria.id == ActividadCategoria.id_categoria).\
             filter(ActividadCategoria.id_actividad == actividadID)
         
-        return catActividad
+        result = catActividad.all()
+        
+        return result
 
     def getCategorias(self):
         categorias = self.db_session.query(Categoria).all()
