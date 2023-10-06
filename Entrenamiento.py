@@ -49,10 +49,12 @@ with Session(getEngine()) as session:
     # Ahora puedes acceder a las dimensiones de las matrices
     num_categorias = len(categorias)#.shape[1]
     num_actividades = len(actividades)#.shape[1]
+    
 
     print('tipo: ',str(type(categorias)))
     
     num_usuarios = len(datos)
+    
     preferencias_usuarios = np.zeros((num_usuarios, num_categorias))
     claves_datos = list(datos.keys())
 
@@ -74,6 +76,16 @@ with Session(getEngine()) as session:
                 actividades_categorias[i, j] = 0
 
     # Crear matrices NumPy para las actividades y preferencias
+    print("tamaño: actividades ", len(actividades_categorias))
+    print("tamaño: preferencia ", len(preferencias_usuarios))
+
+    if len(actividades_categorias) > len(preferencias_usuarios):
+        max_size = len(actividades_categorias)
+        preferencias_usuarios = np.pad(preferencias_usuarios, ((0, max_size - len(preferencias_usuarios)), (0, 0)), 'constant')
+    else:
+        max_size = len(preferencias_usuarios)
+        actividades_categorias = np.pad(actividades_categorias, ((0, max_size - len(actividades_categorias)), (0, 0)), 'constant')
+    
     preferencias_usuarios = np.array(preferencias_usuarios)
     actividades_categorias = np.array(actividades_categorias)
 
@@ -81,18 +93,26 @@ with Session(getEngine()) as session:
     modelo = tf.keras.Sequential([
         tf.keras.layers.Input(shape=(num_categorias,)), #num_categorias
         tf.keras.layers.Dense(16, activation='relu'),
-        tf.keras.layers.Dense(num_actividades, activation='sigmoid') #num_actividades
+        tf.keras.layers.Dense(num_categorias, activation='sigmoid') #se puede cambiar por num_categorias?
     ])
+    #modelo.add(tf.keras.layers.Dense(4, activation='sigmoid')) 
 
     # Compilar el modelo
     modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
     # Entrenar el modelo
-    modelo.fit(preferencias_usuarios, actividades_categorias, epochs = 1000)
-    #modelo.fit(usuarios_map, actividades, epochs=1000)
+    #!volver a 1000
+    modelo.fit(preferencias_usuarios, actividades_categorias, epochs = 500)
 
-    usuario_nuevo = np.array(UsuarioRepository(session)).getUsuarioCategoria(5)#[0, 0, 1, 0, 1])
-    recomendaciones_probabilidades = modelo.predict(np.array([usuario_nuevo]))
+    nuevoUsuario = np.array([[0, 0, 0, 1, 0]])
+    #usuario_nuevo = np.array(UsuarioRepository(session)).getUsuarioCategoria(5)#[0, 0, 1, 0, 1])
+    usuario_nuevo = CategoriaRepository(session).getCategoriaUsuario(5)
+    #recomendaciones_probabilidades = modelo.predict(np.array([usuario_nuevo]))
+
+    usuario_nuevo = np.array([usuario_nuevo])  # Agregar una dimensión adicional
+    #usuario_nuevo = np.array(usuario_nuevo)  # Convierte a un array NumPy
+    #usuario_nuevo = np.reshape(usuario_nuevo, (1, num_categorias)) 
+    recomendaciones_probabilidades = modelo.predict(nuevoUsuario)
 
     # Obtener las actividades recomendadas en palabras
     actividades_recomendadas = []
