@@ -273,6 +273,30 @@ def getAgenda(usuarioID):
 
     return agenda_json
 
+
+@app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
+def agendasUsuario(usuarioID):
+# Leer el json recibido
+# agenda = request.get_json()
+    agendaService = AgendaService(getEngine())
+    agendasUsuario = agendaService.obtenerAgendasUsuario(usuarioID)  # Supongo que obtienes los resultados de tu función
+
+    # Crear una lista de diccionarios a partir de los resultados
+    agendas_json = [
+        {
+            
+            "id_agenda": row[0],
+            "dia": row[1].strftime("%Y-%m-%d"),  # Convierte date a cadena
+            "actividad_id": row[2],
+            "nombre_actividad": row[3],
+            "horaInicio": row[4].strftime("%H:%M:%S"),  # Convierte time a cadena
+            "horaFin": row[5].strftime("%H:%M:%S"),  # Convierte time a cadena
+        }
+        for row in agendasUsuario
+    ]
+
+        # Convertir la lista en un JSON y devolverlo
+    return jsonify(agendas_json)
     """
     @app.route('/agendaCreada/<int:usuarioID>', methods=['GET'])
 def getAgenda(usuarioID):

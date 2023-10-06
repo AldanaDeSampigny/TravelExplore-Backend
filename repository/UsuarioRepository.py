@@ -45,21 +45,28 @@ class UsuarioRepository:
         )
      
         return franki
-    """    subQueryUsuario = select([Usuario.id]).where(Usuario.id == usuarioID).as_scalar()
-
-        subQueryAgendaViaje = select([func.max(AgendaViaje.id)]).as_scalar()
-            #         group_by(Categoria.id, Actividad.id).\
-            # order_by(func.max(Actividad.valoracion))
-        
-        franki = self.db_session.query(AgendaDiaria.id ,Actividad.id, Actividad.nombre, AgendaDiaria.horaInicio, AgendaDiaria.horaFin).\
-                join(Usuario, Usuario.id == Viaje.id_usuario).\
-                join(Itinerario, Itinerario.id_viaje == Viaje.id).\
-                join(AgendaDiaria, AgendaDiaria.itinerario_id == Itinerario.id).\
-                join(AgendaViaje, AgendaViaje.id == AgendaDiaria.id_agenda_viaje).\
-                join(ActividadAgenda, ActividadAgenda.id_agenda ==  AgendaDiaria.id).\
-                join(Actividad, Actividad.id == ActividadAgenda.id_actividad).\
-                filter(AgendaViaje.id.in_(subQueryAgendaViaje)).\
-                filter(Usuario.id.in_(subQueryUsuario))
-                #ilter(Categoria.id.in_(subquery_cat_ids))
-        return franki.all() """
-    
+    #!volver a pensar query 
+    def obtenerAgendasUsuario(self,usuarioID):
+        agendas = (
+            self.db_session.query(
+                AgendaViaje.id,  # O el campo que identifica de manera única cada agenda
+                AgendaDiaria.dia,
+                Actividad.id,
+                Actividad.nombre,
+                AgendaDiaria.horaInicio,
+                AgendaDiaria.horaFin,
+                Viaje.fechaDesde,
+                Viaje.fechaHasta
+            )
+            .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
+            .join(Actividad, Actividad.id == ActividadAgenda.id_actividad)
+            .join(AgendaViaje, AgendaDiaria.id_agenda_viaje == AgendaViaje.id)
+            .join(Itinerario, Itinerario.id == AgendaDiaria.itinerario_id)
+            .join(Viaje, Viaje.id == Itinerario.id_viaje)
+            .join(Usuario, Usuario.id == Viaje.id_usuario)
+            .filter(Usuario.id == usuarioID)
+            # Elimina el filtro de fecha si deseas obtener todas las agendas sin restricciones de fecha
+            # .filter(Viaje.fechaDesde >= '2023-10-05' and Viaje.fechaHasta <= '2023-10-07')
+            .group_by(AgendaViaje.id)  # Agrupa por el campo que identifica cada agenda
+        )
+        return agendas.all()

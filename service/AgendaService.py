@@ -108,6 +108,14 @@ class AgendaService:
 
         return agendaUsuario;
         
+
+    def obtenerAgendasUsuario(self,usuarioID):
+        with Session(getEngine()) as session:
+            agenda = UsuarioRepository(session)
+
+            agendasUsuario = agenda.getAgendaUsuario(usuarioID)
+
+        return agendasUsuario;
 #generador de agenda diaria con dias ocupados, y horarios especificos
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
