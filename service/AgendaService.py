@@ -29,7 +29,7 @@ class AgendaService:
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def saveAgenda(self, idUsuario,idCiudad,fechaDesde,fechaHasta, horaInicio, horaFin, dia, agenda):
+    def saveAgenda(self, idUsuario,idCiudad,fechaDesde,fechaHasta, horaInicio, horaFin, agenda):
         with Session(getEngine()) as session:
             print("Tipo Agenda: ",type(agenda))
 
@@ -57,27 +57,29 @@ class AgendaService:
                 session.commit()
                 # session.commit()
 
-
+                fecha = datetime.strptime(fechaDesde, "%Y-%m-%d") 
+                diax = timedelta(days = 1)
                 for agendaDiaria in agenda:
                     nuevaAgendaDiaria = AgendaDiaria()
+                    print("agenda: ",agendaDiaria)
                     nuevaAgendaDiaria.horaInicio = horaInicio if horaInicio is not None else None
                     nuevaAgendaDiaria.horaFin = horaFin if horaFin is not None else None
-                    nuevaAgendaDiaria.dia = dia if dia is not None else None
+                    nuevaAgendaDiaria.dia = fecha.strftime("%Y-%m-%d")
                     nuevaAgendaDiaria.itinerario_id = nuevoItinerario.id
                     nuevaAgendaDiaria.id_agenda_viaje = agendaViajeNueva.id
-
+                    fecha += timedelta(days=1)
+                    
                     session.add(nuevaAgendaDiaria)
                     session.commit()
-
+                    
                     for actividadAgenda in agendaDiaria.get('actividades', []):
                         actividadAgendaNueva = ActividadAgenda()
                         actividadAgendaNueva.id_actividad = actividadAgenda.get('id', None)
                         actividadAgendaNueva.id_agenda = nuevaAgendaDiaria.id
                         session.add(actividadAgendaNueva)
-
-                    session.commit()
+                        session.commit()
            
-           
+            
             except Exception as e:
                 # En caso de error, realiza un rollback
                 session.rollback()
