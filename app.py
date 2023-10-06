@@ -1,4 +1,6 @@
 from collections import defaultdict
+from email.utils import format_datetime
+from click import format_filename
 
 import requests
 from bs4 import BeautifulSoup
@@ -6,6 +8,7 @@ from bs4 import BeautifulSoup
 from .models.ActividadAgenda import ActividadAgenda
 from .service.AgendaValidaciones import AgendaValidaciones
 from flask import Flask, jsonify, render_template, request
+from datetime import datetime
 
 import googlemaps
 import json
@@ -244,23 +247,29 @@ def getAgenda(usuarioID):
     agendaService = AgendaService(getEngine())
     agendaUsuario = agendaService.getAgenda(usuarioID)  # Supongo que obtienes los resultados de tu función
 
-    # Crear una lista de diccionarios a partir de los resultados
-    agenda_json = [
-        {
-             "dia": row[1].strftime("%Y-%m-%d"),  # Convierte date a cadena
-             "id_agenda": row[0],
-             "actividad_id": row[2],
-             "nombre_actividad": row[3],
-             "horaInicio": row[4].strftime("%H:%M:%S"),  # Convierte time a cadena
-             "horaFin": row[5].strftime("%H:%M:%S"),  # Convierte time a cadena
-         }
-        for row in agendaUsuario
-     ]
-    agenda_json_str = json.dumps(agenda_json)
+    # Crear un diccionario para almacenar los datos en el formato deseado
+    agenda_data = {}
 
-    print(agenda_json_str)  
-    
-    print(str(type(agendaUsuario)))
+    for row in agendaUsuario:
+        dia =  row[1].strftime("%Y-%m-%d") if row[1] else None
+        actividad = {
+            "nombre_actividad": row[3],
+            "horaInicio":row[4].strftime("%H:%M:%S") if row[4] else None,
+            "horaFin": row[5].strftime("%H:%M:%S") if row[5] else None,
+        }
+
+        # Si el día ya existe en el diccionario, agregamos la actividad a la lista de actividades
+        if dia in agenda_data:
+            agenda_data[dia]["actividades"].append(actividad)
+        else:
+            # Si el día no existe, creamos una entrada nueva
+            agenda_data[dia] = {
+                "dia": dia,
+                "actividades": [actividad]
+            }
+
+        # Convertir el diccionario en una lista de valores y devolverlo
+        agenda_json = list(agenda_data.values())
 
     return agenda_json
 
