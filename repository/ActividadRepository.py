@@ -13,8 +13,8 @@ class ActividadRepository:
         return actividades
     
     def getActividad(self, id):
-        actividad = self.db_session.query(Actividad.nombre).\
-            filter(Actividad, Actividad.id == id)
+        actividad = self.db_session.query(Actividad).\
+            filter(Actividad.id == id).first()
 
         return actividad
 

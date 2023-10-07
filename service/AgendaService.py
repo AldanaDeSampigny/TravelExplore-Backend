@@ -113,7 +113,7 @@ class AgendaService:
         with Session(getEngine()) as session:
             agenda = UsuarioRepository(session)
 
-            agendasUsuario = agenda.getAgendaUsuario(usuarioID)
+            agendasUsuario = agenda.obtenerAgendasUsuario(usuarioID)
 
         return agendasUsuario;
 #generador de agenda diaria con dias ocupados, y horarios especificos

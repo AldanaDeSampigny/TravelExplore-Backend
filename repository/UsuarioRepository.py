@@ -26,7 +26,7 @@ class UsuarioRepository:
     def getAgendaUsuario(self,usuarioID):  
         max_av_id = self.db_session.query(func.max(AgendaViaje.id)).scalar()
 
-        franki = (
+        agenda = (
             self.db_session.query(ActividadAgenda.id_agenda,
                 AgendaDiaria.dia,
                 Actividad.id,
@@ -44,12 +44,10 @@ class UsuarioRepository:
             .filter(Usuario.id == usuarioID)
         )
      
-        return franki
+        return agenda
     #!volver a pensar query 
     def obtenerAgendasUsuario(self,usuarioID):
-        agendas = (
-            self.db_session.query(
-                AgendaViaje.id,  # O el campo que identifica de manera única cada agenda
+        query = (self.db_session.query(ActividadAgenda.id_agenda,
                 AgendaDiaria.dia,
                 Actividad.id,
                 Actividad.nombre,
@@ -65,8 +63,5 @@ class UsuarioRepository:
             .join(Viaje, Viaje.id == Itinerario.id_viaje)
             .join(Usuario, Usuario.id == Viaje.id_usuario)
             .filter(Usuario.id == usuarioID)
-            # Elimina el filtro de fecha si deseas obtener todas las agendas sin restricciones de fecha
-            # .filter(Viaje.fechaDesde >= '2023-10-05' and Viaje.fechaHasta <= '2023-10-07')
-            .group_by(AgendaViaje.id)  # Agrupa por el campo que identifica cada agenda
         )
-        return agendas.all()
+        return query

@@ -280,23 +280,36 @@ def agendasUsuario(usuarioID):
 # agenda = request.get_json()
     agendaService = AgendaService(getEngine())
     agendasUsuario = agendaService.obtenerAgendasUsuario(usuarioID)  # Supongo que obtienes los resultados de tu función
+    agenda_data = {}
 
-    # Crear una lista de diccionarios a partir de los resultados
-    agendas_json = [
-        {
-            
+    for row in agendasUsuario:
+        dia =  row[1].strftime("%Y-%m-%d") if row[1] else None
+        actividad = {
             "id_agenda": row[0],
-            "dia": row[1].strftime("%Y-%m-%d"),  # Convierte date a cadena
-            "actividad_id": row[2],
             "nombre_actividad": row[3],
-            "horaInicio": row[4].strftime("%H:%M:%S"),  # Convierte time a cadena
-            "horaFin": row[5].strftime("%H:%M:%S"),  # Convierte time a cadena
+            "horaInicio":row[4].strftime("%H:%M:%S") if row[4] else None,
+            "horaFin": row[5].strftime("%H:%M:%S") if row[5] else None,
+            "fechaDesde": row[6].strftime("%Y-%m-%d") if row[6] else None,
+            "fechaHasta": row[7].strftime("%Y-%m-%d") if row[7] else None,
         }
-        for row in agendasUsuario
-    ]
+
+        # Si el día ya existe en el diccionario, agregamos la actividad a la lista de actividades
+        if dia in agenda_data:
+            agenda_data[dia]["actividades"].append(actividad)
+        else:
+            # Si el día no existe, creamos una entrada nueva
+            agenda_data[dia] = {
+                "dia": dia,
+                "actividades": [actividad]
+            }
+
+        # Convertir el diccionario en una lista de valores y devolverlo
+        agendas_json = list(agenda_data.values())
+
+
+    return jsonify(agendas_json)
 
         # Convertir la lista en un JSON y devolverlo
-    return jsonify(agendas_json)
     """
     @app.route('/agendaCreada/<int:usuarioID>', methods=['GET'])
 def getAgenda(usuarioID):
