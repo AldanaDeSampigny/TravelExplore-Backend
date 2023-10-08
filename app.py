@@ -1,6 +1,6 @@
 from collections import defaultdict
-from email.utils import format_datetime
-from click import format_filename
+from .repository.CiudadRepository import CiudadRepository
+from sqlalchemy.orm import Session
 
 import requests
 from bs4 import BeautifulSoup
@@ -26,12 +26,7 @@ from .models.Categoria import Categoria
 from .models.Itinerario import Itinerario
 from .models.Lugar import Lugar
 from .models.LugarCategoria import LugarCategoria
-
-from .utils.AlchemyEncoder import AlchemyEncoder
-
 from .service.AgendaService import AgendaService
-"""from .service.GustaService import GustaService """
-
 from .models.Actividad import Actividad
 from .models.AgendaDiaria import AgendaDiaria
 from .models.Viaje import Viaje
@@ -185,12 +180,28 @@ def obtener_descripcion_lugar(nombre_lugar):
     # Si no se encuentra una descripción, puedes devolver un valor predeterminado o "No disponible"
     return "No disponible"
 
+@app.route('/ciudades', methods=['GET'])
+def obtenerCiudades():
+    with Session(getEngine()) as session:
+        ciudadesQuery = CiudadRepository(session).getCiudades()
+
+        ciudades = []
+        
+        for ciudad in ciudadesQuery:
+            ciudad_data = {
+                'nombre': ciudad.nombre  # Accede a la propiedad 'nombre' de la instancia de Ciudad
+            }
+            ciudades.append(ciudad_data)
+
+        return jsonify(ciudades)
+
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
+    buscarLugar = request.args.get('ciudad')
 
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
-    places = gmaps.places(query="places", location=(-42.767470, -65.036549), radius=4000)
+    places = gmaps.places(query=buscarLugar, radius=4000)
     
     lugares = []
     for place in places['results']:
