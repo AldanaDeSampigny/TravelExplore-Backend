@@ -279,35 +279,68 @@ def getAgenda(usuarioID):
                 "actividades": [actividad]
             }
 
-        # Convertir el diccionario en una lista de valores y devolverlo
+        #Convertir el diccionario en una lista de valores y devolverlo
         agenda_json = list(agenda_data.values())
 
     return agenda_json
 
 
-@app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
-def agendasUsuario(usuarioID):
+@app.route('/verAgendaUsuario/<int:usuarioID>' ,methods = ['GET'])
+def verAgendaUsuario(usuarioID):
 # Leer el json recibido
 # agenda = request.get_json()
     agendaService = AgendaService(getEngine())
     agendasUsuario = agendaService.obtenerAgendasUsuario(usuarioID)  # Supongo que obtienes los resultados de tu función
+    
+    agenda_data = agendasUsuario.all()
 
-    # Crear una lista de diccionarios a partir de los resultados
-    agendas_json = [
-        {
-            
-            "id_agenda": row[0],
-            "dia": row[1].strftime("%Y-%m-%d"),  # Convierte date a cadena
-            "actividad_id": row[2],
-            "nombre_actividad": row[3],
-            "horaInicio": row[4].strftime("%H:%M:%S"),  # Convierte time a cadena
-            "horaFin": row[5].strftime("%H:%M:%S"),  # Convierte time a cadena
+    agendaActual = agenda_data[0][0]
+
+    agenda_json = {
+        "destino" : str(agenda_data[0][8]),
+        "fechaDesde": str(agenda_data[0][6] if agenda_data[0][6] else None),
+        "fechaHasta": str(agenda_data[0][7] if agenda_data[0][7] else None),
+        "diaViaje": []
+    }
+
+    for diaViaje in agenda_data:
+        diaViajeJson = {
+            "fecha": diaViaje[1],
+            "id_agenda": diaViaje[0]
         }
-        for row in agendasUsuario
-    ]
+
+        agenda_json['diaViaje'].append(diaViajeJson)
+
+    '''agenda_data = {}
+
+
+    for row in agendasUsuario:
+        dia =  row[1].strftime("%Y-%m-%d") if row[1] else None
+        
+        actividad = {
+            "id_agenda": row[0],
+            "nombre_actividad": row[3],
+            "horaInicio":row[4].strftime("%H:%M:%S") if row[4] else None,
+            "horaFin": row[5].strftime("%H:%M:%S") if row[5] else None,
+        }
+
+        # Si el día ya existe en el diccionario, agregamos la actividad a la lista de actividades
+        if dia in agenda_data:
+            agenda_data[dia]["actividades"].append(actividad)
+        else:
+            # Si el día no existe, creamos una entrada nueva
+
+            agenda_data[dia] = {
+                "dia": dia,
+                "actividades": [actividad]
+            }
+
+        # Convertir el diccionario en una lista de valores y devolverlo
+        agendas_json = list(agenda_data.values())'''
+
+    return jsonify(agenda_json)
 
         # Convertir la lista en un JSON y devolverlo
-    return jsonify(agendas_json)
     """
     @app.route('/agendaCreada/<int:usuarioID>', methods=['GET'])
 def getAgenda(usuarioID):
@@ -343,6 +376,24 @@ def getAgenda(usuarioID):
 
     return agenda_json_str
     """
+
+@app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
+def verAgendas(usuarioID):
+    agendaService = AgendaService(getEngine())
+    agendasUsuario = agendaService.obtenerAgendasUsuarioConDestino(usuarioID)
+
+    agenda_json = []
+    
+    for agendaUsuario in agendasUsuario:
+        agenda = {
+            "destino": str(agendaUsuario[2]),
+            "fechaDesde": str(agendaUsuario[0]),
+            "fechaHasta": str(agendaUsuario[1])
+        }
+        agenda_json.append(agenda)
+
+    return jsonify(agenda_json)
+
 
 
 @app.route('/directions', methods=['GET'])
