@@ -36,6 +36,12 @@ usuarios_map = { #tiene las actividades que le gusta
     # Agrega más usuarios según sea necesario
 }
 
+usuarios = np.array([[0, 1, 0, 0, 1],  # Usuario 1: Le gusta la comida italiana, museos de arte y fotografía de naturaleza
+                     [0, 0, 0, 1, 0],  # Usuario 2: Le gusta el senderismo
+                     [0, 0, 0, 0, 0],  # Usuario 3: No tiene preferencias
+                     # Agrega más usuarios según sea necesario
+                     ])
+
 # Reemplazar datos numéricos por palabras
 categorias = np.array([
     [1, 0, 0, 0, 0],  # Categoría 1: Comida Italiana
@@ -60,10 +66,10 @@ modelo = tf.keras.Sequential([
 modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
 # Entrenar el modelo
-modelo.fit(usuarios_map, actividades, epochs=1000)
+modelo.fit(usuarios, actividades, epochs=50)
 #"Usuario 3": [0, 0, 0, 0, 0]
 # Realizar predicciones para un usuario
-usuario_nuevo = np.array([0, 0, 1, 0, 1])#usuarios_map["Usuario 1"])
+usuario_nuevo = np.array([0, 0, 1, 1, 0])#usuarios_map["Usuario 1"])
 recomendaciones_probabilidades = modelo.predict(np.array([usuario_nuevo]))
 
 # Obtener las actividades recomendadas en palabras
@@ -76,4 +82,4 @@ for i, probabilidad in enumerate(recomendaciones_probabilidades[0]):
 print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
 
 # Guardar el modelo entrenado se guarda en h5 porque es un archivo compatible con tensorflow
-modelo.save('modelo_entrenado.h5')
+#modelo.save('modelo_entrenado.h5')

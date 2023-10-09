@@ -223,6 +223,8 @@ def placesRoutes():
                 valoracion = place.get('rating', 'N/A')
                 if valoracion != 'N/A':
                     valoracion = float(valoracion)
+                else:
+                    valoracion = 0.0
                 lugar = {
                     'id': place['place_id'],
                     'imagen': place['icon'],
