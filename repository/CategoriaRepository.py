@@ -22,8 +22,8 @@ class CategoriaRepository:
             join(ActividadCategoria, Categoria.id == ActividadCategoria.id_categoria).\
             filter(ActividadCategoria.id_actividad == actividadID)
         
-        result = catActividad.all()
-        
+        result = [row[0] for row in catActividad.all()]  # Extrae los identificadores
+    
         return result
 
     def getCategorias(self):
