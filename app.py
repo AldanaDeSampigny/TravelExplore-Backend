@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from .models.ActividadAgenda import ActividadAgenda
 from .service.AgendaValidaciones import AgendaValidaciones
 from flask import Flask, jsonify, render_template, request
-from datetime import datetime
+from geopy.geocoders import Nominatim
 
 import googlemaps
 import json
@@ -198,26 +198,53 @@ def obtenerCiudades():
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
     buscarLugar = request.args.get('ciudad')
+    idiomas_permitidos = ['es', 'mx', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
+
 
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
-    places = gmaps.places(query=buscarLugar, radius=4000)
+    places = gmaps.places(query=buscarLugar)#, radius=4000)
     
     lugares = []
     for place in places['results']:
-        lugar = {
-            'id': place['place_id'],
-            'imagen': place['icon'],
-            'nombre': place['name'],
-            'tipo': place.get('types', ['N/A'])[0],
-            'direccion': place['formatted_address'],
-            'valoracion': place.get('rating', 'N/A'),
-        }
-        lugares.append(lugar)
-    
-        # Ordenar la lista de lugares por valoración (rating) de mayor a menor
-    lugares = sorted(lugares, key=lambda x: x['valoracion'], reverse=True)
+        location = place['geometry']['location']
+        latitude = location['lat']
+        longitude = location['lng']
 
+        geolocator = Nominatim(user_agent="TravleExplore-proyectoUni")
+        location_info = geolocator.reverse((latitude, longitude), exactly_one=True)
+        # Verificar si la información de ubicación está disponible
+        if location_info and location_info.raw:
+            country_code = location_info.raw.get('address', {}).get('country_code', '').lower()
+
+            # Comprobar si el código del país está en la lista de idiomas permitidos
+            if country_code in idiomas_permitidos:
+
+                valoracion = place.get('rating', 'N/A')
+                if valoracion != 'N/A':
+                    valoracion = float(valoracion)
+                lugar = {
+                    'id': place['place_id'],
+                    'imagen': place['icon'],
+                    'nombre': place['name'],
+                    'tipo': place.get('types', ['N/A'])[0],
+                    'direccion': place['formatted_address'],
+                    'valoracion': valoracion,
+                    #'valoracion': place.get('rating', 'N/A'),
+                }
+                lugares.append(lugar)
+
+    if not lugares:
+        # Si no se encontraron lugares, crea un mensaje JSON personalizado
+        mensaje = {'mensaje': 'No se encontraron lugares disponibles en esta ubicación.'}
+        return jsonify(mensaje)
+
+    # Filtrar lugares sin valoración ('N/A') si es necesario
+    lugares = [lugar for lugar in lugares if lugar['valoracion'] != 'N/A']
+
+    # Ordenar la lista por valoración de mayor a menor
+    lugares = sorted(lugares, key=lambda x: x['valoracion'], reverse=True)
+    
     return jsonify(lugares)
 
 @app.route('/lugar/<id>', methods=['GET'])
