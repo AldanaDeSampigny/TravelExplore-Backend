@@ -1,11 +1,12 @@
 from collections import defaultdict
+
+
 from .repository.CiudadRepository import CiudadRepository
 from sqlalchemy.orm import Session
 
 import requests
 from bs4 import BeautifulSoup
 
-from .models.ActividadAgenda import ActividadAgenda
 from .service.AgendaValidaciones import AgendaValidaciones
 from flask import Flask, jsonify, render_template, request
 from geopy.geocoders import Nominatim
@@ -14,14 +15,14 @@ import googlemaps
 import json
 from .consultas import obtenerDirecciones, validacionTransporte
 
+from .models.ActividadAgenda import ActividadAgenda
 from .models.Usuario import Usuario
 from .models.ActividadCategoria import ActividadCategoria
 from .models.AgendaViaje import AgendaViaje
-
 from .models.UsuarioCategoria import UsuarioCategoria
-
 from .models.Ciudad import Ciudad
-
+from .models.Provincia import Provincia
+from .models.Pais import Pais
 from .models.Categoria import Categoria
 from .models.Itinerario import Itinerario
 from .models.Lugar import Lugar
@@ -30,6 +31,7 @@ from .service.AgendaService import AgendaService
 from .models.Actividad import Actividad
 from .models.AgendaDiaria import AgendaDiaria
 from .models.Viaje import Viaje
+
 from .bd.conexion import getSession, getEngine, Base
 from flask_cors import CORS
 
@@ -41,6 +43,8 @@ Base.metadata.create_all(engine)
 
 nuevoUsuario = Usuario()
 nuevoViaje = Viaje()
+nuevoPais = Pais()
+nuevaProvincia = Provincia()
 nuevaCiudad = Ciudad()
 nuevoItinerario = Itinerario()
 nuevaAgendaDiaria = AgendaDiaria()
