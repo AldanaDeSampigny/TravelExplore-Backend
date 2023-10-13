@@ -1,7 +1,6 @@
 from collections import defaultdict
 import numpy as np
 from sqlalchemy.orm import Session
-
 from .repository.ActividadRepository import ActividadRepository
 from .bd.conexion import getSession, getEngine
 from .repository.UsuarioRepository import UsuarioRepository
@@ -21,76 +20,63 @@ with Session(getEngine()) as session:
     userRepo = UsuarioRepository(session)
     aRepo = ActividadRepository(session)
     CRepo = CategoriaRepository(session)
-    cRepo = CategoriaRepository(session)
 
     datos = defaultdict(list)
     datosActividad = defaultdict(list)
 
     usuarios = userRepo.getUsuarios()
     for user in usuarios:
-        datos[user.id].append(cRepo.getCategoriaUsuario(user.id))
+        datos[user.id].append(CRepo.getCategoriaUsuario(user.id))
 
     actividades = aRepo.getActividades()
-    for activity in actividades:
-        datosActividad[activity.id].append(CRepo.getCategoriaActividad(activity.id))
+    #actividadesInfo = np.array([[actividad.id, actividad.nombre] for actividad in actividades])
+    categorias_actividades = [CRepo.getCategoriaActividad(actividad.id) for actividad in actividades]
+    categorias_actividades = [[tupla[0] if tupla is not None and len(tupla) > 0 else None for tupla in categorias] for categorias in categorias_actividades]
+    
+    # Obtén la longitud máxima de las listas en categorias_actividades
+    max_length = max(len(seq) for seq in categorias_actividades)
+    # Rellena las listas más cortas con ceros
+    categorias_actividades = [seq + [0] * (max_length - len(seq)) for seq in categorias_actividades]
+    # Convierte la lista en una matriz de NumPy
+    print(categorias_actividades)
+    actividadesInfo = np.array(categorias_actividades) 
+   
+    valoraciones = [actividad.valoracion for actividad in actividades]
+    print(valoraciones)
 
     categorias = CRepo.getCategorias()
 
     categorias = np.array(categorias)
     actividades = np.array(actividades)
 
-
     # Ahora puedes acceder a las dimensiones de las matrices
-    num_categorias = len(categorias)#.shape[1]
+    num_categorias = len(categorias) + 1#.shape[1]
     num_actividades = len(actividades)#.shape[1]
-    
 
-    print('tipo: ',str(type(categorias)))
     
     num_usuarios = len(datos)
     
-    preferencias_usuarios = np.zeros((num_usuarios, num_categorias))
+    preferencias_usuarios = np.zeros((num_usuarios, (num_categorias)))
     claves_datos = list(datos.keys())
 
     for i, user_id in enumerate(claves_datos):
-        for c in range(0, num_categorias):
-            if c in datos[user]:
+        categorias_usuario = []
+        for d in datos[user_id]:
+            for tupla in d:
+                mi_tupla = tupla
+                categorias_usuario.append(mi_tupla[0])# = mi_tupla[0]
+        
+        for c in range(1, (num_categorias)):
+            if c in categorias_usuario:
                 preferencias_usuarios[i, c] = 1
             else:
                 preferencias_usuarios[i, c] = 0
 
-    # actividades_categorias = np.zeros((num_actividades, num_categorias))
-    # claves_actividades = list(datosActividad.keys())
-
-    # for i, actividad in enumerate(claves_actividades):
-    #     for j in range(0, num_categorias):
-    #         if j in datosActividad[actividad]:  # Ajusta esto según la estructura de tu modelo de datos
-    #             actividades_categorias[i, j] = 1
-    #         else:
-    #             actividades_categorias[i, j] = 0
-
-    # Crear matrices NumPy para las actividades y preferencias
-    print("tamaño: actividades ", len(actividades))
-    print("tamaño: preferencia ", len(preferencias_usuarios))
-
-    # if len(actividades_categorias) > len(preferencias_usuarios):
-    #     max_size = len(actividades_categorias)
-    #     preferencias_usuarios = np.pad(preferencias_usuarios, ((0, max_size - len(preferencias_usuarios)), (0, 0)), 'constant')
-    # else:
-    #     max_size = len(preferencias_usuarios)
-    #     actividades_categorias = np.pad(actividades_categorias, ((0, max_size - len(actividades_categorias)), (0, 0)), 'constant')
-    if len(actividades) > len(preferencias_usuarios):
-        max_size = len(actividades)
-        preferencias_usuarios = np.pad(preferencias_usuarios, ((0, max_size - len(preferencias_usuarios)), (0, 0)), 'constant')
-    else:
-        max_size = len(preferencias_usuarios)
-        actividades = np.pad(actividades, ((0, max_size - len(actividades)), (0, 0)), 'constant')
-    
     preferencias_usuarios = np.array(preferencias_usuarios)
-    actividades = np.array(actividades)
 
     users_dataset = tf.data.Dataset.from_tensor_slices(preferencias_usuarios)
-    activities_dataset = tf.data.Dataset.from_tensor_slices(actividades)
+    activities_dataset = tf.data.Dataset.from_tensor_slices(actividadesInfo)
+    print('tipo: ',str(type(activities_dataset)))
 
     interactions_dataset = tf.data.Dataset.zip((users_dataset, activities_dataset))
 
@@ -101,22 +87,29 @@ with Session(getEngine()) as session:
     #desde aca lo nuevo
     # Define el modelo de usuario (reemplaza con tu lógica)
     user_model = tf.keras.Sequential([
-    tf.keras.layers.Input(shape=(num_categorias,)),  # Input con la misma forma que las preferencias de usuarios
-    tf.keras.layers.Dense(32, activation='relu'),
-    # Agrega más capas si es necesario
-    ])
-
-# Define el modelo de actividad (reemplaza con tu lógica)
-    activity_model = tf.keras.Sequential([
-        tf.keras.layers.Input(shape=(num_categorias,)),  # Input con la misma forma que las actividades
+        tf.keras.layers.Input(shape=(num_categorias,)),  # Input con la misma forma que las preferencias de usuarios
         tf.keras.layers.Dense(32, activation='relu'),
-    # Agrega más capas si es necesario
+        # Agrega más capas si es necesario
     ])
 
-#Define tu tarea de recuperación (puede necesitar ajustes según tus preferencias)
-    task = tfrs.tasks.Retrieval(metrics=tfrs.metrics.FactorizedTopK(
-        activities.batch(128).map(activity_model)
-    ))
+    # Define el modelo de actividad
+    activity_model = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(num_categorias,)),  # Representación de la categoría
+        tf.keras.layers.Embedding(input_dim=num_categorias, output_dim=256),  # Embeddings de categoría
+        tf.keras.layers.Flatten(),  # Aplanar los embeddings
+        tf.keras.layers.Dense(256, activation='relu'),
+        # Agregar más capas si es necesario
+        tf.keras.layers.Dense(1)  # Capa de salida para la métrica
+    ])
+
+    # Define la entrada para el usuario y la actividad
+    user_input = tf.keras.layers.Input(shape=(num_categorias,), name='user_id')
+    activity_input = tf.keras.layers.Input(shape=(num_categorias,), name='activity_id')
+
+    user_embeddings = user_model(user_input)
+    activity_embeddings = activity_model(activity_input)
+
+    model = tfrs.models.Model(user_model, activity_model, activities_dataset)
 
 # Define tu modelo de recomendación
     class MyModel(tfrs.Model):
@@ -126,27 +119,52 @@ with Session(getEngine()) as session:
             self.user_model: tf.keras.Model = user_model
             self.task: tf.keras.layers.Layer = task
 
-    def compute_loss(self, features, training=False):
-        user_embeddings = self.user_model(features["user_id"])
-        activity_embeddings = self.activity_model(features["activity_id"])
-        return self.task(user_embeddings, activity_embeddings)
+        def compute_loss(self, features, training=False):
+            user_embeddings = self.user_model(features["input_1"])  # Accede a las características del usuario con índice 0
+            activity_embeddings = self.activity_model(features["input_2"])  # Accede a las características de la actividad con índice 1
+            return self.task(user_embeddings, activity_embeddings)
 
-    # Crea una instancia de tu modelo
-    model = MyModel(user_model, activity_model, task)
+        # Crea una instancia de tu modelo
+    model = MyModel(user_model, activity_model, activities_dataset)
 
     # Compila el modelo
-    model.compile(optimizer=tf.keras.optimizers.Adagrad(0.5))
+    model.compile(optimizer=tf.keras.optimizers.Adagrad(0.5), loss='mean_squared_error')
 
-    # Entrena el modelo (reemplaza con tus datos y número de épocas)
-    model.fit(preferencias_usuarios, actividades, epochs=50)
+    preferencias_usuarios_tensor = tf.convert_to_tensor(preferencias_usuarios, dtype=tf.float32)
+    actividadesInfo_tensor = tf.convert_to_tensor(actividadesInfo, dtype=tf.float32)
 
-    usuario = CRepo.getCategoriaUsuario(5) 
-    new = np.zeros(num_categorias, dtype=int) 
+    print("tam p: ",len(preferencias_usuarios_tensor))
+    print("tam a: ",len(actividadesInfo_tensor))
+
+    train_data = {
+    "input_1": preferencias_usuarios_tensor,
+    "input_2": actividadesInfo_tensor,
+    }
+
+    # Continuar con el entrenamiento del modelo
+    model.fit(train_data, np.array(valoraciones), epochs=50) #dtype=np.float32)
+
+    # usuario = CRepo.getCategoriaUsuario(5) 
+    # new = np.zeros(num_categorias, dtype=int) 
+    # for categoria in enumerate(usuario):
+    #     if categoria in range(0, num_categorias):  # Asegúrate de que la categoría sea válida
+    #         new[categoria] = 1
+
+    # recomendaciones_probabilidades = model.predict(np.array([new]))#usuario_nuevo)
+
+    usuario = CRepo.getCategoriaUsuario(5)
+    new = np.zeros(num_categorias, dtype=int)
     for categoria in enumerate(usuario):
         if categoria in range(0, num_categorias):  # Asegúrate de que la categoría sea válida
             new[categoria] = 1
 
-    recomendaciones_probabilidades = model.predict(np.array([new]))#usuario_nuevo)
+    entrada = {
+        "input_1": np.array([new]),  # Datos del usuario
+        "input_2": actividadesInfo  # Datos de la actividad
+    }
+
+    recomendaciones_probabilidades = model.predict(entrada)
+
 
     # Obtener las actividades recomendadas en palabras
     print("recom: ", recomendaciones_probabilidades)
@@ -165,49 +183,3 @@ with Session(getEngine()) as session:
     model.save("modelo.keras")
 
     modelo_cargado = tf.keras.models.load_model("modelo.keras")
-
-    #aca empieza lo viejo
-    #actividades_categorias = np.array(actividades_categorias)
-
-    # Crear un modelo de recomendación con TensorFlow
-    # modelo = tf.keras.Sequential([
-    #     tf.keras.layers.Input(shape=(num_actividades,)), #num_categorias
-    #     tf.keras.layers.Dense(16, activation='relu'),
-    #     tf.keras.layers.Dense(num_actividades,activation='sigmoid') #se puede cambiar por num_categorias?
-    # ])
-    # #modelo.add(tf.keras.layers.Dense(4, activation='sigmoid')) 
-
-    # # Compilar el modelo
-    # modelo.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-    # # Entrenar el modelo
-    # #!volver a 1000
-    # objetivo_entrenamiento = preferencias_usuarios.copy()
-    # modelo.fit(preferencias_usuarios, objetivo_entrenamiento, epochs = 50)
-
-    # """nuevoUsuario = np.array([[0, 0, 0, 0, 1, 0, 0, 0]])"""
-    # usuario = CRepo.getCategoriaUsuario(5) 
-    # new = np.zeros(num_categorias, dtype=int) 
-    # for categoria in enumerate(usuario):
-    #     if categoria in range(0, num_categorias):  # Asegúrate de que la categoría sea válida
-    #         new[categoria] = 1
-
-    # recomendaciones_probabilidades = modelo.predict(np.array([new]))#usuario_nuevo)
-
-    # # Obtener las actividades recomendadas en palabras
-    # print("recom: ", recomendaciones_probabilidades)
-    # actividades_recomendadas = []
-    # for i, probabilidad in enumerate(recomendaciones_probabilidades[0]):
-    #     print("indice", i)
-    #     #if probabilidad > 0.7:  # Puedes ajustar este umbral según tus preferencias
-    #     actividad = aRepo.getActividad(i+11)
-    #     print("actividad",actividad.nombre)
-    #     actividades_recomendadas.append(actividad.nombre)
-
-    # # Imprimir las recomendaciones de actividades
-    # print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
-
-    # # Guardar el modelo entrenado se guarda en h5 porque es un archivo compatible con tensorflow
-    # modelo.save("modelo.keras")
-
-    # modelo_cargado = tf.keras.models.load_model("modelo.keras")

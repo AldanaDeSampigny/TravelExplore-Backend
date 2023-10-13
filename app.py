@@ -1,4 +1,6 @@
 from collections import defaultdict
+
+from .models.LugaresFavoritos import LugaresFavoritos
 from .repository.CiudadRepository import CiudadRepository
 from sqlalchemy.orm import Session
 
@@ -33,6 +35,8 @@ from .models.Viaje import Viaje
 from .bd.conexion import getSession, getEngine, Base
 from flask_cors import CORS
 
+from .models.ActividadesFavoritas import ActividadesFavoritas
+
 app = Flask(__name__)
 CORS(app)
 DeDatos = getSession()
@@ -47,6 +51,8 @@ nuevaAgendaDiaria = AgendaDiaria()
 nuevaAgendaViaje = AgendaViaje()
 nuevoLugar = Lugar()
 nuevaActividad = Actividad()
+nuevoGustoActividad = ActividadesFavoritas()
+nuevoGustoLugar = LugaresFavoritos()
 nuevaCategoria = Categoria()
 nuevaActividadAgenda = ActividadAgenda()
 nuevoCategoriaLugar = LugarCategoria()
@@ -110,12 +116,6 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transp
 
     print('ócupados: ',horariosOcupados)
     print('elegidos: ', horariosElegidos)
-
-    # horariosOcupados = {
-    #     '2023-01-02': [('14:00:00', '16:00:00'), ('20:00:00', '22:00:00')],
-    #     '2023-01-05': [('21:00:00', '23:00:00')]
-    # }
-    # horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-03': ('19:00:00' , '22:00:00')} 
     
     print(transporte)
     agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
@@ -249,7 +249,7 @@ def placesRoutes():
     
     return jsonify(lugares)
 
-@app.route('/lugar/<id>', methods=['GET'])
+@app.route('/lugar/<id>', methods=['GET']) #guardar aca, si el lugar ya esta no guardar(query con pais provincia ciudad)
 def lugarEspecifico(id):
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
