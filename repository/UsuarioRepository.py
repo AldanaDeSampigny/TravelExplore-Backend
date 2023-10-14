@@ -83,6 +83,7 @@ class UsuarioRepository:
             .join(Usuario, Usuario.id == Viaje.id_usuario)
             .filter(Usuario.id == usuarioID)
             .group_by(Itinerario.fechaDesde, Itinerario.fechaHasta, Ciudad.nombre, AgendaDiaria.id_agenda_viaje)
+            .order_by((Itinerario.fechaDesde.desc()))
         )
         return agendas
     
