@@ -6,6 +6,7 @@ from ..models.Provincia import Provincia
 from ..models.Ciudad import Ciudad
 from ..models.Horario import Horario
 from ..models.Lugar import Lugar
+from ..repository.LugarRepository import LugarRepository
 
 from ..bd.conexion import getEngine
 from sqlalchemy.orm import Session
@@ -16,21 +17,30 @@ class LugarService:
 
     def guardarLugar(self, lugar):
         with Session(getEngine()) as session:
+            repository = LugarRepository(session)
             print(lugar)
 
-            lugar_existente = True#session.query(Lugar).filter_by(codigo=lugar['id']).first()
-            if lugar_existente:
+            lugar_existente = repository.getLugar(lugar['id'])
+            #True#session.query(Lugar).filter_by(codigo=lugar['id']).first()
+            if not lugar_existente:
                 nuevoLugar = Lugar()
                 nuevoLugar.codigo = lugar['id']
                 nuevoLugar.nombre = lugar['nombre']
                 nuevoLugar.tipo = lugar['tipo']
                 nuevoLugar.latitud = lugar['latitud']
                 nuevoLugar.longitud = lugar['longitud']
-                nuevoLugar.id_ciudad = 1
+
+                ciudad = repository.getCiudadLugar(lugar['ciudad'])
+                if ciudad:
+                    nuevoLugar.id_ciudad = ciudad.id
+                    print("ciudad existe, guardao")
+                else:
+                    print("ciudad no existe, a guardao")
+                    #self.guardarCiudad(lugar) #posible conflicto por codigo
 
                 session.add(nuevoLugar)
 
-                horarios = lugar.get('horarios', [])
+                horarios = lugar.get('horarios', []) #ARREGLARRR
                 for horario_text in horarios:
                     # Dividir la cadena de horario en días y rangos de tiempo
                     horario_parts = horario_text.split(': ')
@@ -67,13 +77,21 @@ class LugarService:
 
     def guardarCiudad(self, ciudad):
         with Session(getEngine()) as session:
+            repository = LugarRepository(session)
             print(ciudad)
 
-            ciudadExistente = True#session.query(Lugar).filter_by(codigo=lugar['id']).first()
-            if ciudadExistente:
+            ciudadExistente = repository.getCiudad(ciudad['id'])
+            #True#session.query(Lugar).filter_by(codigo=lugar['id']).first()
+            if not ciudadExistente:
                 nuevaCiudad = Ciudad()
                 nuevaCiudad.codigo = ciudad['id']
                 nuevaCiudad.nombre = ciudad['nombre']
+
+                provincia = repository.getProvinciaCiudad(ciudad['provincia'])
+                if provincia:
+                    nuevaCiudad.id_provincia = provincia.id
+                else:
+                    print("forma pa guardar provincia")
 
                 session.add(nuevaCiudad)
                 session.commit()
@@ -83,13 +101,22 @@ class LugarService:
 
     def guardarProvincia(self, provincia):
         with Session(getEngine()) as session:
+            repository = LugarRepository(session)
+
             print(provincia)
 
-            provinciaExistente = True#session.query(Lugar).filter_by(codigo=lugar['id']).first()
-            if provinciaExistente:
+            provinciaExistente = repository.getProvincia(provincia['id'])
+            #True#session.query(Lugar).filter_by(codigo=lugar['id']).first()
+            if not provinciaExistente:
                 nuevaProvincia = Provincia()
                 nuevaProvincia.codigo = provincia['id']
                 nuevaProvincia.nombre = provincia['nombre']
+
+                pais = repository.getPaisProvincia(provincia['pais'])
+                if pais:
+                    nuevaProvincia.id_pais = pais.id
+                else:
+                    print("forma para guardar pais")
 
                 session.add(nuevaProvincia)
                 session.commit()
@@ -99,27 +126,34 @@ class LugarService:
 
     def guardarPais(self, pais):
         with Session(getEngine()) as session:
+            repository = LugarRepository(session)
+
             print(pais)
 
-            paisExistente = True#session.query(Lugar).filter_by(codigo=lugar['id']).first()
-            if paisExistente:
+            paisExistente = repository.getPais(pais['id'])
+            #True#session.query(Lugar).filter_by(codigo=lugar['id']).first()
+            if not paisExistente:
                 nuevaPais = Pais()
                 nuevaPais.codigo = pais['id']
                 nuevaPais.nombre = pais['nombre']
 
                 session.add(nuevaPais)
                 session.commit()
-                print("se guardo")
+                print("se guardo pais")
             else:
                 print("ya existe")
 
 #primero basico, luego que guarde los horarios en una nueva tabla, y luego dividir si son ciudades pa q las guarde
     def guardarSitio(self, sitio): 
         tipoSitio = sitio.get('tipo', 'N/A')
+        print(tipoSitio)
 
         switch_dict = {
-            1: self.guardarLugar,
+            'point_of_interest': self.guardarLugar,
+            'establishment': self.guardarLugar,
+            'restaurant': self.guardarLugar,
             'city': self.guardarCiudad,
+            'locality': self.guardarCiudad,
             'administrative_area_level_1': self.guardarProvincia,
             'country': self.guardarPais
         }

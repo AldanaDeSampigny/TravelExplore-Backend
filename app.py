@@ -253,7 +253,7 @@ def placesRoutes():
     # Ordenar la lista por valoración de mayor a menor
     lugares = sorted(lugares, key=lambda x: x['valoracion'], reverse=True)
     
-    return jsonify(lugares)
+    return jsonify(places)
 
 @app.route('/lugar/<id>', methods=['GET']) #guardar aca, si el lugar ya esta no guardar(query con pais provincia ciudad)
 def lugarEspecifico(id):
