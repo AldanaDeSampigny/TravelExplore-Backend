@@ -6,7 +6,7 @@ import sqlalchemy as db
 from sqlalchemy.orm import relationship
 metadata_obj = db.MetaData()
 
-class Lugar(Base):
+class Lugar(Base): #AGREGAR VALORACION ACAA, NO EN ACTIVIDAD
   __tablename__ = 'lugares'
   id = Column(Integer, primary_key=false) #el lugar puede ser nulo  
   codigo = Column(String)

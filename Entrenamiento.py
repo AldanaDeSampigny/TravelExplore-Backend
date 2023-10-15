@@ -29,14 +29,8 @@ with Session(getEngine()) as session:
         datos[user.id].append(CRepo.getCategoriaUsuario(user.id))
 
     actividades = aRepo.getActividades()
-#    actividadesInfo = np.array([[actividad.id, actividad.nombre] for actividad in actividades])
-    categorias_actividades = [CRepo.getCategoriaActividad(actividad.id) for actividad in actividades]
-    max_length = max(len(seq) for seq in categorias_actividades)
-    categorias_actividades = [seq + [0] * (max_length - len(seq)) for seq in categorias_actividades]
-    actividadesInfo = np.array(categorias_actividades, dtype=np.float32)
-    #actividadesInfo = np.array(categorias_actividades)
-    valoraciones = [actividad.valoracion for actividad in actividades]
-    print(valoraciones)
+    for activity in actividades:
+        datosActividad[activity.id].append(CRepo.getCategoriaActividad(activity.id))
 
     categorias = CRepo.getCategorias()
 
@@ -44,24 +38,18 @@ with Session(getEngine()) as session:
     actividades = np.array(actividades)
 
     # Ahora puedes acceder a las dimensiones de las matrices
-    num_categorias = len(categorias)#.shape[1]
+    num_categorias = len(categorias) + 1#.shape[1]
     num_actividades = len(actividades)#.shape[1]
 
     
     num_usuarios = len(datos)
     
-    preferencias_usuarios = np.zeros((num_usuarios, (num_categorias + 1)))
+    preferencias_usuarios = np.zeros((num_usuarios, num_categorias))
     claves_datos = list(datos.keys())
 
     for i, user_id in enumerate(claves_datos):
-        categorias_usuario = []
-        for d in datos[user_id]:
-            for tupla in d:
-                mi_tupla = tupla
-                categorias_usuario.append(mi_tupla[0])# = mi_tupla[0]
-        
-        for c in range(1, (num_categorias + 1)):
-            if c in categorias_usuario:
+        for c in range(0, num_categorias):
+            if c in datos[user]:
                 preferencias_usuarios[i, c] = 1
             else:
                 preferencias_usuarios[i, c] = 0
@@ -113,44 +101,33 @@ with Session(getEngine()) as session:
             self.user_model: tf.keras.Model = user_model
             self.task: tf.keras.layers.Layer = task
 
-        def compute_loss(self, features, training=False):
-            user_embeddings = self.user_model(features["user_id"])
-            activity_embeddings = self.activity_model(features["activity_id"])
-            return self.task(user_embeddings, activity_embeddings)
+    def compute_loss(self, features, training=False):
+        user_embeddings = self.user_model(features["user_id"])
+        activity_embeddings = self.activity_model(features["activity_id"])
+        return self.task(user_embeddings, activity_embeddings)
 
         # Crea una instancia de tu modelo
     model = MyModel(user_model, activity_model, activities_dataset)
 
     # Compila el modelo
-    model.compile(optimizer=tf.keras.optimizers.Adagrad(0.5), loss='mean_squared_error')
+    model.compile(optimizer=tf.keras.optimizers.Adagrad(0.5))
 
-    preferencias_usuarios_tensor = tf.convert_to_tensor(preferencias_usuarios, dtype=tf.float32)
-    actividadesInfo_tensor = tf.convert_to_tensor(actividadesInfo, dtype=tf.float32)
+    # Entrena el modelo (reemplaza con tus datos y número de épocas)
+    model.fit(preferencias_usuarios, actividades, epochs=50)
 
-    print("tam p: ",len(preferencias_usuarios_tensor))
-    print("tam a: ",len(actividadesInfo_tensor))
-
-    train_data = {
-    "user_id": preferencias_usuarios_tensor,
-    "activity_id": actividadesInfo_tensor,
-    }
-
-    # Continuar con el entrenamiento del modelo
-    model.fit(train_data, np.array(valoraciones, dtype=np.float32), epochs=50)
-    # Continuar con el entrenamiento del modelo
-    # model.fit(
-    #     {"user_id": preferencias_usuarios_tensor, "activity_id": actividadesInfo_tensor},
-    #     np.array(valoraciones, dtype=np.float32),
-    #     epochs=50
-    # )
-
-    usuario = CRepo.getCategoriaUsuario(5) 
-    new = np.zeros(num_categorias, dtype=int) 
+    usuario = CRepo.getCategoriaUsuario(5)
+    new = np.zeros(num_categorias, dtype=int)
     for categoria in enumerate(usuario):
         if categoria in range(0, num_categorias):  # Asegúrate de que la categoría sea válida
             new[categoria] = 1
 
-    recomendaciones_probabilidades = model.predict(np.array([new]))#usuario_nuevo)
+    entrada = {
+        "input_1": np.array([new]),  # Datos del usuario
+        "input_2": actividadesInfo  # Datos de la actividad
+    }
+
+    recomendaciones_probabilidades = model.predict(entrada)
+
 
     # Obtener las actividades recomendadas en palabras
     print("recom: ", recomendaciones_probabilidades)

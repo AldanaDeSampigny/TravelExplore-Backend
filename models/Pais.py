@@ -9,6 +9,7 @@ class Pais(Base):
    __tablename__ = 'paises'
    id = Column(Integer, primary_key=True)
    nombre = Column(String)
+   codigo = Column(String)
    
    metadata_obj.create_all(getEngine())
 
@@ -16,4 +17,5 @@ class Pais(Base):
       return {
         "id": self.id,
         "nombre": self.nombre,
+        "codigo": self.codigo
       }

@@ -9,6 +9,7 @@ class Ciudad(Base):
    __tablename__ = 'ciudades'
    id = Column(Integer, primary_key=True)
    nombre = Column(String)
+   codigo = Column(String)
    id_provincia = Column(db.ForeignKey("provincias.id"))
    
    metadata_obj.create_all(getEngine())
@@ -17,4 +18,5 @@ class Ciudad(Base):
       return {
         "id": self.id,
         "nombre": self.nombre,
+        "codigo": self.codigo
       }

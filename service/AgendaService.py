@@ -58,7 +58,6 @@ class AgendaService:
                 # session.commit()
 
                 fecha = datetime.strptime(fechaDesde, "%Y-%m-%d") 
-                diax = timedelta(days = 1)
                 for agendaDiaria in agenda:
                     nuevaAgendaDiaria = AgendaDiaria()
                     print("agenda: ",agendaDiaria)

@@ -1,6 +1,9 @@
 from collections import defaultdict
 
+from .models.Horario import Horario
+from .service.LugarService import LugarService
 
+from .models.LugaresFavoritos import LugaresFavoritos
 from .repository.CiudadRepository import CiudadRepository
 from sqlalchemy.orm import Session
 
@@ -35,6 +38,8 @@ from .models.Viaje import Viaje
 from .bd.conexion import getSession, getEngine, Base
 from flask_cors import CORS
 
+from .models.ActividadesFavoritas import ActividadesFavoritas
+
 app = Flask(__name__)
 CORS(app)
 DeDatos = getSession()
@@ -49,8 +54,11 @@ nuevaCiudad = Ciudad()
 nuevoItinerario = Itinerario()
 nuevaAgendaDiaria = AgendaDiaria()
 nuevaAgendaViaje = AgendaViaje()
+nuevoHorario = Horario()
 nuevoLugar = Lugar()
 nuevaActividad = Actividad()
+nuevoGustoActividad = ActividadesFavoritas()
+nuevoGustoLugar = LugaresFavoritos()
 nuevaCategoria = Categoria()
 nuevaActividadAgenda = ActividadAgenda()
 nuevoCategoriaLugar = LugarCategoria()
@@ -114,12 +122,6 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transp
 
     print('ócupados: ',horariosOcupados)
     print('elegidos: ', horariosElegidos)
-
-    # horariosOcupados = {
-    #     '2023-01-02': [('14:00:00', '16:00:00'), ('20:00:00', '22:00:00')],
-    #     '2023-01-05': [('21:00:00', '23:00:00')]
-    # }
-    # horariosElegidos = { '2023-01-01': ('12:00:00' , '14:00:00' ), '2023-01-03': ('19:00:00' , '22:00:00')} 
     
     print(transporte)
     agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
@@ -253,7 +255,7 @@ def placesRoutes():
     
     return jsonify(lugares)
 
-@app.route('/lugar/<id>', methods=['GET'])
+@app.route('/lugar/<id>', methods=['GET']) #guardar aca, si el lugar ya esta no guardar(query con pais provincia ciudad)
 def lugarEspecifico(id):
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
@@ -267,7 +269,21 @@ def lugarEspecifico(id):
             # Construye la URL de la imagen utilizando la referencia de la foto
             imagen_url = f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_reference}&key=AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
 
+        ciudad = place.get('address_components', [])
+        provincia = None
+        pais = None
+
+        for component in ciudad:
+            types = component.get('types', [])
+            if 'locality' in types:
+                ciudad = component.get('long_name')
+            elif 'administrative_area_level_1' in types:
+                provincia = component.get('long_name')
+            elif 'country' in types:
+                pais = component.get('long_name')
+
         lugar = {
+            'id' : id,
             'nombre': place['name'],
             'imagen': imagen_url if photo_reference else 'N/A',
             'tipo': place.get('types', ['N/A'])[0],
@@ -276,9 +292,14 @@ def lugarEspecifico(id):
             'latitud': place.get('geometry', {}).get('location', {}).get('lat', 'N/A'),
             'longitud': place.get('geometry', {}).get('location', {}).get('lng', 'N/A'),
             'horarios': place.get('opening_hours', {}).get('weekday_text', 'N/A'),
-            'descripcion': obtener_descripcion_lugar(place['name']), 
+            #'descripcion': obtener_descripcion_lugar(place['name']), 
+            'ciudad': ciudad if ciudad else 'N/A',
+            'provincia': provincia if provincia else 'N/A',
+            'pais': pais if pais else 'N/A',
             'website': place.get('website', None)
         }
+
+        LugarService(getEngine()).guardarSitio(lugar)
         return jsonify(lugar)
     else:
         return jsonify({'error': 'Place not found'})
