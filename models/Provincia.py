@@ -5,12 +5,12 @@ import sqlalchemy as db
 
 metadata_obj = db.MetaData()
 
-class Ciudad(Base):
-   __tablename__ = 'ciudades'
+class Provincia(Base):
+   __tablename__ = 'provincias'
    id = Column(Integer, primary_key=True)
    nombre = Column(String)
    codigo = Column(String)
-   id_provincia = Column(db.ForeignKey("provincias.id"))
+   id_pais = Column(db.ForeignKey("paises.id"))
    
    metadata_obj.create_all(getEngine())
 

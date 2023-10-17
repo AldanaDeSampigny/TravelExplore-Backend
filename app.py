@@ -1,5 +1,8 @@
 from collections import defaultdict
 
+from .models.Horario import Horario
+from .service.LugarService import LugarService
+
 from .models.LugaresFavoritos import LugaresFavoritos
 from .repository.CiudadRepository import CiudadRepository
 from sqlalchemy.orm import Session
@@ -7,7 +10,6 @@ from sqlalchemy.orm import Session
 import requests
 from bs4 import BeautifulSoup
 
-from .models.ActividadAgenda import ActividadAgenda
 from .service.AgendaValidaciones import AgendaValidaciones
 from flask import Flask, jsonify, render_template, request
 from geopy.geocoders import Nominatim
@@ -16,14 +18,14 @@ import googlemaps
 import json
 from .consultas import obtenerDirecciones, validacionTransporte
 
+from .models.ActividadAgenda import ActividadAgenda
 from .models.Usuario import Usuario
 from .models.ActividadCategoria import ActividadCategoria
 from .models.AgendaViaje import AgendaViaje
-
 from .models.UsuarioCategoria import UsuarioCategoria
-
 from .models.Ciudad import Ciudad
-
+from .models.Provincia import Provincia
+from .models.Pais import Pais
 from .models.Categoria import Categoria
 from .models.Itinerario import Itinerario
 from .models.Lugar import Lugar
@@ -32,8 +34,10 @@ from .service.AgendaService import AgendaService
 from .models.Actividad import Actividad
 from .models.AgendaDiaria import AgendaDiaria
 from .models.Viaje import Viaje
+
 from .bd.conexion import getSession, getEngine, Base
 from flask_cors import CORS
+import difflib
 
 from .models.ActividadesFavoritas import ActividadesFavoritas
 
@@ -45,10 +49,13 @@ Base.metadata.create_all(engine)
 
 nuevoUsuario = Usuario()
 nuevoViaje = Viaje()
+nuevoPais = Pais()
+nuevaProvincia = Provincia()
 nuevaCiudad = Ciudad()
 nuevoItinerario = Itinerario()
 nuevaAgendaDiaria = AgendaDiaria()
 nuevaAgendaViaje = AgendaViaje()
+nuevoHorario = Horario()
 nuevoLugar = Lugar()
 nuevaActividad = Actividad()
 nuevoGustoActividad = ActividadesFavoritas()
@@ -198,12 +205,11 @@ def obtenerCiudades():
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
     buscarLugar = request.args.get('ciudad')
-    idiomas_permitidos = ['es', 'mx', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
-
+    idiomas_permitidos = ['es', 'mx', 'uy', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
 
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
-    places = gmaps.places(query=buscarLugar)#, radius=4000)
+    places = gmaps.places(query=buscarLugar)
     
     lugares = []
     for place in places['results']:
@@ -218,6 +224,7 @@ def placesRoutes():
             country_code = location_info.raw.get('address', {}).get('country_code', '').lower()
 
             # Comprobar si el código del país está en la lista de idiomas permitidos
+            print(country_code)
             if country_code in idiomas_permitidos:
 
                 valoracion = place.get('rating', 'N/A')
@@ -232,7 +239,6 @@ def placesRoutes():
                     'tipo': place.get('types', ['N/A'])[0],
                     'direccion': place['formatted_address'],
                     'valoracion': valoracion,
-                    #'valoracion': place.get('rating', 'N/A'),
                 }
                 lugares.append(lugar)
 
@@ -240,12 +246,9 @@ def placesRoutes():
         # Si no se encontraron lugares, crea un mensaje JSON personalizado
         mensaje = {'mensaje': 'No se encontraron lugares disponibles en esta ubicación.'}
         return jsonify(mensaje)
-
-    # Filtrar lugares sin valoración ('N/A') si es necesario
-    lugares = [lugar for lugar in lugares if lugar['valoracion'] != 'N/A']
-
-    # Ordenar la lista por valoración de mayor a menor
-    lugares = sorted(lugares, key=lambda x: x['valoracion'], reverse=True)
+    
+    lugares = sorted(lugares, key=lambda x: difflib.SequenceMatcher(
+        None, x['nombre'], buscarLugar).ratio(), reverse=True)
     
     return jsonify(lugares)
 
@@ -263,7 +266,21 @@ def lugarEspecifico(id):
             # Construye la URL de la imagen utilizando la referencia de la foto
             imagen_url = f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_reference}&key=AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
 
+        ciudad = place.get('address_components', [])
+        provincia = None
+        pais = None
+
+        for component in ciudad:
+            types = component.get('types', [])
+            if 'locality' in types:
+                ciudad = component.get('long_name')
+            elif 'administrative_area_level_1' in types:
+                provincia = component.get('long_name')
+            elif 'country' in types:
+                pais = component.get('long_name')
+
         lugar = {
+            'id' : id,
             'nombre': place['name'],
             'imagen': imagen_url if photo_reference else 'N/A',
             'tipo': place.get('types', ['N/A'])[0],
@@ -272,9 +289,14 @@ def lugarEspecifico(id):
             'latitud': place.get('geometry', {}).get('location', {}).get('lat', 'N/A'),
             'longitud': place.get('geometry', {}).get('location', {}).get('lng', 'N/A'),
             'horarios': place.get('opening_hours', {}).get('weekday_text', 'N/A'),
-            'descripcion': obtener_descripcion_lugar(place['name']), 
+            #'descripcion': obtener_descripcion_lugar(place['name']), 
+            'ciudad': ciudad if ciudad else 'N/A',
+            'provincia': provincia if provincia else 'N/A',
+            'pais': pais if pais else 'N/A',
             'website': place.get('website', None)
         }
+
+        LugarService(getEngine()).guardarSitio(lugar)
         return jsonify(lugar)
     else:
         return jsonify({'error': 'Place not found'})
