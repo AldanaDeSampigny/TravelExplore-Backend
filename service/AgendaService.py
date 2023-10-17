@@ -21,25 +21,22 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 
 class AgendaService:
-    horas = {datetime.strptime('08:00:00', '%H:%M:%S').time(): datetime.strptime('10:00:00', '%H:%M:%S').time(),
-                    datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('14:00:00', '%H:%M:%S').time(),
-                    datetime.strptime('18:00:00', '%H:%M:%S').time(): datetime.strptime('19:00:00', '%H:%M:%S').time(),
-                    datetime.strptime('21:00:00', '%H:%M:%S').time(): datetime.strptime('23:00:00', '%H:%M:%S').time()}
-    
+    """  horas = {datetime.strptime('08:00:00', '%H:%M:%S').time(): datetime.strptime('10:00:00', '%H:%M:%S').time(),
+                        datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('14:00:00', '%H:%M:%S').time(),
+                        datetime.strptime('18:00:00', '%H:%M:%S').time(): datetime.strptime('19:00:00', '%H:%M:%S').time(),
+                        datetime.strptime('21:00:00', '%H:%M:%S').time(): datetime.strptime('23:00:00', '%H:%M:%S').time()}
+        """
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def saveAgenda(self, idUsuario,idCiudad,fechaDesde,fechaHasta, horaInicio, horaFin, agenda):
+    def saveAgenda(self, idUsuario, idCiudad, fechaDesde, fechaHasta, horaInicio, horaFin, agenda):
         with Session(getEngine()) as session:
-            print("Tipo Agenda: ",type(agenda))
-
-            print("Agenda: ",str(agenda))
-
+    
             nuevoViaje = Viaje()
             nuevoViaje.id_usuario = idUsuario
             nuevoViaje.fechaDesde = fechaDesde
             nuevoViaje.fechaHasta = fechaHasta
-            
+
             try:
                 session.add(nuevoViaje)
                 session.commit()
@@ -49,41 +46,41 @@ class AgendaService:
                 session.commit()
 
                 nuevoItinerario = Itinerario()
-                nuevoItinerario.id_ciudad= idCiudad
+                nuevoItinerario.id_ciudad = idCiudad
                 nuevoItinerario.fechaDesde = fechaDesde
                 nuevoItinerario.fechaHasta = fechaHasta
                 nuevoItinerario.id_viaje = nuevoViaje.id
                 session.add(nuevoItinerario)
                 session.commit()
-                # session.commit()
 
-                fecha = datetime.strptime(fechaDesde, "%Y-%m-%d") 
+                fecha = datetime.strptime(fechaDesde, "%Y-%m-%d")
+                diax = timedelta(days=1)
                 for agendaDiaria in agenda:
                     nuevaAgendaDiaria = AgendaDiaria()
-                    print("agenda: ",agendaDiaria)
-                    nuevaAgendaDiaria.horaInicio = horaInicio if horaInicio is not None else None
-                    nuevaAgendaDiaria.horaFin = horaFin if horaFin is not None else None
+                    nuevaAgendaDiaria.horaInicio = horaInicio
+                    print("horaInicio", horaInicio)
+                    nuevaAgendaDiaria.horaFin = horaFin
+                    print("horaFin", horaFin)
                     nuevaAgendaDiaria.dia = fecha.strftime("%Y-%m-%d")
                     nuevaAgendaDiaria.itinerario_id = nuevoItinerario.id
                     nuevaAgendaDiaria.id_agenda_viaje = agendaViajeNueva.id
                     fecha += timedelta(days=1)
-                    
+
                     session.add(nuevaAgendaDiaria)
                     session.commit()
-                    
+
                     for actividadAgenda in agendaDiaria.get('actividades', []):
                         actividadAgendaNueva = ActividadAgenda()
                         actividadAgendaNueva.id_actividad = actividadAgenda.get('id', None)
                         actividadAgendaNueva.id_agenda = nuevaAgendaDiaria.id
                         session.add(actividadAgendaNueva)
                         session.commit()
-           
-            
+
             except Exception as e:
                 # En caso de error, realiza un rollback
                 session.rollback()
                 raise e
-            
+
     def calcularTiempoTraslado(self,origenM, destinoM, transporteM):
         with Session(getEngine()) as session:
             if destinoM:
