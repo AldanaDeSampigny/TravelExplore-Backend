@@ -57,6 +57,9 @@ class LugarService:
                                 if ':00 –' in rangoTiempo:
                                     rangoTiempo = rangoTiempo.replace(
                                         ':00 –', ':00\u202fPM –')
+                                elif ':30 –' in rangoTiempo:
+                                    rangoTiempo = rangoTiempo.replace(
+                                        ':30 –', ':30\u202fPM –')
                                 
                                 horas = re.findall(r'\d+:\d+\s*[APapMm]+', rangoTiempo)
                                 if len(horas) == 2:
@@ -85,7 +88,7 @@ class LugarService:
         with Session(getEngine()) as session:
             repository = LugarRepository(session)
 
-            ciudadExistente = repository.getCiudad(ciudad['id'])
+            ciudadExistente = repository.getCiudad(ciudad['id'], ciudad['nombre'])
             if not ciudadExistente:
                 nuevaCiudad = Ciudad()
                 nuevaCiudad.codigo = ciudad['id']
@@ -192,6 +195,10 @@ class LugarService:
             'restaurant': self.guardarLugar,
             'place_of_worship': self.guardarLugar,
             'tourist_attraction': self.guardarLugar,
+            'store': self.guardarLugar,
+            'food': self.guardarLugar,
+            'electronics_store': self.guardarLugar,
+            #'university': self.guardarLugar,
             'city': self.guardarCiudad,
             'locality': self.guardarCiudad,
             'administrative_area_level_1': self.guardarProvincia,

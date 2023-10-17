@@ -37,6 +37,7 @@ from .models.Viaje import Viaje
 
 from .bd.conexion import getSession, getEngine, Base
 from flask_cors import CORS
+import difflib
 
 from .models.ActividadesFavoritas import ActividadesFavoritas
 
@@ -206,10 +207,9 @@ def placesRoutes():
     buscarLugar = request.args.get('ciudad')
     idiomas_permitidos = ['es', 'mx', 'uy', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
 
-
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
-    places = gmaps.places(query=buscarLugar)#, radius=4000)
+    places = gmaps.places(query=buscarLugar)
     
     lugares = []
     for place in places['results']:
@@ -239,7 +239,6 @@ def placesRoutes():
                     'tipo': place.get('types', ['N/A'])[0],
                     'direccion': place['formatted_address'],
                     'valoracion': valoracion,
-                    #'valoracion': place.get('rating', 'N/A'),
                 }
                 lugares.append(lugar)
 
@@ -247,14 +246,11 @@ def placesRoutes():
         # Si no se encontraron lugares, crea un mensaje JSON personalizado
         mensaje = {'mensaje': 'No se encontraron lugares disponibles en esta ubicación.'}
         return jsonify(mensaje)
-
-    # Filtrar lugares sin valoración ('N/A') si es necesario
-    lugares = [lugar for lugar in lugares if lugar['valoracion'] != 'N/A']
-
-    # Ordenar la lista por valoración de mayor a menor
-    lugares = sorted(lugares, key=lambda x: x['valoracion'], reverse=True)
     
-    return jsonify(places)
+    lugares = sorted(lugares, key=lambda x: difflib.SequenceMatcher(
+        None, x['nombre'], buscarLugar).ratio(), reverse=True)
+    
+    return jsonify(lugares)
 
 @app.route('/lugar/<id>', methods=['GET']) #guardar aca, si el lugar ya esta no guardar(query con pais provincia ciudad)
 def lugarEspecifico(id):
