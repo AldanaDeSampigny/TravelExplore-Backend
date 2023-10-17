@@ -8,27 +8,30 @@ class LugarRepository:
     def __init__(self, db_session): #esto seria un constructor
         self.db_session = db_session
 
-    def getLugar(self, idLugar):
+    def getLugar(self, codigoLugar):
         lugar = self.db_session.query(Lugar).\
-            filter(Lugar.codigo == idLugar).first()
+            filter(Lugar.codigo == codigoLugar).first()
 
         return lugar
     
-    def getCiudad(self, codigoCiudad):
+    def getCiudad(self, codigoCiudad, nombreCiudad):
         ciudad = self.db_session.query(Ciudad).\
-            filter(Ciudad.codigo == codigoCiudad).first()
+            filter((Ciudad.codigo == codigoCiudad) |(Ciudad.codigo.is_(None))).\
+            filter(Ciudad.nombre == nombreCiudad).first()
 
         return ciudad
     
-    def getProvincia(self, codigoProvincia):
+    def getProvincia(self, codigoProvincia, nombreProvincia):
         provincia = self.db_session.query(Provincia).\
-            filter(Provincia.codigo == codigoProvincia).first()
+            filter((Provincia.codigo == codigoProvincia) | (Provincia.codigo.is_(None))).\
+            filter(Provincia.nombre == nombreProvincia).first()
 
         return provincia
     
-    def getPais(self, codigoPais):
+    def getPais(self, codigoPais, nombrePais):
         pais = self.db_session.query(Pais).\
-            filter(Pais.codigo == codigoPais).first()
+            filter((Pais.codigo == codigoPais) | (Pais.codigo.is_(None))).\
+            filter(Pais.nombre == nombrePais).first()
 
         return pais
     

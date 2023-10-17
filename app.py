@@ -204,7 +204,7 @@ def obtenerCiudades():
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
     buscarLugar = request.args.get('ciudad')
-    idiomas_permitidos = ['es', 'mx', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
+    idiomas_permitidos = ['es', 'mx', 'uy', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
 
 
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
@@ -224,6 +224,7 @@ def placesRoutes():
             country_code = location_info.raw.get('address', {}).get('country_code', '').lower()
 
             # Comprobar si el código del país está en la lista de idiomas permitidos
+            print(country_code)
             if country_code in idiomas_permitidos:
 
                 valoracion = place.get('rating', 'N/A')
