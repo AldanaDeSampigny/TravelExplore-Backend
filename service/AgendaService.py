@@ -1,3 +1,4 @@
+import math
 from turtle import update
 import json
 
@@ -119,13 +120,59 @@ class AgendaService:
 
             agendasDestino = agenda.todasLasAgendasUsuario(usuarioID).all()
 
-        return agendasDestino;
+        return agendasDestino
+
+    def haversine_distance(self, lat1, lon1, lat2, lon2):
+    # Radio de la Tierra en kilómetros
+        R = 6371.0
+
+        # Convertir las latitudes y longitudes de grados a radianes
+        lat1 = math.radians(lat1)
+        lon1 = math.radians(lon1)
+        lat2 = math.radians(lat2)
+        lon2 = math.radians(lon2)
+
+        # Diferencia en latitudes y longitudes
+        delta_lat = lat2 - lat1
+        delta_lon = lon2 - lon1
+
+        # Fórmula Haversine
+        a = math.sin(delta_lat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(delta_lon / 2)**2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        distance = R * c
+
+        return distance
+
+    def calculoDeDistancias(self, usuarioID, destinoID, actividades):
+        with Session(getEngine()) as session:
+            agenda_repo = AgendaRepository(session)
+            distancias = []
+            cercanos = []
+
+            actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
+
+            for dos in range(len(actividadIds)):
+                lugar1 = agenda_repo.buscarLugar(actividadIds[dos].id)
+                for uno in range(len(actividadIds)):
+                    if uno != dos:
+                        print("for 1",dos)
+                        print("for 2",uno)
+                        lugar2 = agenda_repo.buscarLugar(actividadIds[uno].id)
+                        distancias.append(self.haversine_distance(lugar1.latitud, lugar1.longitud, lugar2.latitud, lugar2.longitud))
+                
+                ordenado = sorted(distancias)
+                cerca = ordenado[0]
+                cercanos.append(cerca)
+            
+        return cercanos
+
 
 #generador de agenda diaria con dias ocupados, y horarios especificos
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             agenda = []
+            cercanos = []
 
             fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
@@ -133,6 +180,10 @@ class AgendaService:
 
             gustos_agregados = set()
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
+
+            #   lista = self.calculoDeDistancia(usuarioId, destinoID, actividadIds)
+        
+
             while fecha_actual <= fecha_hasta:
 
                 if fecha_actual.date().strftime('%Y-%m-%d') in horariosElegidos:
