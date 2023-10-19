@@ -1,4 +1,5 @@
 from collections import defaultdict
+import dbm
 
 from .models.Horario import Horario
 from .service.LugarService import LugarService
@@ -75,7 +76,7 @@ def clean_publications():
 
 def serialize_timedelta(td):
     return str(td)
-
+            
 @app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<transporte>/<horaInicio>/<horaFin>'
             , methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transporte, horaInicio, horaFin):
