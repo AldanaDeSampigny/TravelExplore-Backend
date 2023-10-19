@@ -5,6 +5,7 @@ from .repository.ActividadRepository import ActividadRepository
 from .bd.conexion import getSession, getEngine
 from .repository.UsuarioRepository import UsuarioRepository
 from .repository.CategoriaRepository import CategoriaRepository
+from collections import OrderedDict
 import tensorflow as tf
 import tensorflow_recommenders as tfrs
 import numpy as np
@@ -18,23 +19,14 @@ with Session(getEngine()) as session:
     aRepo = ActividadRepository(session)
     CRepo = CategoriaRepository(session)
     datos = defaultdict(list)
+    categorias_actividades = defaultdict(list)
     datosActividad = defaultdict(list)
+    
     usuarios = userRepo.getUsuarios()
     for user in usuarios:
         datos[user.id].append(CRepo.getCategoriaUsuario(user.id))
-
+    
     actividades = aRepo.getActividades()
-#  EL ERROR ES COMO OBTENEMOS Y GUARDAMOS LA INFO?
-    categorias_actividades = [CRepo.getCategoriaActividad(
-        actividad.id) for actividad in actividades]
-    max_length = max(len(seq) for seq in categorias_actividades) + 1
-    categorias_actividades = [
-        seq + [0] * (max_length - len(seq)) for seq in categorias_actividades]
-    
-    actividadesInfo = np.array(categorias_actividades, dtype=np.float32)
-    
-    valoraciones = [actividad.valoracion for actividad in actividades]
-    print(valoraciones)
 
     categorias = CRepo.getCategorias()
 
@@ -42,10 +34,55 @@ with Session(getEngine()) as session:
     actividades = np.array(actividades)
 
     # Ahora puedes acceder a las dimensiones de las matrices
-    num_categorias = len(categorias) + 1  # .shape[1]
-    num_actividades = len(actividades)  # .shape[1]
+    num_categorias = len(categorias) + 1  
+    num_actividades = len(actividades)  
 
     num_usuarios = len(datos)
+    
+    for acti in actividades:
+        categorias_actividades[acti.id].append(CRepo.getCategoriaActividad(acti.id))
+
+    print("categorias actividades:", categorias_actividades)
+    print("actividades longituf:", num_actividades)  
+    print("categorias actividades longituf:", len(categorias_actividades))  
+
+    actividadesInfo = np.zeros((num_actividades, (num_categorias)))
+    actividadDatos = list(categorias_actividades.keys())
+        
+    for i, actividadID in enumerate(actividadDatos):
+        actividades_categorias = categorias_actividades.get(actividadID, [])  # Obtener las categorías de la actividad
+        print("id actividad", actividadID)
+        for categoria in actividades_categorias:
+            print(categoria)
+            #for num in categoria:
+            actividades_categorias.append(categoria)
+        
+        for c in range(1, num_actividades):
+            if c in actividades_categorias:
+                actividadesInfo[i, c] = 1
+            else:
+                actividadesInfo[i, c] = 0
+    """     for i,actividadID in enumerate(actividadDatos):
+        actividades_categorias = []
+        print("id actividad",actividadID)
+        for d in categorias_actividades[actividadID]:
+            for tupla in d:
+                print(tupla)
+                mi_tupla = tupla
+                actividades_categorias.append(mi_tupla[0])
+
+        for c in range(1, (num_actividades)):
+            if c in actividades_categorias:
+                actividadesInfo[i, c] = 1
+            else:
+                actividadesInfo[i, c] = 0  """
+
+    print("info")
+    print(actividadesInfo)
+    
+    valoraciones = [actividad.valoracion for actividad in actividades]
+    print(valoraciones)
+
 
     preferencias_usuarios = np.zeros((num_usuarios, (num_categorias)))
     claves_datos = list(datos.keys())
@@ -55,7 +92,7 @@ with Session(getEngine()) as session:
         for d in datos[userID]:
             for tupla in d:
                 mi_tupla = tupla
-                categorias_usuario.append(mi_tupla[0])  # = mi_tupla[0]
+                categorias_usuario.append(mi_tupla[0]) 
 
         for c in range(1, (num_categorias)):
             if c in categorias_usuario:
