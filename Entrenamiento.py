@@ -42,47 +42,24 @@ with Session(getEngine()) as session:
     for acti in actividades:
         categorias_actividades[acti.id].append(CRepo.getCategoriaActividad(acti.id))
 
-    print("categorias actividades:", categorias_actividades)
-    print("actividades longituf:", num_actividades)  
-    print("categorias actividades longituf:", len(categorias_actividades))  
 
     actividadesInfo = np.zeros((num_actividades, (num_categorias)))
     actividadDatos = list(categorias_actividades.keys())
-        
+
     for i, actividadID in enumerate(actividadDatos):
-        actividades_categorias = categorias_actividades.get(actividadID, [])  # Obtener las categorías de la actividad
-        print("id actividad", actividadID)
-        for categoria in actividades_categorias:
-            print(categoria)
-            #for num in categoria:
+        actividades_categorias = [] 
+        for categoria in categorias_actividades[actividadID]:
             actividades_categorias.append(categoria)
         
-        for c in range(1, num_actividades):
-            if c in actividades_categorias:
+        for c in range(0, num_categorias):
+            inner_list = actividades_categorias[0] if actividades_categorias else [] 
+            if c in inner_list:
                 actividadesInfo[i, c] = 1
             else:
                 actividadesInfo[i, c] = 0
-    """     for i,actividadID in enumerate(actividadDatos):
-        actividades_categorias = []
-        print("id actividad",actividadID)
-        for d in categorias_actividades[actividadID]:
-            for tupla in d:
-                print(tupla)
-                mi_tupla = tupla
-                actividades_categorias.append(mi_tupla[0])
 
-        for c in range(1, (num_actividades)):
-            if c in actividades_categorias:
-                actividadesInfo[i, c] = 1
-            else:
-                actividadesInfo[i, c] = 0  """
-
-    print("info")
-    print(actividadesInfo)
     
     valoraciones = [actividad.valoracion for actividad in actividades]
-    print(valoraciones)
-
 
     preferencias_usuarios = np.zeros((num_usuarios, (num_categorias)))
     claves_datos = list(datos.keys())
@@ -104,7 +81,6 @@ with Session(getEngine()) as session:
 
     users_dataset = tf.data.Dataset.from_tensor_slices(preferencias_usuarios)
     activities_dataset = tf.data.Dataset.from_tensor_slices(actividadesInfo)
-    print('tipo: ', str(type(activities_dataset)))
     
     interactions_dataset = tf.data.Dataset.zip(
         (users_dataset, activities_dataset))
@@ -129,34 +105,34 @@ with Session(getEngine()) as session:
         tf.keras.layers.Flatten(),  # Aplanar los embeddings
         tf.keras.layers.Dense(256, activation='relu'),
         # Agregar más capas si es necesario
-        tf.keras.layers.Dense(1)  # Capa de salida para la métrica
+        tf.keras.layers.Dense(32)  # Capa de salida para la métrica
     ])
     # Define la entrada para el usuario y la actividad
     user_input = tf.keras.layers.Input(shape=(num_categorias,), name='input_')
+
     activity_input = tf.keras.layers.Input(
         shape=(num_categorias,), name='input_2')
+    
     user_embeddings = user_model(user_input)
     activity_embeddings = activity_model(activity_input)
-    model = tfrs.models.Model(user_model, activity_model, activities_dataset)
-    # Define tu modelo de recomendación
+    task = tfrs.tasks.Retrieval(metrics=tfrs.metrics.FactorizedTopK(
+        activities_dataset.batch(128).map(activity_model)
+        )
+    )
 
     class MyModel(tfrs.Model):
-        def __init__(self, user_model, activity_model, task):
+        def __init__(self, user_model, activity_model,task):
             super().__init__()
-            self.activity_model: tf.keras.Model = activity_model
-            self.user_model: tf.keras.Model = user_model
-            self.task: tf.keras.layers.Layer = task
+            self.activity_model = activity_model
+            self.user_model = user_model
+            self.task = task
 
         def compute_loss(self, features, training=False):
-            print(features)
-            print(features[0]['input_1'])
-            print(str(type(features[1])))
             user_embeddings = self.user_model(features[0]['input_1'])
             activity_embeddings = self.activity_model(features[0]['input_2'])
             return self.task(user_embeddings, activity_embeddings)
 
-        # Crea una instancia de tu modelo
-    model = MyModel(user_model, activity_model, activities_dataset)
+    model = MyModel(user_model, activity_model, task)
 
     # Compila el modelo
     model.compile(optimizer=tf.keras.optimizers.Adagrad(
@@ -167,11 +143,13 @@ with Session(getEngine()) as session:
     actividadesInfo_tensor = tf.convert_to_tensor(
         actividadesInfo, dtype=tf.float32)
 
-    print("tam p: ", len(preferencias_usuarios_tensor))
-    print("tam a: ", len(actividadesInfo_tensor))
+    print("type p: ", str(type(preferencias_usuarios_tensor)))
+    print("type a: ", str(type(actividadesInfo_tensor)))
 
     print("actividad")
     print(actividadesInfo_tensor)
+    print("usuarios")
+    print(preferencias_usuarios_tensor)
 
     train_data = {
         'input_1': preferencias_usuarios_tensor,
@@ -181,15 +159,25 @@ with Session(getEngine()) as session:
     # Continuar con el entrenamiento del modelo
     model.fit(train_data, np.array(valoraciones, dtype=np.float32), epochs=50)
 
-    usuario = CRepo.getCategoriaUsuario(5)
+    categoriasDelUsuario = CRepo.getCategoriaUsuario(5)
     new = np.zeros(num_categorias, dtype=int)
-    for categoria in enumerate(usuario):
-        # Asegúrate de que la categoría sea válida
-        if categoria in range(0, num_categorias):
-            new[categoria] = 1
+    usuarioCategoria= []
+    for i in range(1, num_categorias):
+        for categoria in enumerate(categoriasDelUsuario):
+            if i == categoria[1][0]:
+                new[i] = 1
+            else:
+                new[i] = 0
 
-    recomendaciones_probabilidades = model.predict(
-        np.array([new]))  # usuario_nuevo)
+    print("nuevo ", new)
+
+    input_data = {
+    'input_1': new,  # Datos de preferencias de usuarios
+    'input_2': actividadesInfo[5]  # Datos de actividades (puedes usar uno existente o crear uno nuevo)
+    }
+
+    recomendaciones_probabilidades = model.predict(input_data) 
+    #recomendaciones_probabilidades = model.predict(np.array([new])) 
 
     # Obtener las actividades recomendadas en palabras
     print("recom: ", recomendaciones_probabilidades)
@@ -202,7 +190,7 @@ with Session(getEngine()) as session:
         actividades_recomendadas.append(actividad.nombre)
     # Imprimir las recomendaciones de actividades
     print("Recomendaciones de actividades para el usuario:",
-          actividades_recomendadas)
+        actividades_recomendadas)
     # Guardar el modelo entrenado se guarda en h5 porque es un archivo compatible con tensorflow
     model.save("modelo.keras")
     modelo_cargado = tf.keras.models.load_model("modelo.keras")
