@@ -1,6 +1,8 @@
 from collections import defaultdict
 import dbm
 
+from .repository.LugarRepository import LugarRepository
+
 from .models.Horario import Horario
 from .service.LugarService import LugarService
 
@@ -76,7 +78,16 @@ def clean_publications():
 
 def serialize_timedelta(td):
     return str(td)
-            
+
+@app.route('/generarprueba/<int:usuarioID>/<int:destinoID>'
+            , methods=['GET'])
+def mostrarDistancia(usuarioID, destinoID):
+    agenda_service = AgendaService(getEngine())
+
+    distancias = agenda_service.calculoDeDistancias(1,1, [])
+     
+    return distancias
+
 @app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<transporte>/<horaInicio>/<horaFin>'
             , methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transporte, horaInicio, horaFin):
@@ -202,6 +213,21 @@ def obtenerCiudades():
             ciudades.append(ciudad_data)
 
         return jsonify(ciudades)
+    
+@app.route('/lugares', methods=['GET'])
+def lugares():
+    with Session(getEngine()) as session:
+        lugarRepo = LugarRepository(session).getLugares()
+
+        lugares = []
+        for lugar in lugarRepo:
+            lugar_data = {
+                'nombre': lugar.nombre,
+                'codigo': lugar.codigo
+            }
+            lugares.append(lugar_data)
+
+    return lugares
 
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
@@ -284,6 +310,7 @@ def lugarEspecifico(id):
             'id' : id,
             'nombre': place['name'],
             'imagen': imagen_url if photo_reference else 'N/A',
+            'icono': place['icon'],
             'tipo': place.get('types', ['N/A'])[0],
             'valoracion': place.get('rating', 'N/A'),
             'direccion': place['formatted_address'],
@@ -392,43 +419,7 @@ def verAgendaUsuario(usuarioID):
 
     return jsonify(agenda_json)
 
-        # Convertir la lista en un JSON y devolverlo
-    """
-    @app.route('/agendaCreada/<int:usuarioID>', methods=['GET'])
-def getAgenda(usuarioID):
-    agendaService = AgendaService(getEngine())
-    agendaUsuario = agendaService.getAgenda(usuarioID)  # Supongo que obtienes los resultados de tu función
-
-    # Crear un diccionario para agrupar las actividades por día
-    agenda_por_dia = defaultdict(list)
-    for actividad_data in agendaUsuario:
-        dia = actividad_data['dia'].strftime('%d-%m-%Y')
-        actividad_json = {
-            'id': actividad_data['actividad_id'],
-            'actividad': actividad_data['nombre_actividad'],
-            'hora_inicio': actividad_data['horaInicio'].strftime('%H:%M:%S'),
-            'hora_fin': actividad_data['horaFin'].strftime('%H:%M:%S'),
-        }
-        agenda_por_dia[dia].append(actividad_json)
-
-    # Crear una lista de diccionarios serializables a JSON ordenados por día
-    agenda_json = []
-    for dia, actividades in sorted(agenda_por_dia.items()):
-        dia_json = {
-            'dia': dia,
-            'actividades': actividades
-        }
-        agenda_json.append(dia_json)
-
-    # Serializar la lista de diccionarios a JSON
-    agenda_json_str = json.dumps(agenda_json)
-
-    print(agenda_json_str)
-    print(str(type(agendaUsuario)))
-
-    return agenda_json_str
-    """
-
+       
 @app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
 def verAgendas(usuarioID):
     agendaService = AgendaService(getEngine())
@@ -462,6 +453,7 @@ def directions():
 @app.route('/mostrar_mapa', methods=['GET'])
 def mostrar_mapa():
     return render_template('mapa.html') 
+
 
 """    
     # Geocoding an address

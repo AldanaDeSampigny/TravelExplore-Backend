@@ -8,6 +8,11 @@ class LugarRepository:
     def __init__(self, db_session): #esto seria un constructor
         self.db_session = db_session
 
+    def getLugares(self):
+        lugares = self.db_session.query(Lugar).all()
+
+        return lugares
+
     def getLugar(self, codigoLugar):
         lugar = self.db_session.query(Lugar).\
             filter(Lugar.codigo == codigoLugar).first()

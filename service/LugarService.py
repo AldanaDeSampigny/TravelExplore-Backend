@@ -198,6 +198,8 @@ class LugarService:
             'store': self.guardarLugar,
             'food': self.guardarLugar,
             'electronics_store': self.guardarLugar,
+            'church': self.guardarLugar,
+            'insurance_agency': self.guardarLugar,
             #'university': self.guardarLugar,
             'city': self.guardarCiudad,
             'locality': self.guardarCiudad,
