@@ -88,11 +88,20 @@ def mostrarDistancia(usuarioID, destinoID):
      
     return distancias
 
-@app.route('/generar_agenda/<int:usuarioID>/<int:destinoID>/<fechaInicio>/<fechaFin>/<transporte>/<horaInicio>/<horaFin>'
+
+@app.route('/generar_agenda/<int:usuarioID>'
             , methods=['POST'])
-def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transporte, horaInicio, horaFin):
+def generar_y_mostrar_agenda(usuarioID):
     agenda_service = AgendaService(getEngine())
-    print(transporte)
+    data = request.get_json()
+
+    destino = 1
+    fechaInicio = str(data.get('fechaDesde'))
+    print("fechaDesde -->"+fechaInicio)
+    fechaFin = str(data.get('fechaHasta'))
+    horaInicio = data.get('horarioGeneral')['horaDesde']
+    horaFin = data.get('horarioGeneral')['horaHasta']
+    transporte = data.get('transporte')
     try:
         AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
         AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
@@ -104,47 +113,28 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transp
         response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
         return response
     
-    data = request.get_json()
+    horariosEspecificos = {}
+    for horarioEspecifico in data.get('horariosEspecificos'):
+        horariosEspecificos[horarioEspecifico['dia']] = \
+            (horarioEspecifico['horaDesde'],horarioEspecifico['horaHasta'])
+           
 
-    ocupados = data.get('horariosOcupado')
-    elegidos = data.get('horariosActividad')
+    horariosOcupados = {}
+    for horarioOcupado in data.get('horariosOcupados'):
+        horariosOcupados[horarioOcupado['dia']] = []
+        for horario in horarioOcupado['horarios']:
+            horariosOcupados[horarioOcupado['dia']].append(tuple(horario.values()))
+       
+ 
+    agenda = agenda_service.generarAgendaDiaria(usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
 
-    horariosOcupados = defaultdict(list)
-    horariosElegidos = defaultdict(tuple)
 
-    for item in ocupados:
-        dia = item['dia']
-        hora_desde = item['horaDesdeOcupado']
-        hora_hasta = item['horaHastaOcupado']
-        hora_desde += ':00'
-        hora_hasta += ':00'
-        horariosOcupados[dia].append((hora_desde, hora_hasta))
-
-    # Procesar los datos de 'elegidos'
-    for item in elegidos:
-        if dia != 'Horario General':
-            dia = item['dia']
-            hora_desde = item['horaDesdeActividad']
-            hora_hasta = item['horaHastaActividad']
-            hora_desde += ':00'
-            hora_hasta += ':00'
-            horariosElegidos[dia] = (hora_desde, hora_hasta)
-
-    horariosOcupados = dict(horariosOcupados)
-    horariosElegidos = dict(horariosElegidos)
-
-    print('ócupados: ',horariosOcupados)
-    print('elegidos: ', horariosElegidos)
-    
-    print(transporte)
-    agenda = agenda_service.generarAgendaDiaria(usuarioID, destinoID, horariosElegidos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
-    # Crear un diccionario para agrupar las actividades por día
+# Crear un diccionario para agrupar las actividades por día
     agenda_por_dia = defaultdict(list)
     for actividad_data in agenda:
         dia = actividad_data['dia']
         agenda_por_dia[dia].append(actividad_data)
-    
-    # Crear una lista de diccionarios serializables a JSON ordenados por día
+
     agenda_json = []
     for dia, actividades in sorted(agenda_por_dia.items()):
         dia_json = {
@@ -161,11 +151,9 @@ def generar_y_mostrar_agenda(usuarioID, destinoID, fechaInicio, fechaFin, transp
             }
             dia_json['actividades'].append(actividad_json)
         agenda_json.append(dia_json)
-    agendaNueva = agenda_service.saveAgenda(usuarioID, destinoID, fechaInicio, fechaFin, horaInicio, horaFin,agenda_json)
 
-    
-        
-    # Devolver la lista de días y actividades serializadas a JSON
+    agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agenda_json)
+
     return jsonify(agenda_json)
 
 def obtener_descripcion_lugar(nombre_lugar):
