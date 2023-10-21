@@ -140,8 +140,7 @@ with Session(getEngine()) as session:
 
     preferencias_usuarios_tensor = tf.convert_to_tensor(
         preferencias_usuarios, dtype=tf.float32)
-    actividadesInfo_tensor = tf.convert_to_tensor(
-        actividadesInfo, dtype=tf.float32)
+    actividadesInfo_tensor = tf.convert_to_tensor(actividadesInfo, dtype=tf.float32)
 
     print("type p: ", str(type(preferencias_usuarios_tensor)))
     print("type a: ", str(type(actividadesInfo_tensor)))
@@ -169,29 +168,45 @@ with Session(getEngine()) as session:
             else:
                 new[i] = 0
 
-    print("nuevo ", new)
+    new_tensor = tf.convert_to_tensor(new, dtype=tf.float32)
+    # Create a model that takes in raw query features, and
+    index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
+    # recommends movies out of the entire movies dataset.
+    index.index_from_dataset(
+        tf.data.Dataset.zip((activities_dataset.batch(100), activities_dataset.batch(100).map(model.activity_model)))
+    ) 
 
-    input_data = {
-    'input_1': new,  # Datos de preferencias de usuarios
-    'input_2': actividadesInfo[5]  # Datos de actividades (puedes usar uno existente o crear uno nuevo)
-    }
 
-    recomendaciones_probabilidades = model.predict(input_data) 
-    #recomendaciones_probabilidades = model.predict(np.array([new])) 
-
-    # Obtener las actividades recomendadas en palabras
-    print("recom: ", recomendaciones_probabilidades)
+    _,recommended_indices = index(np.array([new_tensor], dtype=np.int32))  # Reemplaza new_tensor con las preferencias del usuario
+    print(f"recomendaciones para el usuario 5: {recommended_indices[0, 6:9]}")
     actividades_recomendadas = []
-    for i, probabilidad in enumerate(recomendaciones_probabilidades[0]):
-        print("indice", i)
-        # if probabilidad > 0.7:  # Puedes ajustar este umbral según tus preferencias
-        actividad = aRepo.getActividad(i+11)
-        print("actividad", actividad.nombre)
-        actividades_recomendadas.append(actividad.nombre)
-    # Imprimir las recomendaciones de actividades
-    print("Recomendaciones de actividades para el usuario:",
-        actividades_recomendadas)
-    # Guardar el modelo entrenado se guarda en h5 porque es un archivo compatible con tensorflow
-    model.save("modelo.keras")
-    modelo_cargado = tf.keras.models.load_model("modelo.keras")
     
+    for indice, info in enumerate(actividadesInfo_tensor):
+        print("info", info)
+        print("info indice", indice)
+        for recomendacion in recommended_indices[0, 6:9]:   
+            recomendacion = tf.cast(recomendacion, dtype=tf.float32)
+            print("indice", recomendacion)
+            if tf.reduce_all(recomendacion == info):
+                actividad = aRepo.getActividad(indice)
+                print("actividad", actividad.nombre)
+                actividades_recomendadas.append(actividad.nombre)
+
+    # Imprimir las recomendaciones de actividades
+            # if probabilidad > 0.7:  # Puedes ajustar este umbral según tus preferencias
+    print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
+    #model.save("modelo.keras")
+    #modelo_cargado = tf.keras.models.load_model("modelo.keras")
+
+    # print("recom: ", recomendaciones_probabilidades)
+    # actividades_recomendadas = []
+    # for i, probabilidad in enumerate(recomendaciones_probabilidades[0]):
+    #     print("indice", i)
+    #     # if probabilidad > 0.7:  # Puedes ajustar este umbral según tus preferencias
+    #     actividad = aRepo.getActividad(i+11)
+    #     print("actividad", actividad.nombre)
+    #     actividades_recomendadas.append(actividad.nombre)
+    # # Imprimir las recomendaciones de actividades
+    # print("Recomendaciones de actividades para el usuario:",
+    #     actividades_recomendadas)
+    # Guardar el modelo entrenado se guarda en h5 porque es un archivo compatible con tensorflow

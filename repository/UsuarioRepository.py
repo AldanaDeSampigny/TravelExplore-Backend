@@ -24,8 +24,8 @@ class UsuarioRepository:
         
         return usuarios
 
-    def getAgendaUsuario(self,usuarioID):  
-        max_av_id = self.db_session.query(func.max(AgendaViaje.id)).scalar()
+    def getAgendaUsuario(self,usuarioID,idAgenda):  
+        #max_av_id = self.db_session.query(func.max(AgendaViaje.id)).scalar()
 
         agenda = (
             self.db_session.query(ActividadAgenda.id_agenda,
@@ -41,8 +41,8 @@ class UsuarioRepository:
             .join(Itinerario, Itinerario.id == AgendaDiaria.itinerario_id)
             .join(Viaje, Viaje.id == Itinerario.id_viaje)
             .join(Usuario, Usuario.id == Viaje.id_usuario)
-            .filter(AgendaViaje.id == max_av_id)
             .filter(Usuario.id == usuarioID)
+            .filter(AgendaViaje.id == idAgenda)
         )
      
         return agenda

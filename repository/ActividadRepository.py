@@ -2,13 +2,16 @@ from ..models.ActividadCategoria import ActividadCategoria
 from ..models.Actividad import Actividad
 from ..models.Categoria import Categoria
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import func
 
 class ActividadRepository:
     def __init__(self, db_session): #esto seria un constructor
         self.db_session = db_session
 
     def getActividades(self):
-        actividades = self.db_session.query(Actividad).all()
+        actividades = self.db_session.query(Actividad).\
+            group_by(Actividad.id).\
+            order_by(func.min(Actividad.id)).all()
 
         return actividades
     
