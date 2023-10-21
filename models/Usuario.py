@@ -1,5 +1,5 @@
 from tkinter import Image
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from ..bd.conexion import getEngine, Base
 import sqlalchemy as db
@@ -12,6 +12,7 @@ class Usuario(Base):
    nombre = Column(String)
    gmail = Column(String)
    contrasenia = Column(String)
+   admin = Column(Boolean)
    
    metadata_obj.create_all(getEngine())
 
@@ -21,4 +22,5 @@ class Usuario(Base):
          "nombre": self.nombre,
          "gmail": self.gmail,
          "contrasenia": self.contrasenia,
+         "admin": self.admin
       }

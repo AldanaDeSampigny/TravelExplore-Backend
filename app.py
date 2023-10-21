@@ -1,4 +1,7 @@
 from collections import defaultdict
+import dbm
+
+from .repository.LugarRepository import LugarRepository
 
 from .models.Horario import Horario
 from .service.LugarService import LugarService
@@ -198,6 +201,21 @@ def obtenerCiudades():
             ciudades.append(ciudad_data)
 
         return jsonify(ciudades)
+    
+@app.route('/lugares', methods=['GET'])
+def lugares():
+    with Session(getEngine()) as session:
+        lugarRepo = LugarRepository(session).getLugares()
+
+        lugares = []
+        for lugar in lugarRepo:
+            lugar_data = {
+                'nombre': lugar.nombre,
+                'codigo': lugar.codigo
+            }
+            lugares.append(lugar_data)
+
+    return lugares
 
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
@@ -280,6 +298,7 @@ def lugarEspecifico(id):
             'id' : id,
             'nombre': place['name'],
             'imagen': imagen_url if photo_reference else 'N/A',
+            'icono': place['icon'],
             'tipo': place.get('types', ['N/A'])[0],
             'valoracion': place.get('rating', 'N/A'),
             'direccion': place['formatted_address'],
