@@ -89,8 +89,27 @@ def mostrarDistancia(usuarioID, destinoID):
     return distancias
 
 
-@app.route('/generar_agenda/<int:usuarioID>'
-            , methods=['POST'])
+@app.route('/like/<int:usuarioID>',methods=['PUT'])
+def like(usuarioID):
+    agenda_service = AgendaService(getEngine())
+    lugar = request.get_json()
+
+    agenda_service.agregarGusto(usuarioID,lugar)    
+
+    return "Gusto actualizado"
+
+
+@app.route('/dislike/<int:usuarioID>',methods=['PUT'])
+def dislike(usuarioID):
+    agenda_service = AgendaService(getEngine())
+    lugar = request.get_json()
+    print("Lugar --> ",str(lugar))
+    
+    agenda_service.quitarGusto(usuarioID,lugar)    
+
+    return "Gusto Cambiado"
+
+@app.route('/generar_agenda/<int:usuarioID>', methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID):
     agenda_service = AgendaService(getEngine())
     data = request.get_json()
@@ -124,7 +143,6 @@ def generar_y_mostrar_agenda(usuarioID):
         horariosOcupados[horarioOcupado['dia']] = []
         for horario in horarioOcupado['horarios']:
             horariosOcupados[horarioOcupado['dia']].append(tuple(horario.values()))
-       
  
     agenda = agenda_service.generarAgendaDiaria(usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
 
@@ -226,6 +244,19 @@ def placesRoutes():
 
     places = gmaps.places(query=buscarLugar)
     
+
+    ciudad = places.get('address_components', [])
+    provincia = None
+    pais = None
+
+    for component in ciudad:
+        types = component.get('types', [])
+        if 'locality' in types:
+            ciudad = component.get('long_name')
+        elif 'administrative_area_level_1' in types:
+            provincia = component.get('long_name')
+        elif 'country' in types:
+            pais = component.get('long_name')
     lugares = []
     for place in places['results']:
         location = place['geometry']['location']
@@ -254,6 +285,14 @@ def placesRoutes():
                     'tipo': place.get('types', ['N/A'])[0],
                     'direccion': place['formatted_address'],
                     'valoracion': valoracion,
+                    'latitud': latitude,
+                    'longitud': longitude,
+                    'horarios': place.get('opening_hours', {}).get('weekday_text', 'N/A'),
+                    #'descripcion': obtener_descripcion_lugar(place['name']), 
+                    'ciudad': ciudad if ciudad else 'N/A',
+                    'provincia': provincia if provincia else 'N/A',
+                    'pais': pais if pais else 'N/A',
+                    'website': place.get('website', None)
                 }
                 lugares.append(lugar)
 
@@ -264,6 +303,94 @@ def placesRoutes():
     
     lugares = sorted(lugares, key=lambda x: difflib.SequenceMatcher(
         None, x['nombre'], buscarLugar).ratio(), reverse=True)
+    
+    return jsonify(lugares)
+
+""" Retorna 
+    []
+    {
+        "lugar": lugar,
+        "like": Boolean
+    }
+"""
+@app.route('/lugarGustos/<int:usuarioId>', methods=['GET'])
+def favoritos(idUsuario):
+    buscarLugar = request.args.get('ciudad')
+    idiomas_permitidos = ['es', 'mx', 'uy', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
+
+    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+
+    places = gmaps.places(query=buscarLugar)
+    
+
+    for component in ciudad:
+        types = component.get('types', [])
+        if 'locality' in types:
+            ciudad = component.get('long_name')
+        elif 'administrative_area_level_1' in types:
+            provincia = component.get('long_name')
+        elif 'country' in types:
+            pais = component.get('long_name')
+    lugares = []
+    for place in places['results']:
+        location = place['geometry']['location']
+        latitude = location['lat']
+        longitude = location['lng']
+
+        geolocator = Nominatim(user_agent="TravleExplore-proyectoUni")
+        location_info = geolocator.reverse((latitude, longitude), exactly_one=True)
+        # Verificar si la información de ubicación está disponible
+        if location_info and location_info.raw:
+            country_code = location_info.raw.get('address', {}).get('country_code', '').lower()
+
+            # Comprobar si el código del país está en la lista de idiomas permitidos
+            print(country_code)
+            if country_code in idiomas_permitidos:
+
+                valoracion = place.get('rating', 'N/A')
+                if valoracion != 'N/A':
+                    valoracion = float(valoracion)
+                else:
+                    valoracion = 0.0
+                
+                lugar = {
+                    'id': place['place_id'],
+                    'imagen': place['icon'],
+                    'nombre': place['name'],
+                    'tipo': place.get('types', ['N/A'])[0],
+                    'direccion': place['formatted_address'],
+                    'valoracion': valoracion,
+                    'latitud': latitude,
+                    'longitud': longitude,
+                    'horarios': place.get('opening_hours', {}).get('weekday_text', 'N/A'),
+                    #'descripcion': obtener_descripcion_lugar(place['name']), 
+                    'ciudad': ciudad if ciudad else 'N/A',
+                    'provincia': provincia if provincia else 'N/A',
+                    'pais': pais if pais else 'N/A',
+                    'website': place.get('website', None)
+                }
+
+                lugarFavorito = AgendaService(getEngine()).getLugarFavorito(idUsuario,lugar['id'])
+
+                if(lugarFavorito != None):
+                    likeLugarFavorito = lugarFavorito.like
+                else:
+                    likeLugarFavorito = False
+
+                lugarGusto = {
+                    'lugar': lugar,
+                    'like':  likeLugarFavorito
+                }
+
+                lugares.append(lugarGusto)
+
+    if not lugares:
+        # Si no se encontraron lugares, crea un mensaje JSON personalizado
+        mensaje = {'mensaje': 'No se encontraron lugares disponibles en esta ubicación.'}
+        return jsonify(mensaje)
+    
+    lugares = sorted(lugares, key=lambda x: difflib.SequenceMatcher(
+        None, x['lugar']['nombre'], buscarLugar).ratio(), reverse=True)
     
     return jsonify(lugares)
 
@@ -373,12 +500,12 @@ def verAgendaUsuario(usuarioID):
     for diaViaje in agenda_data:
         for actividad in agenda_data:
             diaViajeJson = {
-                "fecha": diaViaje[1],
+                """ "fecha": diaViaje[1],
                 "actividades"={
-                    "nombre" = agenda_data[]
+                    "nombre" = agenda_data[] """
                 }
                 #"id_agenda": diaViaje[0]
-        }
+        
 
         agenda_json['diaViaje'].append(diaViajeJson)
 

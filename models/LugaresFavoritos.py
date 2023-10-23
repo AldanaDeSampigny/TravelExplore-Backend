@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Date, ForeignKey, Integer,String
+from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer,String
 from sqlalchemy.ext.declarative import declarative_base
 from ..bd.conexion import getEngine, Base
 import sqlalchemy as db
@@ -10,6 +10,7 @@ class LugaresFavoritos(Base):
     __tablename__ = 'lugares_favoritos'
     lugar_id = Column(Integer, ForeignKey('lugares.id'), primary_key=True)
     usuario_id = Column(Integer, ForeignKey('usuarios.id'),  primary_key=True)
+    like = Column(Boolean)
 
     metadata_obj.create_all(getEngine())
 
