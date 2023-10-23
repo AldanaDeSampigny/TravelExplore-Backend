@@ -152,28 +152,37 @@ class AgendaService:
 
         return distance
 
-    def calculoDeDistancias(self, usuarioID, destinoID, actividades):
+    def calculoDeDistancias(self, usuarioID, destinoID, ultimo, anteultimo ,actividades):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             distancias = []
-            cercanos = []
+            # print("ultimo", ultimo)
+            # print("anteultimo", anteultimo)
+            ultimoLugar = agenda_repo.buscarLugar(ultimo)
+            #anteultimo = agenda_repo.buscarLugar(anteultimo[0])
 
-            actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
+            actividades = agenda_repo.buscarActividad(usuarioID, destinoID)
 
-            for dos in range(len(actividadIds)):
-                lugar1 = agenda_repo.buscarLugar(actividadIds[dos].id)
-                for uno in range(len(actividadIds)):
-                    if uno != dos:
-                        print("for 1",dos)
-                        print("for 2",uno)
-                        lugar2 = agenda_repo.buscarLugar(actividadIds[uno].id)
-                        distancias.append(self.haversine_distance(lugar1.latitud, lugar1.longitud, lugar2.latitud, lugar2.longitud))
-                
-                ordenado = sorted(distancias)
-                cerca = ordenado[0]
-                cercanos.append(cerca)
+            for uno in range(len(actividades)):
+                if ultimo != actividades[uno].id and anteultimo != actividades[uno].id:
+                    # print("uno ",uno)
+                    # print("ultimo ", ultimo)
+                    # print("anteultimo ", anteultimo)
+                    lugar2 = agenda_repo.buscarLugar(actividades[uno].id)
+                    distancia = self.haversine_distance(
+                        ultimoLugar.latitud, ultimoLugar.longitud, lugar2.latitud, lugar2.longitud)
+                    distancias.append({
+                        "actividad": actividades[uno].id,
+                        "lugar": lugar2,
+                        "distancia": distancia
+                    })
+                    
+            distancias_ordenadas = sorted(distancias, key=lambda x: x["distancia"])
+            #print(distancias_ordenadas)
+            cerca = distancias_ordenadas[0]["actividad"]
+            #print(cerca)
             
-        return cercanos
+        return cerca 
 
 
 #generador de agenda diaria con dias ocupados, y horarios especificos
@@ -190,8 +199,17 @@ class AgendaService:
             gustos_agregados = set()
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
 
-            #   lista = self.calculoDeDistancia(usuarioId, destinoID, actividadIds)
-        
+            listaInicial = []
+            listaInicial.append(actividadIds[0][0])
+            cerca = self.calculoDeDistancias(
+                1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
+            listaInicial.append(cerca)
+            for i in range(0, len(actividadIds)):
+                cerca = self.calculoDeDistancias(
+                    1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
+                listaInicial.append(cerca)
+
+            actividadIds = listaInicial.copy()
 
             while fecha_actual <= fecha_hasta:
 

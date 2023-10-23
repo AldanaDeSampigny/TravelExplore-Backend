@@ -2,6 +2,8 @@ from collections import defaultdict
 from datetime import datetime
 import dbm
 
+from .repository.AgendaRepository import AgendaRepository
+
 from .repository.LugarRepository import LugarRepository
 
 from .models.Horario import Horario
@@ -83,11 +85,26 @@ def serialize_timedelta(td):
 @app.route('/generarprueba/<int:usuarioID>/<int:destinoID>'
             , methods=['GET'])
 def mostrarDistancia(usuarioID, destinoID):
-    agenda_service = AgendaService(getEngine())
+    with Session(getEngine()) as session:
+        agenda_repo = AgendaRepository(session)
+        agenda_service = AgendaService(getEngine())
+        actividadIds = agenda_repo.buscarActividad(1, 1)
 
-    distancias = agenda_service.calculoDeDistancias(1,1, [])
+        print(actividadIds)
+
+        listaInicial = []
+        listaInicial.append(actividadIds[0][0])
+        cerca = agenda_service.calculoDeDistancias(
+            1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
+        listaInicial.append(cerca)
+        for i in range(0, len(actividadIds)):
+            cerca = agenda_service.calculoDeDistancias(
+                1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
+            listaInicial.append(cerca)
+            print("inicial ", listaInicial)
+
      
-    return distancias
+    return listaInicial
 
 
 @app.route('/generar_agenda/<int:usuarioID>'
@@ -96,7 +113,8 @@ def generar_y_mostrar_agenda(usuarioID):
     agenda_service = AgendaService(getEngine())
     data = request.get_json()
 
-    destino = 1
+    # destino = 1
+    destino = int(data.get('destino'))
     fechaInicio = str(data.get('fechaDesde'))
     print("fechaDesde -->"+fechaInicio)
     fechaFin = str(data.get('fechaHasta'))
