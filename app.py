@@ -168,10 +168,6 @@ def generar_y_mostrar_agenda(usuarioID):
     for horarioOcupado in data.get('horariosOcupados'):
         horariosOcupados[horarioOcupado['dia']] = []
         for horario in horarioOcupado['horarios']:
-<<<<<<< HEAD
-            horariosOcupados[horarioOcupado['dia']].append(tuple(horario.values()))
- 
-=======
             horaDesde = horario['horaDesde'] + ':00'
             horaHasta = horario['horaHasta'] + ':00'
             # horaDesde = datetime.strptime(horaDesde, '%H:%M:%S').time()
@@ -180,7 +176,6 @@ def generar_y_mostrar_agenda(usuarioID):
             #horariosOcupados[horarioOcupado['dia']].append(tuple(horario.values()))
     
 
->>>>>>> 23be1ae6913f69afab4e6fef25d99368fb42be45
     agenda = agenda_service.generarAgendaDiaria(usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
 
 
@@ -535,50 +530,46 @@ def verAgendaUsuario(usuarioID):
         "diaViaje": []
     }
 
-<<<<<<< HEAD
-    for diaViaje in agenda_data:
-        for actividad in agenda_data:
-            diaViajeJson = {
-                """ "fecha": diaViaje[1],
-                "actividades"={
-                    "nombre" = agenda_data[] """
-                }
-                #"id_agenda": diaViaje[0]
+    # for diaViaje in agenda_data:
+    #     for actividad in agenda_data:
+    #         diaViajeJson = {
+    #             """ "fecha": diaViaje[1],
+    #             "actividades"={
+    #                 "nombre" = agenda_data[] """
+    #             }
+    #             #"id_agenda": diaViaje[0]
         
 
-        agenda_json['diaViaje'].append(diaViajeJson)
+    #     agenda_json['diaViaje'].append(diaViajeJson)
 
-    '''agenda_data = {}
+    # agenda_data = {}
 
 
     for row in agendasUsuario:
-=======
-    for row in agenda_data:
-        print("row ", row)
-        actividadRepo = agendaService.obtenerActividadAgenda(row[2], row[0])
->>>>>>> 23be1ae6913f69afab4e6fef25d99368fb42be45
-        dia =  row[1].strftime("%Y-%m-%d") if row[1] else None
-        
-        actividad = {
-            "id_agenda": row[0],
-            "nombre_actividad": row[3],
-            # row[4].strftime("%H:%M:%S") if row[4] else None,
-            "horaDesde": actividadRepo.horadesde.strftime("%H:%M:%S") if actividadRepo.horadesde else None,
-            "horaHasta": actividadRepo.horahasta.strftime("%H:%M:%S") if actividadRepo.horahasta else None #row[5].strftime("%H:%M:%S") if row[5] else None,
-        }
-
-        # Si el día ya existe en el diccionario, agregamos la actividad a la lista de actividades
-        if dia in agenda_data:
-            agenda_json['diaViaje'].append(actividad)
-        else:
-            # Si el día no existe, creamos una entrada nueva
-            agenda_json[dia] = {
-                "dia": dia,
-                "actividades": [actividad]
+        for row in agenda_data:
+            print("row ", row)
+            actividadRepo = agendaService.obtenerActividadAgenda(row[2], row[0])
+            dia =  row[1].strftime("%Y-%m-%d") if row[1] else None
+            
+            actividad = {
+                "id_agenda": row[0],
+                "nombre_actividad": row[3],
+                # row[4].strftime("%H:%M:%S") if row[4] else None,
+                "horaDesde": actividadRepo.horadesde.strftime("%H:%M:%S") if actividadRepo.horadesde else None,
+                "horaHasta": actividadRepo.horahasta.strftime("%H:%M:%S") if actividadRepo.horahasta else None #row[5].strftime("%H:%M:%S") if row[5] else None,
             }
 
-        # Convertir el diccionario en una lista de valores y devolverlo
-        '''agendas_json = list(agenda_data.values())'''
+            # Si el día ya existe en el diccionario, agregamos la actividad a la lista de actividades
+            if dia in agenda_data:
+                agenda_json['diaViaje'].append(actividad)
+            else:
+                # Si el día no existe, creamos una entrada nueva
+                agenda_json[dia] = {
+                    "dia": dia,
+                    "actividades": [actividad]
+                }
+
+ 
 
     return jsonify(agenda_json)
 
