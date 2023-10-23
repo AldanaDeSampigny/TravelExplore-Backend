@@ -196,7 +196,8 @@ def obtenerCiudades():
         
         for ciudad in ciudadesQuery:
             ciudad_data = {
-                'nombre': ciudad.nombre  # Accede a la propiedad 'nombre' de la instancia de Ciudad
+                'id': ciudad.id,
+                'nombre': ciudad.nombre
             }
             ciudades.append(ciudad_data)
 
