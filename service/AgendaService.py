@@ -190,7 +190,6 @@ class AgendaService:
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             agenda = []
-            cercanos = []
 
             fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
@@ -291,10 +290,5 @@ class AgendaService:
                     hora_actual = hora_inicio_datetime.time() 
                 
                 fecha_actual += delta_dias
-                #print(fecha_actual)
 
-            #session.commit()
-            #session.close()
-
-        # self.saveAgenda(usuarioID,destinoID,fechaDesde,fechaHasta,horaInicio,horaFin,fechaHasta,agenda)
         return agenda
