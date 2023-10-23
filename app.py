@@ -1,5 +1,8 @@
 from collections import defaultdict
+from datetime import datetime
 import dbm
+
+from .repository.AgendaRepository import AgendaRepository
 
 from .repository.LugarRepository import LugarRepository
 
@@ -82,11 +85,26 @@ def serialize_timedelta(td):
 @app.route('/generarprueba/<int:usuarioID>/<int:destinoID>'
             , methods=['GET'])
 def mostrarDistancia(usuarioID, destinoID):
-    agenda_service = AgendaService(getEngine())
+    with Session(getEngine()) as session:
+        agenda_repo = AgendaRepository(session)
+        agenda_service = AgendaService(getEngine())
+        actividadIds = agenda_repo.buscarActividad(1, 1)
 
-    distancias = agenda_service.calculoDeDistancias(1,1, [])
+        print(actividadIds)
+
+        listaInicial = []
+        listaInicial.append(actividadIds[0][0])
+        cerca = agenda_service.calculoDeDistancias(
+            1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
+        listaInicial.append(cerca)
+        for i in range(0, len(actividadIds)):
+            cerca = agenda_service.calculoDeDistancias(
+                1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
+            listaInicial.append(cerca)
+            print("inicial ", listaInicial)
+
      
-    return distancias
+    return listaInicial
 
 
 @app.route('/like/<int:usuarioID>',methods=['PUT'])
@@ -114,13 +132,19 @@ def generar_y_mostrar_agenda(usuarioID):
     agenda_service = AgendaService(getEngine())
     data = request.get_json()
 
-    destino = 1
+    # destino = 1
+    destino = int(data.get('destino'))
     fechaInicio = str(data.get('fechaDesde'))
     print("fechaDesde -->"+fechaInicio)
     fechaFin = str(data.get('fechaHasta'))
-    horaInicio = data.get('horarioGeneral')['horaDesde']
-    horaFin = data.get('horarioGeneral')['horaHasta']
+    horaInicio = data.get('horarioGeneral')['horaDesde'] + ':00'
+    horaFin = data.get('horarioGeneral')['horaHasta'] + ':00'
     transporte = data.get('transporte')
+
+
+    # horaInicio = datetime.strptime(horaInicio, '%H:%M:%S').time()
+    # horaFin = datetime.strptime(horaFin, '%H:%M:%S').time()
+
     try:
         AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
         AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
@@ -134,16 +158,29 @@ def generar_y_mostrar_agenda(usuarioID):
     
     horariosEspecificos = {}
     for horarioEspecifico in data.get('horariosEspecificos'):
+        # horaDesde = horarioEspecifico['horaDesde'] + ':00'
+        # horaHasta = horarioEspecifico['horaHasta'] + ':00'
         horariosEspecificos[horarioEspecifico['dia']] = \
-            (horarioEspecifico['horaDesde'],horarioEspecifico['horaHasta'])
-           
+            (horarioEspecifico['horaDesde']+':00',horarioEspecifico['horaHasta']+':00')
+        
 
     horariosOcupados = {}
     for horarioOcupado in data.get('horariosOcupados'):
         horariosOcupados[horarioOcupado['dia']] = []
         for horario in horarioOcupado['horarios']:
+<<<<<<< HEAD
             horariosOcupados[horarioOcupado['dia']].append(tuple(horario.values()))
  
+=======
+            horaDesde = horario['horaDesde'] + ':00'
+            horaHasta = horario['horaHasta'] + ':00'
+            # horaDesde = datetime.strptime(horaDesde, '%H:%M:%S').time()
+            # horaHasta = datetime.strptime(horaHasta, '%H:%M:%S').time()
+            horariosOcupados[horarioOcupado['dia']].append((horaDesde, horaHasta))
+            #horariosOcupados[horarioOcupado['dia']].append(tuple(horario.values()))
+    
+
+>>>>>>> 23be1ae6913f69afab4e6fef25d99368fb42be45
     agenda = agenda_service.generarAgendaDiaria(usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
 
 
@@ -171,7 +208,7 @@ def generar_y_mostrar_agenda(usuarioID):
         agenda_json.append(dia_json)
 
     agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agenda_json)
-
+    print(agenda_json)
     return jsonify(agenda_json)
 
 def obtener_descripcion_lugar(nombre_lugar):
@@ -214,7 +251,8 @@ def obtenerCiudades():
         
         for ciudad in ciudadesQuery:
             ciudad_data = {
-                'nombre': ciudad.nombre  # Accede a la propiedad 'nombre' de la instancia de Ciudad
+                'id': ciudad.id,
+                'nombre': ciudad.nombre
             }
             ciudades.append(ciudad_data)
 
@@ -486,7 +524,7 @@ def verAgendaUsuario(usuarioID):
     agendaService = AgendaService(getEngine())
     agendasUsuario = agendaService.obtenerAgendasUsuario(usuarioID)  # Supongo que obtienes los resultados de tu función
     
-    agenda_data = agendasUsuario.all()
+    agenda_data = agendasUsuario #.all()
 
     agendaActual = agenda_data[0][0]
 
@@ -497,6 +535,7 @@ def verAgendaUsuario(usuarioID):
         "diaViaje": []
     }
 
+<<<<<<< HEAD
     for diaViaje in agenda_data:
         for actividad in agenda_data:
             diaViajeJson = {
@@ -513,28 +552,33 @@ def verAgendaUsuario(usuarioID):
 
 
     for row in agendasUsuario:
+=======
+    for row in agenda_data:
+        print("row ", row)
+        actividadRepo = agendaService.obtenerActividadAgenda(row[2], row[0])
+>>>>>>> 23be1ae6913f69afab4e6fef25d99368fb42be45
         dia =  row[1].strftime("%Y-%m-%d") if row[1] else None
         
         actividad = {
             "id_agenda": row[0],
             "nombre_actividad": row[3],
-            "horaInicio":row[4].strftime("%H:%M:%S") if row[4] else None,
-            "horaFin": row[5].strftime("%H:%M:%S") if row[5] else None,
+            # row[4].strftime("%H:%M:%S") if row[4] else None,
+            "horaDesde": actividadRepo.horadesde.strftime("%H:%M:%S") if actividadRepo.horadesde else None,
+            "horaHasta": actividadRepo.horahasta.strftime("%H:%M:%S") if actividadRepo.horahasta else None #row[5].strftime("%H:%M:%S") if row[5] else None,
         }
 
         # Si el día ya existe en el diccionario, agregamos la actividad a la lista de actividades
         if dia in agenda_data:
-            agenda_data[dia]["actividades"].append(actividad)
+            agenda_json['diaViaje'].append(actividad)
         else:
             # Si el día no existe, creamos una entrada nueva
-
-            agenda_data[dia] = {
+            agenda_json[dia] = {
                 "dia": dia,
                 "actividades": [actividad]
             }
 
         # Convertir el diccionario en una lista de valores y devolverlo
-        agendas_json = list(agenda_data.values())'''
+        '''agendas_json = list(agenda_data.values())'''
 
     return jsonify(agenda_json)
 
