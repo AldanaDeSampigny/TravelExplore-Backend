@@ -19,6 +19,12 @@ class LugarRepository:
 
         return lugar
     
+    def getLugarById(self, id):
+        lugar = self.db_session.query(Lugar).\
+            filter(Lugar.codigo == id).first()
+
+        return lugar
+    
     def getCiudad(self, codigoCiudad, nombreCiudad):
         ciudad = self.db_session.query(Ciudad).\
             filter((Ciudad.codigo == codigoCiudad) |(Ciudad.codigo.is_(None))).\

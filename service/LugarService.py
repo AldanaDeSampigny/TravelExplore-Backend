@@ -21,68 +21,65 @@ class LugarService:
         with Session(getEngine()) as session:
             repository = LugarRepository(session)
 
-            lugar_existente = repository.getLugar(lugar['id'])
-            if not lugar_existente:
-                nuevoLugar = Lugar()
-                nuevoLugar.codigo = lugar['id']
-                nuevoLugar.nombre = lugar['nombre']
-                nuevoLugar.tipo = lugar['tipo']
-                nuevoLugar.latitud = lugar['latitud']
-                nuevoLugar.longitud = lugar['longitud']
+            nuevoLugar = Lugar()
+            nuevoLugar.codigo = lugar['id']
+            nuevoLugar.nombre = lugar['nombre']
+            nuevoLugar.tipo = lugar['tipo']
+            nuevoLugar.latitud = lugar['latitud']
+            nuevoLugar.longitud = lugar['longitud']
 
-                ciudad = repository.getCiudadLugar(lugar['ciudad'])
-                if ciudad:
-                    nuevoLugar.id_ciudad = ciudad.id
-                    print("ciudad existe, guardao")
-                else:
-                    nuevoCiudad = Ciudad()
-                    nuevoCiudad.nombre = lugar['ciudad']
-                    session.add(nuevoCiudad)
-                    session.commit()
-                    nuevoLugar.id_ciudad = nuevoCiudad.id
-                    print("ciudad no existe, a guardao")
-
-                session.add(nuevoLugar)
-                session.commit()
-
-                horarios = lugar.get('horarios', [])
-                for dia in horarios:
-                    # Dividir la cadena de horario en días y rangos de tiempo
-                    horarioDia = dia.split(': ')
-                    day = horarioDia[0].strip()
-                    for horario_part in horarioDia:
-                        if ':' in horario_part:
-                            for part in horario_part.split(','):
-                                rangoTiempo = part.replace('\u202f', ' ').replace('\u2009', ' ')
-                                if ':00 –' in rangoTiempo:
-                                    rangoTiempo = rangoTiempo.replace(
-                                        ':00 –', ':00\u202fPM –')
-                                elif ':30 –' in rangoTiempo:
-                                    rangoTiempo = rangoTiempo.replace(
-                                        ':30 –', ':30\u202fPM –')
-                                
-                                horas = re.findall(r'\d+:\d+\s*[APapMm]+', rangoTiempo)
-                                if len(horas) == 2:
-                                    hora_inicio_str, hora_fin_str = horas
-                                    hora_inicio = datetime.datetime.strptime(
-                                        hora_inicio_str, '%I:%M %p').strftime('%H:%M:%S')
-                                    hora_fin = datetime.datetime.strptime(
-                                        hora_fin_str, '%I:%M %p').strftime('%H:%M:%S')
-                                    
-                                    horario = Horario()
-                                    horario.id_lugar = nuevoLugar.id
-                                    horario.dia = day
-                                    horario.horaInicio = hora_inicio
-                                    horario.horaFin = hora_fin
-
-                                    session.add(horario)
-                                    session.commit()
-                                else:
-                                    print("No se encontró un formato de hora válido en:", rangoTiempo)
-                            
-                print("se guardo")
+            ciudad = repository.getCiudadLugar(lugar['ciudad'])
+            if ciudad:
+                nuevoLugar.id_ciudad = ciudad.id
+                print("ciudad existe, guardado")
             else:
-                print("ya existe")
+                nuevoCiudad = Ciudad()
+                nuevoCiudad.nombre = lugar['ciudad']
+                session.add(nuevoCiudad)
+                session.commit()
+                nuevoLugar.id_ciudad = nuevoCiudad.id
+                print("ciudad no existe, a guardao")
+
+            session.add(nuevoLugar)
+            session.commit()
+
+            horarios = lugar.get('horarios', [])
+            for dia in horarios:
+                # Dividir la cadena de horario en días y rangos de tiempo
+                horarioDia = dia.split(': ')
+                day = horarioDia[0].strip()
+                for horario_part in horarioDia:
+                    if ':' in horario_part:
+                        for part in horario_part.split(','):
+                            rangoTiempo = part.replace('\u202f', ' ').replace('\u2009', ' ')
+                            if ':00 –' in rangoTiempo:
+                                rangoTiempo = rangoTiempo.replace(
+                                    ':00 –', ':00\u202fPM –')
+                            elif ':30 –' in rangoTiempo:
+                                rangoTiempo = rangoTiempo.replace(
+                                    ':30 –', ':30\u202fPM –')
+                            
+                            horas = re.findall(r'\d+:\d+\s*[APapMm]+', rangoTiempo)
+                            if len(horas) == 2:
+                                hora_inicio_str, hora_fin_str = horas
+                                hora_inicio = datetime.datetime.strptime(
+                                    hora_inicio_str, '%I:%M %p').strftime('%H:%M:%S')
+                                hora_fin = datetime.datetime.strptime(
+                                    hora_fin_str, '%I:%M %p').strftime('%H:%M:%S')
+                                
+                                horario = Horario()
+                                horario.id_lugar = nuevoLugar.id
+                                horario.dia = day
+                                horario.horaInicio = hora_inicio
+                                horario.horaFin = hora_fin
+
+                                session.add(horario)
+                                session.commit()
+                            else:
+                                print("No se encontró un formato de hora válido en:", rangoTiempo)
+                        
+            print("se guardo")
+        
 
     def guardarCiudad(self, ciudad):
         with Session(getEngine()) as session:

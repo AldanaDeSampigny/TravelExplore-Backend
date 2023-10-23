@@ -3,8 +3,19 @@ from turtle import update
 import json
 
 import numpy as np
+from sqlalchemy import Row
+
+from ..service.LugarService import LugarService
+from ..models.Lugar import Lugar
+
+from ..models.LugaresFavoritos import LugaresFavoritos
+
+from ..repository.LugarRepository import LugarRepository
 
 from ..repository.UsuarioRepository import UsuarioRepository
+from ..repository.FavoritoRepository import FavoritoRepository
+
+from sqlalchemy import update
 
 from ..models.AgendaViaje import AgendaViaje
 
@@ -22,14 +33,77 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 
 class AgendaService:
-    """  horas = {datetime.strptime('08:00:00', '%H:%M:%S').time(): datetime.strptime('10:00:00', '%H:%M:%S').time(),
-                        datetime.strptime('12:00:00', '%H:%M:%S').time(): datetime.strptime('14:00:00', '%H:%M:%S').time(),
-                        datetime.strptime('18:00:00', '%H:%M:%S').time(): datetime.strptime('19:00:00', '%H:%M:%S').time(),
-                        datetime.strptime('21:00:00', '%H:%M:%S').time(): datetime.strptime('23:00:00', '%H:%M:%S').time()}
-        """
     def __init__(self, db_session):
         self.db_session = db_session
 
+
+    def getLugarFavorito(self,idUsuario,codigoLugar):
+        with Session(getEngine()) as session:
+            gusto = FavoritoRepository(session)
+
+            gustoObtenido = gusto.getLugarUsuario(idUsuario,codigoLugar)
+
+            return gustoObtenido
+
+
+    def agregarGusto(self,idUsuario,lugar):
+        with Session(getEngine()) as session:
+            gusto = FavoritoRepository(session)
+            codigoLugar = lugar.get('id')
+            
+            lugarRepository = LugarRepository(session)
+
+            gustoObtenido = gusto.getLugarUsuario(idUsuario,codigoLugar)
+            print("gustoObtenido --> ",str(gustoObtenido))
+
+            if gustoObtenido != None:   
+                idLugar = gustoObtenido[0]
+                
+                gusto.updateLike(idUsuario, idLugar, True)
+
+            else:
+                lugarObtenido = lugarRepository.getLugar(codigoLugar)
+
+                if lugarObtenido != None:
+                    nuevoMeGusta = LugaresFavoritos()
+                    nuevoMeGusta.usuario_id = idUsuario
+                    nuevoMeGusta.lugar_id = lugarObtenido.id
+                    nuevoMeGusta.like = True
+
+                    session.add(nuevoMeGusta)
+                    session.commit()
+                    
+                else:
+                    lugarService = LugarService(session)
+
+                    lugarService.guardarLugar(lugar)
+
+                    lugarRecibido = lugarRepository.getLugar(lugar.get('id'))                    
+                    
+                    nuevo = LugaresFavoritos()
+                    nuevo.usuario_id = idUsuario
+                    nuevo.lugar_id = lugarRecibido.id
+                    nuevo.like = True
+
+                    session.add(nuevo)
+                    session.commit()
+
+
+    def quitarGusto(self,idUsuario,lugar):
+        with Session(getEngine()) as session:
+            gustoRepository = FavoritoRepository(session)
+            codigoLugar = lugar.get('id')
+        
+            gustoObtenido = gustoRepository.getLugarUsuario(idUsuario,codigoLugar)
+
+            if gustoObtenido != None:   
+                idLugar = gustoObtenido[0]
+                print("idLugar --> ",str(idLugar))
+                
+                gustoRepository.updateLike(idUsuario, idLugar, False)
+
+        return None
+            
     def saveAgenda(self, idUsuario, idCiudad, fechaDesde, fechaHasta, horaInicio, horaFin, agenda):
         with Session(getEngine()) as session:
     
@@ -98,11 +172,11 @@ class AgendaService:
             print(direccion)
             return direccion
         
-    def getAgenda(self,usuario,agendaID):
+    def getAgenda(self,agendaID):
         with Session(getEngine()) as session:
             agenda = UsuarioRepository(session)
 
-            agendaUsuario = agenda.getAgendaUsuario(usuario,agendaID)
+            agendaUsuario = agenda.getAgendaUsuario(agendaID)
 
         return agendaUsuario;
         
