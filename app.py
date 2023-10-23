@@ -319,12 +319,12 @@ def lugarEspecifico(id):
         return jsonify({'error': 'Place not found'})
 
 
-@app.route('/agendaCreada/<int:usuarioID>' ,methods = ['GET'])
-def getAgenda(usuarioID):
+@app.route('/agendaID/<int:usuarioID>/<int:agendaID>' ,methods = ['GET'])
+def getAgenda(usuarioID,agendaID):
     # Leer el json recibido
     # agenda = request.get_json()
     agendaService = AgendaService(getEngine())
-    agendaUsuario = agendaService.getAgenda(usuarioID)  # Supongo que obtienes los resultados de tu función
+    agendaUsuario = agendaService.getAgenda(usuarioID,agendaID)  # Supongo que obtienes los resultados de tu función
 
     # Crear un diccionario para almacenar los datos en el formato deseado
     agenda_data = {}
@@ -372,9 +372,13 @@ def verAgendaUsuario(usuarioID):
     }
 
     for diaViaje in agenda_data:
-        diaViajeJson = {
-            "fecha": diaViaje[1],
-            "id_agenda": diaViaje[0]
+        for actividad in agenda_data:
+            diaViajeJson = {
+                "fecha": diaViaje[1],
+                "actividades"={
+                    "nombre" = agenda_data[]
+                }
+                #"id_agenda": diaViaje[0]
         }
 
         agenda_json['diaViaje'].append(diaViajeJson)

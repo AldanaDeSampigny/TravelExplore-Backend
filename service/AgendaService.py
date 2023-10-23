@@ -97,11 +97,11 @@ class AgendaService:
             print(direccion)
             return direccion
         
-    def getAgenda(self,usuario):
+    def getAgenda(self,usuario,agendaID):
         with Session(getEngine()) as session:
             agenda = UsuarioRepository(session)
 
-            agendaUsuario = agenda.getAgendaUsuario(usuario)
+            agendaUsuario = agenda.getAgendaUsuario(usuario,agendaID)
 
         return agendaUsuario;
         
