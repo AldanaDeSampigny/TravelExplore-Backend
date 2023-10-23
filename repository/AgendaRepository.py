@@ -1,4 +1,5 @@
 #from requests import Session
+from ..models.ActividadAgenda import ActividadAgenda
 from ..models.Actividad import Actividad
 from ..models.ActividadCategoria import ActividadCategoria
 from ..models.Categoria import Categoria
@@ -21,6 +22,13 @@ class AgendaRepository:
         self.db_session.add(agenda)
         self.db_session.commit()
         return agenda
+    
+    def getActividadAgenda(self, idActividad, idAgenda):
+        actividadAgenda = self.db_session.query(ActividadAgenda).\
+            filter(ActividadAgenda.id_actividad == idActividad).\
+            filter(ActividadAgenda.id_agenda == idAgenda).first()
+        
+        return actividadAgenda
 
     def buscarActividad(self, usuarioID, ciudadID):
         subquery_cat_ids = self.db_session.query(Categoria.id).\

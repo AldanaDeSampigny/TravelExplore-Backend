@@ -55,7 +55,6 @@ class AgendaService:
                 session.commit()
 
                 fecha = datetime.strptime(fechaDesde, "%Y-%m-%d")
-                diax = timedelta(days=1)
                 for agendaDiaria in agenda:
                     nuevaAgendaDiaria = AgendaDiaria()
                     nuevaAgendaDiaria.horaInicio = horaInicio
@@ -73,6 +72,8 @@ class AgendaService:
                     for actividadAgenda in agendaDiaria.get('actividades', []):
                         actividadAgendaNueva = ActividadAgenda()
                         actividadAgendaNueva.id_actividad = actividadAgenda.get('id', None)
+                        actividadAgendaNueva.horadesde = actividadAgenda.get('hora_inicio', None)
+                        actividadAgendaNueva.horahasta = actividadAgenda.get('hora_fin', None)
                         actividadAgendaNueva.id_agenda = nuevaAgendaDiaria.id
                         session.add(actividadAgendaNueva)
                         session.commit()
@@ -121,6 +122,14 @@ class AgendaService:
             agendasDestino = agenda.todasLasAgendasUsuario(usuarioID).all()
 
         return agendasDestino
+    
+    def obtenerActividadAgenda(self, idActividad, idAgenda):
+        with Session(getEngine()) as session:
+            agenda = AgendaRepository(session)
+
+            actividadAgenda = agenda.getActividadAgenda(idActividad, idAgenda)
+
+        return actividadAgenda
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
     # Radio de la Tierra en kilómetros
