@@ -131,8 +131,18 @@ def generar_y_mostrar_agenda(usuarioID):
     agenda_service = AgendaService(getEngine())
     data = request.get_json()
 
+    destino = data.get('destino')
+
+    if destino is None or destino == '':
+        error_message = "Se debe ingresar el destino del viaje"
+        response = jsonify({"error":error_message})
+        response.status_code = 400
+        response.headers['Content-Type'] = 'application/json'
+        print(response)
+        return response
+
     # destino = 1
-    destino = int(data.get('destino'))
+    destino = int(destino)
     fechaInicio = str(data.get('fechaDesde'))
     print("fechaDesde -->"+fechaInicio)
     fechaFin = str(data.get('fechaHasta'))
@@ -150,7 +160,7 @@ def generar_y_mostrar_agenda(usuarioID):
         validacionTransporte(-42.767470, -65.036549, transporte)
     except ValueError as e:
         error_message = str(e)
-        response = jsonify({'error': error_message})
+        response = jsonify({"error":error_message})
         response.status_code = 400
         response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
         return response
