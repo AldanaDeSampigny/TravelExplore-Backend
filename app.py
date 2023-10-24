@@ -141,8 +141,8 @@ def generar_y_mostrar_agenda(usuarioID):
         print(response)
         return response
 
-    # destino = 1
-    destino = int(destino)
+    destino = 1
+    #destino = int(destino)
     fechaInicio = str(data.get('fechaDesde'))
     print("fechaDesde -->"+fechaInicio)
     fechaFin = str(data.get('fechaHasta'))
@@ -286,7 +286,6 @@ def placesRoutes():
 
     places = gmaps.places(query=buscarLugar)
     
-
     ciudad = places.get('address_components', [])
     provincia = None
     pais = None

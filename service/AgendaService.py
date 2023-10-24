@@ -54,7 +54,6 @@ class AgendaService:
             lugarRepository = LugarRepository(session)
 
             gustoObtenido = gusto.getLugarUsuario(idUsuario,codigoLugar)
-            print("gustoObtenido --> ",str(gustoObtenido))
 
             if gustoObtenido != None:   
                 idLugar = gustoObtenido[0]
@@ -98,7 +97,6 @@ class AgendaService:
 
             if gustoObtenido != None:   
                 idLugar = gustoObtenido[0]
-                print("idLugar --> ",str(idLugar))
                 
                 gustoRepository.updateLike(idUsuario, idLugar, False)
 
@@ -300,7 +298,8 @@ class AgendaService:
 
                 while hora_actual < horario_fin:
                     for idx, m_id in enumerate(actividadIds):
-                        m = session.query(Actividad).get(m_id[0])
+
+                        m = session.query(Actividad).get(m_id)
                         lugar = agenda_repo.buscarLugar(m.id)
 
                         if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
@@ -336,7 +335,7 @@ class AgendaService:
 
                             siguiente_actividad = actividadIds[idx + 1] if idx + 1 < len(actividadIds) else None
                             if siguiente_actividad:
-                                siguiente_actividad_obj = session.query(Actividad).get(siguiente_actividad[0])
+                                siguiente_actividad_obj = session.query(Actividad).get(siguiente_actividad)
                                 siguiente_lugar = agenda_repo.buscarLugar(siguiente_actividad_obj.id)
 
                             direccion = self.calcularTiempoTraslado(lugar, siguiente_lugar, transporte)

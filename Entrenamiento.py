@@ -179,9 +179,9 @@ with Session(getEngine()) as session:
 
     _,recommended_indices = index(np.array([new_tensor], dtype=np.int32))  # Reemplaza new_tensor con las preferencias del usuario
     print(f"recomendaciones para el usuario 5: {recommended_indices[0, 6:9]}")
-    actividades_recomendadas = []
+    #actividades_recomendadas = []
     
-    for indice, info in enumerate(actividadesInfo_tensor):
+    """ for indice, info in enumerate(actividadesInfo_tensor):
         print("info", info)
         print("info indice", indice)
         for recomendacion in recommended_indices[0, 6:9]:   
@@ -190,11 +190,11 @@ with Session(getEngine()) as session:
             if tf.reduce_all(recomendacion == info):
                 actividad = aRepo.getActividad(indice)
                 print("actividad", actividad.nombre)
-                actividades_recomendadas.append(actividad.nombre)
+                actividades_recomendadas.append(actividad.nombre) """
 
     # Imprimir las recomendaciones de actividades
             # if probabilidad > 0.7:  # Puedes ajustar este umbral según tus preferencias
-    print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
+    #print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
     #model.save("modelo.keras")
     #modelo_cargado = tf.keras.models.load_model("modelo.keras")
 
