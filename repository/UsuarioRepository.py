@@ -25,15 +25,16 @@ class UsuarioRepository:
         return usuarios
 
     def getAgendaUsuario(self,usuarioID,idAgenda):  
-        #max_av_id = self.db_session.query(func.max(AgendaViaje.id)).scalar()
 
         agenda = (
-            self.db_session.query(ActividadAgenda.id_agenda,
+            self.db_session.query(
+                ActividadAgenda.id_agenda, 
                 AgendaDiaria.dia,
                 Actividad.id,
                 Actividad.nombre,
-                AgendaDiaria.horaInicio,
-                AgendaDiaria.horaFin,
+                ActividadAgenda.horadesde,
+                ActividadAgenda.horahasta,
+                AgendaViaje.id
             )
             .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
             .join(Actividad, Actividad.id == ActividadAgenda.id_actividad)
@@ -43,6 +44,7 @@ class UsuarioRepository:
             .join(Usuario, Usuario.id == Viaje.id_usuario)
             .filter(Usuario.id == usuarioID)
             .filter(AgendaViaje.id == idAgenda)
+            .order_by(ActividadAgenda.horadesde)
         )
      
         return agenda
@@ -75,6 +77,7 @@ class UsuarioRepository:
                 Itinerario.fechaHasta,
                 Ciudad.nombre,
                 AgendaDiaria.id_agenda_viaje
+            
             )
             .join(AgendaViaje, AgendaDiaria.id_agenda_viaje == AgendaViaje.id)
             .join(Itinerario, Itinerario.id == AgendaDiaria.itinerario_id)

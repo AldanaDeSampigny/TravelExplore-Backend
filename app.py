@@ -103,7 +103,6 @@ def mostrarDistancia(usuarioID, destinoID):
             listaInicial.append(cerca)
             print("inicial ", listaInicial)
 
-     
     return listaInicial
 
 
@@ -347,7 +346,7 @@ def placesRoutes():
     }
 """
 @app.route('/lugarGustos/<int:usuarioId>', methods=['GET'])
-def favoritos(idUsuario):
+def favoritos(usuarioId):
     buscarLugar = request.args.get('ciudad')
     idiomas_permitidos = ['es', 'mx', 'uy', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
 
@@ -355,6 +354,9 @@ def favoritos(idUsuario):
 
     places = gmaps.places(query=buscarLugar)
     
+    ciudad = places.get('address_components', [])
+    provincia = None
+    pais = None
 
     for component in ciudad:
         types = component.get('types', [])
@@ -403,7 +405,7 @@ def favoritos(idUsuario):
                     'website': place.get('website', None)
                 }
 
-                lugarFavorito = AgendaService(getEngine()).getLugarFavorito(idUsuario,lugar['id'])
+                lugarFavorito = AgendaService(getEngine()).getLugarFavorito(usuarioId,lugar['id'])
 
                 if(lugarFavorito != None):
                     likeLugarFavorito = lugarFavorito.like
@@ -490,10 +492,11 @@ def getAgenda(usuarioID,agendaID):
 
     for row in agendaUsuario:
         dia =  row[1].strftime("%Y-%m-%d") if row[1] else None
+        id = row[6]
         actividad = {
             "nombre_actividad": row[3],
-            "horaInicio":row[4].strftime("%H:%M:%S") if row[4] else None,
-            "horaFin": row[5].strftime("%H:%M:%S") if row[5] else None,
+            "horadesde":row[4].strftime("%H:%M:%S") if row[4] else None,
+            "horahasta": row[5].strftime("%H:%M:%S") if row[5] else None,
         }
 
         # Si el día ya existe en el diccionario, agregamos la actividad a la lista de actividades
@@ -585,7 +588,8 @@ def verAgendas(usuarioID):
         agenda = {
             "destino": str(agendaUsuario[2]),
             "fechaDesde": str(agendaUsuario[0]),
-            "fechaHasta": str(agendaUsuario[1])
+            "fechaHasta": str(agendaUsuario[1]),
+            "idAgendaViaje" :str(agendaUsuario[3])
         }
         agenda_json.append(agenda)
 
