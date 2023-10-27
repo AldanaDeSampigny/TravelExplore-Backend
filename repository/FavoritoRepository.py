@@ -1,4 +1,5 @@
 from sqlalchemy import update
+from ..models.Usuario import Usuario
 from ..models.Lugar import Lugar
 from ..models.LugaresFavoritos import LugaresFavoritos
 
@@ -30,6 +31,21 @@ class FavoritoRepository:
 
         self.db_session.add(nuevoLugar)
         self.db_session.commit()
+
+
+    def favoritosUsuario(self, usuarioID):
+        lugaresFavoritosUsuario = self.db_session.query(
+            Lugar.nombre,
+            Usuario.nombre,
+            LugaresFavoritos.like,
+            ).\
+        join(Lugar, LugaresFavoritos.lugar_id == Lugar.id).\
+        join(Usuario, LugaresFavoritos.usuario_id == Usuario.id).\
+        filter(Usuario.id == usuarioID).\
+        filter(LugaresFavoritos.like == True).all()
+
+        return lugaresFavoritosUsuario
+    
 """         self.db_session.execute(\
             update(LugaresFavoritos).\
             where(LugaresFavoritos.usuario_id == usuarioId and LugaresFavoritos.lugar_id == idLugar).\

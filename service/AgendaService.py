@@ -88,6 +88,7 @@ class AgendaService:
                     session.commit()
 
 
+    
     def quitarGusto(self,idUsuario,lugar):
         with Session(getEngine()) as session:
             gustoRepository = FavoritoRepository(session)
@@ -101,7 +102,16 @@ class AgendaService:
                 gustoRepository.updateLike(idUsuario, idLugar, False)
 
         return None
-            
+
+    def gustosUsuario(self,idUsuario):
+        with Session(getEngine()) as session:
+            gustoRepository = FavoritoRepository(session)
+
+            gustos = gustoRepository.favoritosUsuario(idUsuario)
+        
+            return gustos
+        
+        
     def saveAgenda(self, idUsuario, idCiudad, fechaDesde, fechaHasta, horaInicio, horaFin, agenda):
         with Session(getEngine()) as session:
     

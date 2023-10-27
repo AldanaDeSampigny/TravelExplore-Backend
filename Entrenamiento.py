@@ -132,7 +132,15 @@ with Session(getEngine()) as session:
             activity_embeddings = self.activity_model(features[0]['input_2'])
             return self.task(user_embeddings, activity_embeddings)
 
+        def get_config(self):
+            #Devuelve un diccionario con la configuración del modelo
+            #Puedes personalizar esto según tu modelo
+            config = super(MyModel, self).get_config()
+            #Agrega cualquier configuración específica de tu modelo al diccionario
+            return config 
+
     model = MyModel(user_model, activity_model, task)
+    #model.build(((None, num_categorias), (None, num_categorias)))
 
     # Compila el modelo
     model.compile(optimizer=tf.keras.optimizers.Adagrad(
@@ -158,27 +166,29 @@ with Session(getEngine()) as session:
     # Continuar con el entrenamiento del modelo
     model.fit(train_data, np.array(valoraciones, dtype=np.float32), epochs=50)
 
-    categoriasDelUsuario = CRepo.getCategoriaUsuario(5)
-    new = np.zeros(num_categorias, dtype=int)
-    usuarioCategoria= []
-    for i in range(1, num_categorias):
-        for categoria in enumerate(categoriasDelUsuario):
-            if i == categoria[1][0]:
-                new[i] = 1
-            else:
-                new[i] = 0
+    model.save_weights('modeloConH5.h5')
 
-    new_tensor = tf.convert_to_tensor(new, dtype=tf.float32)
-    # Create a model that takes in raw query features, and
-    index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
-    # recommends movies out of the entire movies dataset.
-    index.index_from_dataset(
-        tf.data.Dataset.zip((activities_dataset.batch(100), activities_dataset.batch(100).map(model.activity_model)))
-    ) 
+    # categoriasDelUsuario = CRepo.getCategoriaUsuario(22)
+    # new = np.zeros(num_categorias, dtype=int)
+    # usuarioCategoria= []
+    # for i in range(1, num_categorias):
+    #     for categoria in enumerate(categoriasDelUsuario):
+    #         if i == categoria[1][0]:
+    #             new[i] = 1
+    #         else:
+    #             new[i] = 0
+
+    # new_tensor = tf.convert_to_tensor(new, dtype=tf.float32)
+    # # Create a model that takes in raw query features, and
+    # index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
+    # # recommends movies out of the entire movies dataset.
+    # index.index_from_dataset(
+    #     tf.data.Dataset.zip((activities_dataset.batch(100), activities_dataset.batch(100).map(model.activity_model)))
+    # ) 
 
 
-    _,recommended_indices = index(np.array([new_tensor], dtype=np.int32))  # Reemplaza new_tensor con las preferencias del usuario
-    print(f"recomendaciones para el usuario 5: {recommended_indices[0, 6:9]}")
+    # _,recommended_indices = index(np.array([new_tensor], dtype=np.int32))  # Reemplaza new_tensor con las preferencias del usuario
+    # print(f"recomendaciones para el usuario : {recommended_indices[0, 6:9]}")
     #actividades_recomendadas = []
     
     """ for indice, info in enumerate(actividadesInfo_tensor):
@@ -195,7 +205,7 @@ with Session(getEngine()) as session:
     # Imprimir las recomendaciones de actividades
             # if probabilidad > 0.7:  # Puedes ajustar este umbral según tus preferencias
     #print("Recomendaciones de actividades para el usuario:", actividades_recomendadas)
-    #model.save("modelo.keras")
+    #model.save('modelo.keras')
     #modelo_cargado = tf.keras.models.load_model("modelo.keras")
 
     # print("recom: ", recomendaciones_probabilidades)

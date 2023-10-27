@@ -105,6 +105,23 @@ def mostrarDistancia(usuarioID, destinoID):
 
     return listaInicial
 
+@app.route('/getGustosUsuario/<int:usuarioID>',methods=['GET'])
+def getFavoritos(usuarioID):
+    agenda_service = AgendaService(getEngine())
+
+    gustos = agenda_service.gustosUsuario(usuarioID)    
+    
+    favoritosJson = []
+    
+    for gusto in gustos:
+        favoritos = {
+            "usuario":str(gusto[1]),
+            "lugar":str(gusto[0]),
+            "like":str(gusto[2]),
+        }
+        favoritosJson.append(favoritos)
+    return jsonify(favoritosJson)
+
 
 @app.route('/like/<int:usuarioID>',methods=['PUT'])
 def like(usuarioID):
