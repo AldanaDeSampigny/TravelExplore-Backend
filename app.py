@@ -364,13 +364,77 @@ def placesRoutes():
     
     return jsonify(lugares)
 
-""" Retorna 
-    []
-    {
-        "lugar": lugar,
-        "like": Boolean
-    }
-"""
+
+
+
+@app.route('/lugares/cercanos', methods=['GET'])
+def lugaresCercanos():
+    latitud = float(request.args.get('latitud'))
+    longitud = float(request.args.get('longitud'))
+
+    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+
+    localizacion = (latitud, longitud)
+    radio = 45000  # Radio en metros (45 km)
+
+    # Realiza la búsqueda de lugares cercanos
+    places = gmaps.places_nearby(location=localizacion, radius=radio)
+
+    # Filtra los primeros 5 resultados si hay más disponibles
+    lugares_cercanos = places['results'][:5]
+
+    ciudad = places.get('address_components', [])
+    provincia = None
+    pais = None
+
+    for component in ciudad:
+        types = component.get('types', [])
+        if 'locality' in types:
+            ciudad = component.get('long_name')
+        elif 'administrative_area_level_1' in types:
+            provincia = component.get('long_name')
+        elif 'country' in types:
+            pais = component.get('long_name')
+
+    lugares = []
+    imagen_url = None  # Inicializa la URL de la imagen como None
+    for place in lugares_cercanos:
+        photo_reference = place.get('photos', [{}])[0].get('photo_reference', None)
+        if photo_reference:
+            imagen_url = f'https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference={photo_reference}&key=AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
+
+        location = place['geometry']['location']
+        latitude = location['lat']
+        longitude = location['lng']
+
+        valoracion = place.get('rating', 'N/A')
+        if valoracion != 'N/A':
+            valoracion = float(valoracion)
+        else:
+            valoracion = 0.0
+        lugar = {
+            'id': place['place_id'],
+            'imagen': imagen_url if imagen_url else 'N/A',
+            'nombre': place['name'],
+            'tipo': place.get('types', ['N/A'])[0],
+            'direccion': place.get('formatted_address', 'N/A'),
+            'valoracion': valoracion,
+            'latitud': latitude,
+            'longitud': longitude,
+            'horarios': place.get('opening_hours', {}).get('weekday_text', 'N/A'),
+            'ciudad': ciudad if ciudad else 'N/A',
+            'provincia': provincia if provincia else 'N/A',
+            'pais': pais if pais else 'N/A',
+            'website': place.get('website', None)
+        }
+        lugares.append(lugar)
+
+    return jsonify(lugares)
+
+
+
+
+
 @app.route('/lugarGustos/<int:usuarioId>', methods=['GET'])
 def favoritos(usuarioId):
     buscarLugar = request.args.get('ciudad')
@@ -454,6 +518,11 @@ def favoritos(usuarioId):
         None, x['lugar']['nombre'], buscarLugar).ratio(), reverse=True)
     
     return jsonify(lugares)
+
+
+
+
+
 
 @app.route('/lugar/<id>', methods=['GET']) #guardar aca, si el lugar ya esta no guardar(query con pais provincia ciudad)
 def lugarEspecifico(id):
