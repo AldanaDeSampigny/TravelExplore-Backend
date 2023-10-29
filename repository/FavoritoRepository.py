@@ -35,7 +35,7 @@ class FavoritoRepository:
 
     def favoritosUsuario(self, usuarioID):
         lugaresFavoritosUsuario = self.db_session.query(
-            Lugar.nombre,
+            Lugar,
             Usuario.nombre,
             LugaresFavoritos.like,
             ).\

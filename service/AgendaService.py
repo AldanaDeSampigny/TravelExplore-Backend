@@ -59,7 +59,6 @@ class AgendaService:
                 idLugar = gustoObtenido[0]
                 
                 gusto.updateLike(idUsuario, idLugar, True)
-
             else:
                 lugarObtenido = lugarRepository.getLugar(codigoLugar)
 
@@ -75,9 +74,11 @@ class AgendaService:
                 else:
                     lugarService = LugarService(session)
 
+                    lugarRecibido = lugarRepository.getLugar(lugar.get('id'))   
+                    print("lugar",lugarRecibido)                 
+
                     lugarService.guardarLugar(lugar)
 
-                    lugarRecibido = lugarRepository.getLugar(lugar.get('id'))                    
                     
                     nuevo = LugaresFavoritos()
                     nuevo.usuario_id = idUsuario

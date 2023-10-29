@@ -115,25 +115,25 @@ def getFavoritos(usuarioID):
     
     for gusto in gustos:
         favoritos = {
+            "lugar":(gusto[0]),
             "usuario":str(gusto[1]),
-            "lugar":str(gusto[0]),
             "like":str(gusto[2]),
         }
         favoritosJson.append(favoritos)
     return jsonify(favoritosJson)
 
 
-@app.route('/like/<int:usuarioID>',methods=['PUT'])
+@app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
     agenda_service = AgendaService(getEngine())
     lugar = request.get_json()
 
     agenda_service.agregarGusto(usuarioID,lugar)    
 
-    return "Gusto actualizado"
+    return '{ "data": "Gusto Actualizado" }'
 
 
-@app.route('/dislike/<int:usuarioID>',methods=['PUT'])
+@app.route('/dislike/<int:usuarioID>',methods=['POST'])
 def dislike(usuarioID):
     agenda_service = AgendaService(getEngine())
     lugar = request.get_json()
@@ -141,7 +141,7 @@ def dislike(usuarioID):
     
     agenda_service.quitarGusto(usuarioID,lugar)    
 
-    return "Gusto Cambiado"
+    return '{ "data": "Gusto Actualizado" }'
 
 @app.route('/generar_agenda/<int:usuarioID>', methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID):
