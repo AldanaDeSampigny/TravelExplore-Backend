@@ -10,7 +10,7 @@ class LugaresFavoritos(Base):
     __tablename__ = 'lugares_favoritos'
     lugar_id = Column(Integer, ForeignKey('lugares.id'), primary_key=True)
     usuario_id = Column(Integer, ForeignKey('usuarios.id'),  primary_key=True)
-    like = Column(Boolean)
+    like = Column(Integer)
 
     metadata_obj.create_all(getEngine())
 
@@ -18,7 +18,8 @@ class LugaresFavoritos(Base):
         return {
             "id": self.id,
             "usuario_id": self.usuario_id,
-            "lugar_id": self.actividad_id
+            "lugar_id": self.actividad_id,
+            "like" : self.like
         }
 
 

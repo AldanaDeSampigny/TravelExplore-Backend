@@ -114,12 +114,14 @@ def getFavoritos(usuarioID):
     favoritosJson = []
     
     for gusto in gustos:
-        favoritos = {
-            "lugar":(gusto[0]),
-            "usuario":str(gusto[1]),
-            "like":str(gusto[2]),
+        favorito= {
+            "lugar" : str(gusto[0]),
+            "ciudad" : str(gusto[1]),
+            "usuario":str(gusto[2]),
+            "like":str(gusto[3]),
         }
-        favoritosJson.append(favoritos)
+
+        favoritosJson.append(favorito)
     return jsonify(favoritosJson)
 
 
@@ -500,7 +502,7 @@ def favoritos(usuarioId):
                 if(lugarFavorito != None):
                     likeLugarFavorito = lugarFavorito.like
                 else:
-                    likeLugarFavorito = False
+                    likeLugarFavorito = -1
 
                 lugarGusto = {
                     'lugar': lugar,

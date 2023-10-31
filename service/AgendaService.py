@@ -58,7 +58,7 @@ class AgendaService:
             if gustoObtenido != None:   
                 idLugar = gustoObtenido[0]
                 
-                gusto.updateLike(idUsuario, idLugar, True)
+                gusto.updateLike(idUsuario, idLugar, 1)
             else:
                 lugarObtenido = lugarRepository.getLugar(codigoLugar)
 
@@ -66,7 +66,7 @@ class AgendaService:
                     nuevoMeGusta = LugaresFavoritos()
                     nuevoMeGusta.usuario_id = idUsuario
                     nuevoMeGusta.lugar_id = lugarObtenido.id
-                    nuevoMeGusta.like = True
+                    nuevoMeGusta.like = 1
 
                     session.add(nuevoMeGusta)
                     session.commit()
@@ -79,28 +79,64 @@ class AgendaService:
 
                     lugarService.guardarLugar(lugar)
 
-                    
                     nuevo = LugaresFavoritos()
                     nuevo.usuario_id = idUsuario
                     nuevo.lugar_id = lugarRecibido.id
-                    nuevo.like = True
+                    nuevo.like = 1
 
                     session.add(nuevo)
                     session.commit()
-
-
+            
+            if gustoObtenido.like == 1:
+                idLugar = gustoObtenido[0]
+                gusto.updateLike(idUsuario, idLugar, -1)
     
+
     def quitarGusto(self,idUsuario,lugar):
         with Session(getEngine()) as session:
-            gustoRepository = FavoritoRepository(session)
+            gusto = FavoritoRepository(session)
             codigoLugar = lugar.get('id')
         
-            gustoObtenido = gustoRepository.getLugarUsuario(idUsuario,codigoLugar)
+            gustoObtenido = gusto.getLugarUsuario(idUsuario,codigoLugar)
+            
+            lugarRepository = LugarRepository(session)
+
 
             if gustoObtenido != None:   
                 idLugar = gustoObtenido[0]
                 
-                gustoRepository.updateLike(idUsuario, idLugar, False)
+                gusto.updateLike(idUsuario, idLugar, 0)
+            else:
+                lugarObtenido = lugarRepository.getLugar(codigoLugar)
+
+                if lugarObtenido != None:
+                    nuevoMeGusta = LugaresFavoritos()
+                    nuevoMeGusta.usuario_id = idUsuario
+                    nuevoMeGusta.lugar_id = lugarObtenido.id
+                    nuevoMeGusta.like = 0
+
+                    session.add(nuevoMeGusta)
+                    session.commit()
+                    
+                else:
+                    lugarService = LugarService(session)
+
+                    lugarRecibido = lugarRepository.getLugar(lugar.get('id'))   
+                    print("lugar",lugarRecibido)                 
+
+                    lugarService.guardarLugar(lugar)
+
+                    nuevo = LugaresFavoritos()
+                    nuevo.usuario_id = idUsuario
+                    nuevo.lugar_id = lugarRecibido.id
+                    nuevo.like = 0
+
+                    session.add(nuevo)
+                    session.commit()
+        
+            if gustoObtenido.like == 0:
+                
+                gusto.updateLike(idUsuario, idLugar, -1)
 
         return None
 
