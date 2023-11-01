@@ -10,7 +10,7 @@ class CategoriaRepository:
 
     def getCategoriaNombre(self, nombreCategoria):
         categoria = self.db_session.query(Categoria).\
-            filter(Categoria.nombre == nombreCategoria)
+            filter(Categoria.nombre == nombreCategoria).first()
         
         return categoria
 

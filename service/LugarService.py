@@ -25,194 +25,195 @@ class LugarService:
         with Session(getEngine()) as session:
             repository = LugarRepository(session)
 
-            nuevoLugar = Lugar()
-            nuevoLugar.codigo = lugar['id']
-            nuevoLugar.nombre = lugar['nombre']
-            nuevoLugar.tipo = lugar['tipo']
-            nuevoLugar.latitud = lugar['latitud']
-            nuevoLugar.longitud = lugar['longitud']
-            nuevoLugar.valoracion = lugar['valoracion']
-            nuevoLugar.imagen = lugar['imagen']
+            if lugar['tipo'] == 'city' or lugar['tipo'] == 'locality':
+                self.guardarCiudad(lugar)
+                return
 
-            ciudad = repository.getCiudadLugar(lugar['ciudad'])
-            if ciudad:
-                nuevoLugar.id_ciudad = ciudad.id
-                print("ciudad existe, guardado")
-            else:
-                nuevoCiudad = Ciudad()
-                nuevoCiudad.nombre = lugar['ciudad']
-                session.add(nuevoCiudad)
+            lugarEncontrado = repository.getLugar(lugar['id'])
+            if lugarEncontrado:
+                lugarCate = repository.getLugarCategoria(lugarEncontrado.id)
+                if not lugarCate:
+                    self.guardarCategoria(lugarEncontrado, lugar['tipo'])
+            
+                if(lugarEncontrado.valoracion is None or lugarEncontrado.imagen is None):
+                    lugarEncontrado.valoracion = lugar['valoracion']
+                    lugarEncontrado.imagen = lugar['imagen']
+
+                session.add(lugarEncontrado)
                 session.commit()
-                nuevoLugar.id_ciudad = nuevoCiudad.id
-                print("ciudad no existe, a guardao")
+            else: 
+                nuevoLugar = Lugar()
+                nuevoLugar.codigo = lugar['id']
+                nuevoLugar.nombre = lugar['nombre']
+                nuevoLugar.tipo = lugar['tipo']
+                nuevoLugar.latitud = lugar['latitud']
+                nuevoLugar.longitud = lugar['longitud']
+                nuevoLugar.valoracion = lugar['valoracion']
+                nuevoLugar.imagen = lugar['imagen']
 
-            session.add(nuevoLugar)
-            session.commit()
+                ciudad = repository.getCiudadLugar(lugar['ciudad'])
+                if ciudad:
+                    nuevoLugar.id_ciudad = ciudad.id
+                    print("ciudad existe, guardado")
+                else:
+                    nuevoCiudad = Ciudad()
+                    nuevoCiudad.nombre = lugar['ciudad']
+                    session.add(nuevoCiudad)
+                    session.commit()
+                    nuevoLugar.id_ciudad = nuevoCiudad.id
+                    print("ciudad no existe, a guardao")
 
+                session.add(nuevoLugar)
+                session.commit()
+
+                self.guardarCategoria(nuevoLugar, lugar['tipo'])
+
+                horarios = lugar.get('horarios', [])
+                for dia in horarios:
+                    horarioDia = dia.split(': ')
+                    day = horarioDia[0].strip()
+                    for horario_part in horarioDia:
+                        if ':' in horario_part:
+                            for part in horario_part.split(','):
+                                rangoTiempo = part.replace('\u202f', ' ').replace('\u2009', ' ')
+                                if ':00 –' in rangoTiempo:
+                                    rangoTiempo = rangoTiempo.replace(
+                                        ':00 –', ':00\u202fPM –')
+                                elif ':30 –' in rangoTiempo:
+                                    rangoTiempo = rangoTiempo.replace(
+                                        ':30 –', ':30\u202fPM –')
+                                
+                                horas = re.findall(r'\d+:\d+\s*[APapMm]+', rangoTiempo)
+                                if len(horas) == 2:
+                                    hora_inicio_str, hora_fin_str = horas
+                                    hora_inicio = datetime.datetime.strptime(
+                                        hora_inicio_str, '%I:%M %p').strftime('%H:%M:%S')
+                                    hora_fin = datetime.datetime.strptime(
+                                        hora_fin_str, '%I:%M %p').strftime('%H:%M:%S')
+                                    
+                                    horario = Horario()
+                                    horario.id_lugar = nuevoLugar.id
+                                    horario.dia = day
+                                    horario.horaInicio = hora_inicio
+                                    horario.horaFin = hora_fin
+
+                                    session.add(horario)
+                                    session.commit()
+                                else:
+                                    print("No se encontró un formato de hora válido en:", rangoTiempo)
+                        
+            print("se guardo")
+
+    def guardarCategoria(self, lugar, categoriaNombre):
+        with Session(getEngine()) as session:
             repository = CategoriaRepository(session)
-            print('tipo ', lugar['tipo'])
-            categoria = repository.getCategoriaNombre(lugar['tipo'])
-            print('categoria ', categoria)
+            categoria = repository.getCategoriaNombre(categoriaNombre)
 
-            if categoria :
-               
+            if categoria:
                 nuevoLugarCategoria = LugarCategoria()
-                nuevoLugarCategoria.id_lugar = nuevoLugar.id
+                nuevoLugarCategoria.id_lugar = lugar.id
                 nuevoLugarCategoria.id_categoria = categoria.id
 
                 session.add(nuevoLugarCategoria)
                 session.commit()
             else:
-
                 nuevaCategoria = Categoria()
-                nuevaCategoria.nombre = lugar['tipo']
-                
+                nuevaCategoria.nombre = categoriaNombre
+
                 session.add(nuevaCategoria)
                 session.commit()
 
                 nuevoLugarCategoria = LugarCategoria()
-                nuevoLugarCategoria.id_lugar = nuevoLugar.id
+                nuevoLugarCategoria.id_lugar = lugar.id
                 nuevoLugarCategoria.id_categoria = nuevaCategoria.id
 
                 session.add(nuevoLugarCategoria)
                 session.commit()
 
 
-            horarios = lugar.get('horarios', [])
-            for dia in horarios:
-                horarioDia = dia.split(': ')
-                day = horarioDia[0].strip()
-                for horario_part in horarioDia:
-                    if ':' in horario_part:
-                        for part in horario_part.split(','):
-                            rangoTiempo = part.replace('\u202f', ' ').replace('\u2009', ' ')
-                            if ':00 –' in rangoTiempo:
-                                rangoTiempo = rangoTiempo.replace(
-                                    ':00 –', ':00\u202fPM –')
-                            elif ':30 –' in rangoTiempo:
-                                rangoTiempo = rangoTiempo.replace(
-                                    ':30 –', ':30\u202fPM –')
-                            
-                            horas = re.findall(r'\d+:\d+\s*[APapMm]+', rangoTiempo)
-                            if len(horas) == 2:
-                                hora_inicio_str, hora_fin_str = horas
-                                hora_inicio = datetime.datetime.strptime(
-                                    hora_inicio_str, '%I:%M %p').strftime('%H:%M:%S')
-                                hora_fin = datetime.datetime.strptime(
-                                    hora_fin_str, '%I:%M %p').strftime('%H:%M:%S')
-                                
-                                horario = Horario()
-                                horario.id_lugar = nuevoLugar.id
-                                horario.dia = day
-                                horario.horaInicio = hora_inicio
-                                horario.horaFin = hora_fin
-
-                                session.add(horario)
-                                session.commit()
-                            else:
-                                print("No se encontró un formato de hora válido en:", rangoTiempo)
-                        
-            print("se guardo")
-
-
     def guardarCiudad(self, ciudad):
         with Session(getEngine()) as session:
             repository = LugarRepository(session)
 
-            ciudadExistente = repository.getCiudad(ciudad['id'], ciudad['nombre'])
+            # repository.getCiudad(ciudad['id'], ciudad['nombre'])
+            ciudadExistente = repository.getCiudad(ciudad['id'])
             if not ciudadExistente:
                 nuevaCiudad = Ciudad()
                 nuevaCiudad.codigo = ciudad['id']
                 nuevaCiudad.nombre = ciudad['nombre']
-
-                provincia = repository.getProvinciaCiudad(ciudad['provincia'])
-                if provincia:
-                    nuevaCiudad.id_provincia = provincia.id
-                else:
-                    nuevoProvincia = Provincia()
-                    nuevoProvincia.nombre = ciudad['provincia']
-                    session.add(nuevoProvincia)
-                    session.commit()
-                    nuevaCiudad.id_provincia = nuevoProvincia.id
-                    print("forma pa guardar provincia")
+                nuevaCiudad.latitud = ciudad['latitud']
+                nuevaCiudad.longitud = ciudad['latitud']
 
                 session.add(nuevaCiudad)
                 session.commit()
                 print("se guardo")
-            elif ciudadExistente.codigo is None or ciudadExistente.id_pais is None:
+            elif ciudadExistente.codigo is None or ciudadExistente.latitud is None or ciudadExistente.longitud is None:
                 ciudadExistente.codigo = ciudad['id']
-                provincia = repository.getProvinciaCiudad(ciudad['pais'])
-                if provincia:
-                    ciudadExistente.id_provincia = provincia.id
-                else:
-                    nuevoProvincia = Provincia()
-                    nuevoProvincia.nombre = provincia['pais']
-                    session.add(nuevoProvincia)
-                    session.commit()
-                    ciudadExistente.id_pais = nuevoProvincia.id
+                ciudadExistente.latitud = ciudad['latitud']
+                ciudadExistente.longitud = ciudad['latitud']
 
                 session.add(ciudadExistente)
                 session.commit()
                 print("se modifico ciudad")
 
-    def guardarProvincia(self, provincia):
-        with Session(getEngine()) as session:
-            repository = LugarRepository(session)
+    # def guardarProvincia(self, provincia):
+    #     with Session(getEngine()) as session:
+    #         repository = LugarRepository(session)
 
-            provinciaExistente = repository.getProvincia(provincia['id'], provincia['nombre'])
-            if not provinciaExistente:
-                nuevaProvincia = Provincia()
-                nuevaProvincia.codigo = provincia['id']
-                nuevaProvincia.nombre = provincia['nombre']
+    #         provinciaExistente = repository.getProvincia(provincia['id'], provincia['nombre'])
+    #         if not provinciaExistente:
+    #             nuevaProvincia = Provincia()
+    #             nuevaProvincia.codigo = provincia['id']
+    #             nuevaProvincia.nombre = provincia['nombre']
 
-                pais = repository.getPaisProvincia(provincia['pais'])
-                if pais:
-                    nuevaProvincia.id_pais = pais.id
-                else:
-                    nuevoPais = Pais()
-                    nuevoPais.nombre = provincia['pais']
-                    session.add(nuevoPais)
-                    session.commit()
-                    nuevaProvincia.id_pais = nuevoPais.id
-                    print("forma para guardar pais")
+    #             pais = repository.getPaisProvincia(provincia['pais'])
+    #             if pais:
+    #                 nuevaProvincia.id_pais = pais.id
+    #             else:
+    #                 nuevoPais = Pais()
+    #                 nuevoPais.nombre = provincia['pais']
+    #                 session.add(nuevoPais)
+    #                 session.commit()
+    #                 nuevaProvincia.id_pais = nuevoPais.id
+    #                 print("forma para guardar pais")
 
-                session.add(nuevaProvincia)
-                session.commit()
-                print("se guardo")
-            elif provinciaExistente.codigo is None or provinciaExistente.id_pais is None:
-                provinciaExistente.codigo = provincia['id']
-                pais = repository.getPaisProvincia(provincia['pais'])
-                if pais:
-                    provinciaExistente.id_pais = pais.id
-                else:
-                    nuevoPais = Pais()
-                    nuevoPais.nombre = provincia['pais']
-                    session.add(nuevoPais)
-                    session.commit()
-                    provinciaExistente.id_pais = nuevoPais.id
+    #             session.add(nuevaProvincia)
+    #             session.commit()
+    #             print("se guardo")
+    #         elif provinciaExistente.codigo is None or provinciaExistente.id_pais is None:
+    #             provinciaExistente.codigo = provincia['id']
+    #             pais = repository.getPaisProvincia(provincia['pais'])
+    #             if pais:
+    #                 provinciaExistente.id_pais = pais.id
+    #             else:
+    #                 nuevoPais = Pais()
+    #                 nuevoPais.nombre = provincia['pais']
+    #                 session.add(nuevoPais)
+    #                 session.commit()
+    #                 provinciaExistente.id_pais = nuevoPais.id
 
-                session.add(provinciaExistente)
-                session.commit()
-                print("se modifico provincia")
+    #             session.add(provinciaExistente)
+    #             session.commit()
+    #             print("se modifico provincia")
 
-    def guardarPais(self, pais):
-        with Session(getEngine()) as session:
-            repository = LugarRepository(session)
+    # def guardarPais(self, pais):
+    #     with Session(getEngine()) as session:
+    #         repository = LugarRepository(session)
 
-            paisExistente = repository.getPais(pais['id'], pais['nombre'])
-            if not paisExistente:
-                nuevaPais = Pais()
-                nuevaPais.codigo = pais['id']
-                nuevaPais.nombre = pais['nombre']
+    #         paisExistente = repository.getPais(pais['id'], pais['nombre'])
+    #         if not paisExistente:
+    #             nuevaPais = Pais()
+    #             nuevaPais.codigo = pais['id']
+    #             nuevaPais.nombre = pais['nombre']
 
-                session.add(nuevaPais)
-                session.commit()
-                print("se guardo pais")
-            elif paisExistente.codigo is None:
-                paisExistente.codigo = pais['id']
-                session.add(paisExistente)
-                session.commit()
-                print("modifico el codigo")
+    #             session.add(nuevaPais)
+    #             session.commit()
+    #             print("se guardo pais")
+    #         elif paisExistente.codigo is None:
+    #             paisExistente.codigo = pais['id']
+    #             session.add(paisExistente)
+    #             session.commit()
+    #             print("modifico el codigo")
 
 #primero basico, luego que guarde los horarios en una nueva tabla, y luego dividir si son ciudades pa q las guarde
     def guardarSitio(self, sitio): 
@@ -228,14 +229,16 @@ class LugarService:
             'tourist_attraction': self.guardarLugar,
             'store': self.guardarLugar,
             'food': self.guardarLugar,
+            'museum': self.guardarLugar,
             'electronics_store': self.guardarLugar,
             'church': self.guardarLugar,
+            'tourist_attraction': self.guardarLugar,
             'insurance_agency': self.guardarLugar,
-            #'university': self.guardarLugar,
+            'lodging': self.guardarLugar,
             'city': self.guardarCiudad,
             'locality': self.guardarCiudad,
-            'administrative_area_level_1': self.guardarProvincia,
-            'country': self.guardarPais
+            # 'administrative_area_level_1': self.guardarProvincia,
+            # 'country': self.guardarPais
         }
 
         if tipoSitio in switch_dict:
