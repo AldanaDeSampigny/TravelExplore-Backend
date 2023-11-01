@@ -149,6 +149,10 @@ def generar_y_mostrar_agenda(usuarioID):
     data = request.get_json()
 
     destino = data.get('destino')
+    partes = destino.split(" - ")
+    if len(partes) > 1:
+        destino = partes[-1]
+    print(destino)
 
     if destino is None or destino == '':
         error_message = "Se debe ingresar el destino del viaje"

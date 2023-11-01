@@ -98,19 +98,30 @@ with Session(getEngine()) as session:
             user_embeddings = self.user_model(features['input_1'])
             activity_embeddings = self.activity_model(features['input_2'])
             return self.task(user_embeddings, activity_embeddings)
-    
-    # def get_config(self):
-    #     #Devuelve un diccionario con la configuración del modelo
-    #     #Puedes personalizar esto según tu modelo
-    #     config = super(MyModel, self).get_config()
-    #     #Agrega cualquier configuración específica de tu modelo al diccionario
-    #     return config 
+
+        def call(self, inputs, training=False):
+            print("owo ",inputs)
+            print("owo2 ", inputs['input_1'])
+            user_embeddings = self.user_model(inputs['input_1'])
+            activity_embeddings = self.activity_model(inputs['input_2'])
+            return self.task(user_embeddings, activity_embeddings)
 
     model = MyModel(user_model, activity_model, task)
 
-    model.build(((None, num_categorias), (None, num_categorias)))
+    optimizer = tf.keras.optimizers.Adagrad(0.1)
+    loss_fn = tf.keras.losses.MeanSquaredError()  # tfrs.pointwise()
+
+    # Compila el modelo con el optimizador y la función de pérdida
+    model.compile(optimizer, loss=loss_fn)
     # Cargar los pesos en el modelo
-    model.load_weights('pesos_modeloConH5.h5')
+
+    dummy_input = {
+        'input_1': tf.zeros((1, num_categorias), dtype=tf.float32),
+        'input_2': tf.zeros((1, num_actividades), dtype=tf.float32)
+    }
+    _ = model(dummy_input)
+
+    model.load_weights('modeloConH5.h5')
 
     # Continuar con las predicciones utilizando el modelo cargado
     categoriasDelUsuario = CRepo.getCategoriaUsuario(22)
