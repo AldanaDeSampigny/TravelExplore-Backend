@@ -11,11 +11,11 @@ class Lugar(Base): #AGREGAR VALORACION ACAA, NO EN ACTIVIDAD
   id = Column(Integer, primary_key=false) #el lugar puede ser nulo  
   codigo = Column(String)
   nombre = Column(String)
-  horaApertura = Column(Time)
-  horaCierre = Column(Time)
   tipo = Column(String)
   latitud = Column(Float) 
   longitud = Column(Float)
+  imagen = Column(String)
+  valoracion = Column(Float)
   id_ciudad = Column(db.ForeignKey("ciudades.id"))
   #categorias = relationship('Categoria', secondary='lugares_categorias', back_populates='lugares')
 
@@ -27,9 +27,8 @@ class Lugar(Base): #AGREGAR VALORACION ACAA, NO EN ACTIVIDAD
       "id": self.id,
       "nombre": self.nombre,
       "codigo": self.codigo,
-      "horaApertura": self.horaApertura,
-      "horaCierre": self.horaCierre,
       "tipo": self.tipo,
       "latitud": self.latitud,
-      "longitud": self.longitud
+      "longitud": self.longitud,
+      "valoracion": self.valoracion,
     }

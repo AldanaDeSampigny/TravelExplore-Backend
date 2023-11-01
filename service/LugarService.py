@@ -2,6 +2,10 @@ import datetime
 import re
 from turtle import update
 import json
+from ..models.Categoria import Categoria
+from ..models.LugarCategoria import LugarCategoria
+
+from ..repository.CategoriaRepository import CategoriaRepository
 
 from ..models.Pais import Pais
 from ..models.Provincia import Provincia
@@ -27,6 +31,8 @@ class LugarService:
             nuevoLugar.tipo = lugar['tipo']
             nuevoLugar.latitud = lugar['latitud']
             nuevoLugar.longitud = lugar['longitud']
+            nuevoLugar.valoracion = lugar['valoracion']
+            nuevoLugar.imagen = lugar['imagen']
 
             ciudad = repository.getCiudadLugar(lugar['ciudad'])
             if ciudad:
@@ -43,9 +49,37 @@ class LugarService:
             session.add(nuevoLugar)
             session.commit()
 
+            repository = CategoriaRepository(session)
+            print('tipo ', lugar['tipo'])
+            categoria = repository.getCategoriaNombre(lugar['tipo'])
+            print('categoria ', categoria)
+
+            if categoria :
+               
+                nuevoLugarCategoria = LugarCategoria()
+                nuevoLugarCategoria.id_lugar = nuevoLugar.id
+                nuevoLugarCategoria.id_categoria = categoria.id
+
+                session.add(nuevoLugarCategoria)
+                session.commit()
+            else:
+
+                nuevaCategoria = Categoria()
+                nuevaCategoria.nombre = lugar['tipo']
+                
+                session.add(nuevaCategoria)
+                session.commit()
+
+                nuevoLugarCategoria = LugarCategoria()
+                nuevoLugarCategoria.id_lugar = nuevoLugar.id
+                nuevoLugarCategoria.id_categoria = nuevaCategoria.id
+
+                session.add(nuevoLugarCategoria)
+                session.commit()
+
+
             horarios = lugar.get('horarios', [])
             for dia in horarios:
-                # Dividir la cadena de horario en días y rangos de tiempo
                 horarioDia = dia.split(': ')
                 day = horarioDia[0].strip()
                 for horario_part in horarioDia:
@@ -79,7 +113,7 @@ class LugarService:
                                 print("No se encontró un formato de hora válido en:", rangoTiempo)
                         
             print("se guardo")
-        
+
 
     def guardarCiudad(self, ciudad):
         with Session(getEngine()) as session:

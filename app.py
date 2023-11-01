@@ -2,6 +2,8 @@ from collections import defaultdict
 from datetime import datetime
 import dbm
 
+from .service.LugarFavoritoService import LugarFavoritoService
+
 from .repository.AgendaRepository import AgendaRepository
 
 from .repository.LugarRepository import LugarRepository
@@ -82,8 +84,7 @@ def clean_publications():
 def serialize_timedelta(td):
     return str(td)
 
-@app.route('/generarprueba/<int:usuarioID>/<int:destinoID>'
-            , methods=['GET'])
+@app.route('/generarprueba/<int:usuarioID>/<int:destinoID>',methods=['GET'])
 def mostrarDistancia(usuarioID, destinoID):
     with Session(getEngine()) as session:
         agenda_repo = AgendaRepository(session)
@@ -107,9 +108,9 @@ def mostrarDistancia(usuarioID, destinoID):
 
 @app.route('/getGustosUsuario/<int:usuarioID>',methods=['GET'])
 def getFavoritos(usuarioID):
-    agenda_service = AgendaService(getEngine())
+    lugarFavoritoService = LugarFavoritoService(getEngine())
 
-    gustos = agenda_service.gustosUsuario(usuarioID)    
+    gustos = lugarFavoritoService.gustosUsuario(usuarioID)    
     
     favoritosJson = []
     
@@ -127,21 +128,21 @@ def getFavoritos(usuarioID):
 
 @app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
-    agenda_service = AgendaService(getEngine())
+    lugarFavoritoService = LugarFavoritoService(getEngine())
     lugar = request.get_json()
 
-    agenda_service.agregarGusto(usuarioID,lugar)    
+    lugarFavoritoService.agregarGusto(usuarioID,lugar)    
 
     return '{ "data": "Gusto Actualizado" }'
 
 
 @app.route('/dislike/<int:usuarioID>',methods=['POST'])
 def dislike(usuarioID):
-    agenda_service = AgendaService(getEngine())
+    lugarFavoritoService = LugarFavoritoService(getEngine())
     lugar = request.get_json()
     print("Lugar --> ",str(lugar))
     
-    agenda_service.quitarGusto(usuarioID,lugar)    
+    lugarFavoritoService.quitarGusto(usuarioID,lugar)    
 
     return '{ "data": "Gusto Actualizado" }'
 
@@ -497,7 +498,7 @@ def favoritos(usuarioId):
                     'website': place.get('website', None)
                 }
 
-                lugarFavorito = AgendaService(getEngine()).getLugarFavorito(usuarioId,lugar['id'])
+                lugarFavorito = LugarFavoritoService(getEngine()).getLugarFavorito(usuarioId,lugar['id'])
 
                 if(lugarFavorito != None):
                     likeLugarFavorito = lugarFavorito.like

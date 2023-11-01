@@ -5,17 +5,9 @@ import json
 import numpy as np
 from sqlalchemy import Row
 
-from ..service.LugarService import LugarService
 from ..models.Lugar import Lugar
 
-from ..models.LugaresFavoritos import LugaresFavoritos
-
-from ..repository.LugarRepository import LugarRepository
-
 from ..repository.UsuarioRepository import UsuarioRepository
-from ..repository.FavoritoRepository import FavoritoRepository
-
-from sqlalchemy import update
 
 from ..models.AgendaViaje import AgendaViaje
 
@@ -36,119 +28,6 @@ class AgendaService:
     def __init__(self, db_session):
         self.db_session = db_session
 
-
-    def getLugarFavorito(self,idUsuario,codigoLugar):
-        with Session(getEngine()) as session:
-            gusto = FavoritoRepository(session)
-
-            gustoObtenido = gusto.getLugarUsuario(idUsuario,codigoLugar)
-
-            return gustoObtenido
-
-
-    def agregarGusto(self,idUsuario,lugar):
-        with Session(getEngine()) as session:
-            gusto = FavoritoRepository(session)
-            codigoLugar = lugar.get('id')
-            
-            lugarRepository = LugarRepository(session)
-
-            gustoObtenido = gusto.getLugarUsuario(idUsuario,codigoLugar)
-
-            if gustoObtenido != None:   
-                idLugar = gustoObtenido[0]
-                
-                gusto.updateLike(idUsuario, idLugar, 1)
-            else:
-                lugarObtenido = lugarRepository.getLugar(codigoLugar)
-
-                if lugarObtenido != None:
-                    nuevoMeGusta = LugaresFavoritos()
-                    nuevoMeGusta.usuario_id = idUsuario
-                    nuevoMeGusta.lugar_id = lugarObtenido.id
-                    nuevoMeGusta.like = 1
-
-                    session.add(nuevoMeGusta)
-                    session.commit()
-                    
-                else:
-                    lugarService = LugarService(session)
-
-                    lugarRecibido = lugarRepository.getLugar(lugar.get('id'))   
-                    print("lugar",lugarRecibido)                 
-
-                    lugarService.guardarLugar(lugar)
-
-                    nuevo = LugaresFavoritos()
-                    nuevo.usuario_id = idUsuario
-                    nuevo.lugar_id = lugarRecibido.id
-                    nuevo.like = 1
-
-                    session.add(nuevo)
-                    session.commit()
-            
-            if gustoObtenido.like == 1:
-                idLugar = gustoObtenido[0]
-                gusto.updateLike(idUsuario, idLugar, -1)
-    
-
-    def quitarGusto(self,idUsuario,lugar):
-        with Session(getEngine()) as session:
-            gusto = FavoritoRepository(session)
-            codigoLugar = lugar.get('id')
-        
-            gustoObtenido = gusto.getLugarUsuario(idUsuario,codigoLugar)
-            
-            lugarRepository = LugarRepository(session)
-
-
-            if gustoObtenido != None:   
-                idLugar = gustoObtenido[0]
-                
-                gusto.updateLike(idUsuario, idLugar, 0)
-            else:
-                lugarObtenido = lugarRepository.getLugar(codigoLugar)
-
-                if lugarObtenido != None:
-                    nuevoMeGusta = LugaresFavoritos()
-                    nuevoMeGusta.usuario_id = idUsuario
-                    nuevoMeGusta.lugar_id = lugarObtenido.id
-                    nuevoMeGusta.like = 0
-
-                    session.add(nuevoMeGusta)
-                    session.commit()
-                    
-                else:
-                    lugarService = LugarService(session)
-
-                    lugarRecibido = lugarRepository.getLugar(lugar.get('id'))   
-                    print("lugar",lugarRecibido)                 
-
-                    lugarService.guardarLugar(lugar)
-
-                    nuevo = LugaresFavoritos()
-                    nuevo.usuario_id = idUsuario
-                    nuevo.lugar_id = lugarRecibido.id
-                    nuevo.like = 0
-
-                    session.add(nuevo)
-                    session.commit()
-        
-            if gustoObtenido.like == 0:
-                
-                gusto.updateLike(idUsuario, idLugar, -1)
-
-        return None
-
-    def gustosUsuario(self,idUsuario):
-        with Session(getEngine()) as session:
-            gustoRepository = FavoritoRepository(session)
-
-            gustos = gustoRepository.favoritosUsuario(idUsuario)
-        
-            return gustos
-        
-        
     def saveAgenda(self, idUsuario, idCiudad, fechaDesde, fechaHasta, horaInicio, horaFin, agenda):
         with Session(getEngine()) as session:
     

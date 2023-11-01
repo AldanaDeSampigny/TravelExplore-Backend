@@ -8,6 +8,12 @@ class CategoriaRepository:
     def __init__(self, db_session): #esto seria un constructor
         self.db_session = db_session
 
+    def getCategoriaNombre(self, nombreCategoria):
+        categoria = self.db_session.query(Categoria).\
+            filter(Categoria.nombre == nombreCategoria)
+        
+        return categoria
+
     def getCategoriaUsuario(self, usuarioID):
         id = int(usuarioID)
         categorias = self.db_session.query(Categoria.id).\
