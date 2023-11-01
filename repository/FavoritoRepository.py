@@ -1,4 +1,6 @@
 from sqlalchemy import update
+
+from ..models.Ciudad import Ciudad
 from ..models.Usuario import Usuario
 from ..models.Lugar import Lugar
 from ..models.LugaresFavoritos import LugaresFavoritos
@@ -35,14 +37,16 @@ class FavoritoRepository:
 
     def favoritosUsuario(self, usuarioID):
         lugaresFavoritosUsuario = self.db_session.query(
-            Lugar,
+            Lugar.nombre,
+            Ciudad.nombre,
             Usuario.nombre,
             LugaresFavoritos.like,
             ).\
         join(Lugar, LugaresFavoritos.lugar_id == Lugar.id).\
         join(Usuario, LugaresFavoritos.usuario_id == Usuario.id).\
+        join(Ciudad,Lugar.id_ciudad == Ciudad.id).\
         filter(Usuario.id == usuarioID).\
-        filter(LugaresFavoritos.like == True).all()
+        filter(LugaresFavoritos.like == 1).all()
 
         return lugaresFavoritosUsuario
     
