@@ -1,3 +1,4 @@
+from ..models.LugarCategoria import LugarCategoria
 from ..models.Provincia import Provincia
 from ..models.Pais import Pais
 from ..models.Ciudad import Ciudad
@@ -19,16 +20,21 @@ class LugarRepository:
 
         return lugar
     
+    def getLugarCategoria(self, idLugar):
+        lugar = self.db_session.query(LugarCategoria).\
+            filter(LugarCategoria.id_lugar == idLugar).first()
+
+        return lugar
+    
     def getLugarById(self, id):
         lugar = self.db_session.query(Lugar).\
             filter(Lugar.codigo == id).first()
 
         return lugar
     
-    def getCiudad(self, codigoCiudad, nombreCiudad):
+    def getCiudad(self, codigoCiudad):
         ciudad = self.db_session.query(Ciudad).\
-            filter((Ciudad.codigo == codigoCiudad) |(Ciudad.codigo.is_(None))).\
-            filter(Ciudad.nombre == nombreCiudad).first()
+            filter((Ciudad.codigo == codigoCiudad) |(Ciudad.codigo.is_(None))).first()
 
         return ciudad
     
@@ -48,8 +54,6 @@ class LugarRepository:
     
     def getCiudadLugar(self, nombreCiudad):
         ciudad = self.db_session.query(Ciudad).\
-            join(Provincia, Provincia.id == Ciudad.id_provincia).\
-            join(Pais, Pais.id == Provincia.id_pais).\
             filter(Ciudad.nombre == nombreCiudad).first()
         
         return ciudad
