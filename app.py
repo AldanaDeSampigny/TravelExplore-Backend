@@ -2,6 +2,8 @@ from collections import defaultdict
 from datetime import datetime
 import dbm
 
+from .service.ActividadFavoritaService import ActividadFavoritaService
+
 from .service.LugarFavoritoService import LugarFavoritoService
 
 from .repository.AgendaRepository import AgendaRepository
@@ -135,6 +137,14 @@ def like(usuarioID):
 
     return '{ "data": "Gusto Actualizado" }'
 
+@app.route('/likeActividad/<int:usuarioID>',methods=['POST'])
+def likeActividad(usuarioID):
+    actividadFavoritaService = ActividadFavoritaService(getEngine())
+    actividad = request.get_json()
+
+    actividadFavoritaService.agregarGustoActividad(usuarioID,actividad)    
+
+    return '{ "data": "Gusto Actividad Actualizado" }'
 
 @app.route('/dislike/<int:usuarioID>',methods=['POST'])
 def dislike(usuarioID):
@@ -145,6 +155,16 @@ def dislike(usuarioID):
     lugarFavoritoService.quitarGusto(usuarioID,lugar)    
 
     return '{ "data": "Gusto Actualizado" }'
+
+@app.route('/dislikeActividad/<int:usuarioID>',methods=['POST'])
+def dislikeActividad(usuarioID):
+    actividadFavoritaService = ActividadFavoritaService(getEngine())
+    actividad = request.get_json()
+    print("Actividad --> ",str(actividad))
+    
+    actividadFavoritaService.quitarGustoActividad(usuarioID,actividad)    
+
+    return '{"data": "Gusto  Actividad Actualizado" }'
 
 @app.route('/generar_agenda/<int:usuarioID>', methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID):
@@ -368,8 +388,6 @@ def placesRoutes():
     return jsonify(lugares)
 
 
-
-
 @app.route('/lugares/cercanos', methods=['GET'])
 def lugaresCercanos():
     latitud = float(request.args.get('latitud'))
@@ -433,9 +451,6 @@ def lugaresCercanos():
         lugares.append(lugar)
 
     return jsonify(lugares)
-
-
-
 
 
 @app.route('/lugarGustos/<int:usuarioId>', methods=['GET'])
@@ -523,10 +538,6 @@ def favoritos(usuarioId):
     return jsonify(lugares)
 
 
-
-
-
-
 @app.route('/lugar/<id>', methods=['GET']) #guardar aca, si el lugar ya esta no guardar(query con pais provincia ciudad)
 def lugarEspecifico(id):
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
@@ -577,7 +588,6 @@ def lugarEspecifico(id):
     else:
         return jsonify({'error': 'Place not found'})
 
-
 @app.route('/agendaID/<int:usuarioID>/<int:agendaID>' ,methods = ['GET'])
 def getAgenda(usuarioID,agendaID):
     # Leer el json recibido
@@ -611,7 +621,6 @@ def getAgenda(usuarioID,agendaID):
         agenda_json = list(agenda_data.values())
 
     return agenda_json
-
 
 @app.route('/verAgendaUsuario/<int:usuarioID>' ,methods = ['GET'])
 def verAgendaUsuario(usuarioID):
@@ -674,7 +683,6 @@ def verAgendaUsuario(usuarioID):
 
     return jsonify(agenda_json)
 
-       
 @app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
 def verAgendas(usuarioID):
     agendaService = AgendaService(getEngine())
@@ -693,8 +701,6 @@ def verAgendas(usuarioID):
 
     return jsonify(agenda_json)
 
-
-
 @app.route('/directions', methods=['GET'])
 def directions():
     origen = request.args.get('origen') 
@@ -709,7 +715,6 @@ def directions():
 @app.route('/mostrar_mapa', methods=['GET'])
 def mostrar_mapa():
     return render_template('mapa.html') 
-
 
 """    
     # Geocoding an address
