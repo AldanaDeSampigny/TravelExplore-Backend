@@ -106,6 +106,8 @@ def mostrarDistancia(usuarioID, destinoID):
 
     return listaInicial
 
+
+
 @app.route('/getGustosUsuario/<int:usuarioID>',methods=['GET'])
 def getFavoritos(usuarioID):
     lugarFavoritoService = LugarFavoritoService(getEngine())
@@ -126,6 +128,7 @@ def getFavoritos(usuarioID):
     return jsonify(favoritosJson)
 
 
+
 @app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
     lugarFavoritoService = LugarFavoritoService(getEngine())
@@ -134,6 +137,7 @@ def like(usuarioID):
     lugarFavoritoService.agregarGusto(usuarioID,lugar)    
 
     return '{ "data": "Gusto Actualizado" }'
+
 
 
 @app.route('/dislike/<int:usuarioID>',methods=['POST'])
@@ -146,129 +150,108 @@ def dislike(usuarioID):
 
     return '{ "data": "Gusto Actualizado" }'
 
+
+
 @app.route('/generar_agenda/<int:usuarioID>', methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID):
-    agenda_service = AgendaService(getEngine())
-    data = request.get_json()
+    with Session(getEngine()) as session:
+        agenda_service = AgendaService(getEngine())
+        data = request.get_json()
 
-    destino = data.get('destino')
-    partes = destino.split(" - ")
-    if len(partes) > 1:
-        destino = partes[-1]
-    print(destino)
-
-    if destino is None or destino == '':
-        error_message = "Se debe ingresar el destino del viaje"
-        response = jsonify({"error":error_message})
-        response.status_code = 400
-        response.headers['Content-Type'] = 'application/json'
-        print(response)
-        return response
-
-    destino = 1
-    #destino = int(destino)
-    fechaInicio = str(data.get('fechaDesde'))
-    print("fechaDesde -->"+fechaInicio)
-    fechaFin = str(data.get('fechaHasta'))
-    horaInicio = data.get('horarioGeneral')['horaDesde'] + ':00'
-    horaFin = data.get('horarioGeneral')['horaHasta'] + ':00'
-    transporte = data.get('transporte')
-
-
-    # horaInicio = datetime.strptime(horaInicio, '%H:%M:%S').time()
-    # horaFin = datetime.strptime(horaFin, '%H:%M:%S').time()
-
-    try:
-        AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
-        AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
-        validacionTransporte(-42.767470, -65.036549, transporte)
-    except ValueError as e:
-        error_message = str(e)
-        response = jsonify({"error":error_message})
-        response.status_code = 400
-        response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
-        return response
+        destino = data.get('destino')
     
-    horariosEspecificos = {}
-    for horarioEspecifico in data.get('horariosEspecificos'):
-        # horaDesde = horarioEspecifico['horaDesde'] + ':00'
-        # horaHasta = horarioEspecifico['horaHasta'] + ':00'
-        horariosEspecificos[horarioEspecifico['dia']] = \
-            (horarioEspecifico['horaDesde']+':00',horarioEspecifico['horaHasta']+':00')
+        if destino is None or destino.get('nombre') == '':
+            error_message = "Se debe ingresar el destino del viaje"
+            response = jsonify({"error":error_message})
+            response.status_code = 400
+            response.headers['Content-Type'] = 'application/json'
+            print(response)
+            return response
+
+        gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+
+        resultado = gmaps.places(query=destino.get('nombre')+' '+destino.get('pais'))
+        if 'results' in resultado:
+            primer_resultado = resultado['results'][0]
+            ciudadRecibido = LugarRepository(
+                session).getCiudad(primer_resultado['place_id'])
+            
+            if ciudadRecibido:
+                destino = ciudadRecibido.id
+            else:
+                ciudad = {
+                    'id': primer_resultado['place_id'],
+                    'nombre': primer_resultado['name'],
+                    'latitud': destino.get('latitud'),
+                    'longitud': destino.get('longitud')
+                }
+                lugarService = LugarService(getEngine())
+                lugarService.guardarCiudad(ciudad)
+                lugarRecibido = LugarRepository(session).getCiudad(primer_resultado['place_id'])   
+                destino = lugarRecibido.id
+
+        #destino = 1
+        #destino = int(destino)
+        fechaInicio = str(data.get('fechaDesde'))
+        print("fechaDesde -->"+fechaInicio)
+        fechaFin = str(data.get('fechaHasta'))
+        horaInicio = data.get('horarioGeneral')['horaDesde'] + ':00'
+        horaFin = data.get('horarioGeneral')['horaHasta'] + ':00'
+        transporte = data.get('transporte')
+
+        try:
+            AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
+            AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
+            validacionTransporte(-42.767470, -65.036549, transporte)
+        except ValueError as e:
+            error_message = str(e)
+            response = jsonify({"error":error_message})
+            response.status_code = 400
+            response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
+            return response
         
+        horariosEspecificos = {}
+        for horarioEspecifico in data.get('horariosEspecificos'):
+            horariosEspecificos[horarioEspecifico['dia']] = \
+                (horarioEspecifico['horaDesde']+':00',horarioEspecifico['horaHasta']+':00')
 
-    horariosOcupados = {}
-    for horarioOcupado in data.get('horariosOcupados'):
-        horariosOcupados[horarioOcupado['dia']] = []
-        for horario in horarioOcupado['horarios']:
-            horaDesde = horario['horaDesde'] + ':00'
-            horaHasta = horario['horaHasta'] + ':00'
-            # horaDesde = datetime.strptime(horaDesde, '%H:%M:%S').time()
-            # horaHasta = datetime.strptime(horaHasta, '%H:%M:%S').time()
-            horariosOcupados[horarioOcupado['dia']].append((horaDesde, horaHasta))
-            #horariosOcupados[horarioOcupado['dia']].append(tuple(horario.values()))
-    
+        horariosOcupados = {}
+        for horarioOcupado in data.get('horariosOcupados'):
+            horariosOcupados[horarioOcupado['dia']] = []
+            for horario in horarioOcupado['horarios']:
+                horaDesde = horario['horaDesde'] + ':00'
+                horaHasta = horario['horaHasta'] + ':00'
+                horariosOcupados[horarioOcupado['dia']].append((horaDesde, horaHasta))
 
-    agenda = agenda_service.generarAgendaDiaria(usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
+        agenda = agenda_service.generarAgendaDiaria(usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
 
+        agenda_por_dia = defaultdict(list)
+        for actividad_data in agenda:
+            dia = actividad_data['dia']
+            agenda_por_dia[dia].append(actividad_data)
 
-# Crear un diccionario para agrupar las actividades por día
-    agenda_por_dia = defaultdict(list)
-    for actividad_data in agenda:
-        dia = actividad_data['dia']
-        agenda_por_dia[dia].append(actividad_data)
-
-    agenda_json = []
-    for dia, actividades in sorted(agenda_por_dia.items()):
-        dia_json = {
-            'dia': dia.strftime('%d-%m-%Y'),
-            'actividades': []
-        }
-        for actividad_data in actividades:
-            actividad_json = {
-                'id': actividad_data['actividad'].id,
-                'actividad': actividad_data['actividad'].nombre,
-                'lugar': actividad_data['lugar'],
-                'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
-                'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S'),
+        agenda_json = []
+        for dia, actividades in sorted(agenda_por_dia.items()):
+            dia_json = {
+                'dia': dia.strftime('%d-%m-%Y'),
+                'actividades': []
             }
-            dia_json['actividades'].append(actividad_json)
-        agenda_json.append(dia_json)
+            for actividad_data in actividades:
+                actividad_json = {
+                    'id': actividad_data['actividad'].id,
+                    'actividad': actividad_data['actividad'].nombre,
+                    'lugar': actividad_data['lugar'],
+                    'hora_inicio': actividad_data['hora_inicio'].strftime('%H:%M:%S'),
+                    'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S'),
+                }
+                dia_json['actividades'].append(actividad_json)
+            agenda_json.append(dia_json)
 
-    agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agenda_json)
-    print(agenda_json)
-    return jsonify(agenda_json)
+        agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agenda_json)
+        print(agenda_json)
+        return jsonify(agenda_json)
 
-def obtener_descripcion_lugar(nombre_lugar):
-    # Utiliza la API de Wikipedia para buscar información sobre el lugar con coincidencias parciales
-    url = f"https://es.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&list=search&srsearch={nombre_lugar}"
-    response = requests.get(url)
 
-    if response.status_code == 200:
-        data = response.json()
-        search_results = data.get("query", {}).get("search", [])
-
-        if search_results:
-            # Obtiene el título de la primera página de resultados (la que mejor coincide)
-            primer_resultado = search_results[0]
-            titulo_pagina = primer_resultado.get("title")
-
-            # Utiliza el título de la página para obtener la descripción completa
-            url_pagina = f"https://es.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&titles={titulo_pagina}"
-            response_pagina = requests.get(url_pagina)
-
-            if response_pagina.status_code == 200:
-                data_pagina = response_pagina.json()
-                pages = data_pagina.get("query", {}).get("pages", {})
-                for page_id, page_info in pages.items():
-                    if "extract" in page_info:
-                        # Utiliza BeautifulSoup para eliminar etiquetas HTML
-                        soup = BeautifulSoup(page_info["extract"], "html.parser")
-                        text = soup.get_text()
-                        return text.strip()
-
-    # Si no se encuentra una descripción, puedes devolver un valor predeterminado o "No disponible"
-    return "No disponible"
 
 @app.route('/ciudades', methods=['GET'])
 def obtenerCiudades():
@@ -286,6 +269,9 @@ def obtenerCiudades():
 
         return jsonify(ciudades)
     
+
+
+
 @app.route('/lugares', methods=['GET'])
 def lugares():
     with Session(getEngine()) as session:
@@ -734,3 +720,36 @@ def mostrar_mapa():
                                                         regionCode='US',
                                                         locality='Mountain View', 
                                                         enableUspsCass=True) """
+
+
+# def obtener_descripcion_lugar(nombre_lugar):
+#     # Utiliza la API de Wikipedia para buscar información sobre el lugar con coincidencias parciales
+#     url = f"https://es.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&list=search&srsearch={nombre_lugar}"
+#     response = requests.get(url)
+
+#     if response.status_code == 200:
+#         data = response.json()
+#         search_results = data.get("query", {}).get("search", [])
+
+#         if search_results:
+#             # Obtiene el título de la primera página de resultados (la que mejor coincide)
+#             primer_resultado = search_results[0]
+#             titulo_pagina = primer_resultado.get("title")
+
+#             # Utiliza el título de la página para obtener la descripción completa
+#             url_pagina = f"https://es.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&titles={titulo_pagina}"
+#             response_pagina = requests.get(url_pagina)
+
+#             if response_pagina.status_code == 200:
+#                 data_pagina = response_pagina.json()
+#                 pages = data_pagina.get("query", {}).get("pages", {})
+#                 for page_id, page_info in pages.items():
+#                     if "extract" in page_info:
+#                         # Utiliza BeautifulSoup para eliminar etiquetas HTML
+#                         soup = BeautifulSoup(
+#                             page_info["extract"], "html.parser")
+#                         text = soup.get_text()
+#                         return text.strip()
+
+#     # Si no se encuentra una descripción, puedes devolver un valor predeterminado o "No disponible"
+#     return "No disponible"

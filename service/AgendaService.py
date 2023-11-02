@@ -183,7 +183,6 @@ class AgendaService:
         return cerca 
 
 
-#generador de agenda diaria con dias ocupados, y horarios especificos
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
@@ -239,25 +238,7 @@ class AgendaService:
                         minutos_duracion = m.duracion.hour * 60 + m.duracion.minute
                         hora_cierre_intervalo = hora_actual.replace(hour=(hora_actual.hour + (minutos_duracion // 60)) % 24, minute=(hora_actual.minute + minutos_duracion % 60) % 60)
 
-                        
-                        #podria traer una query que traiga un lugar de tipo restaurante y los meta aca
-                        # if hora_actual in self.horas:
-                        #     actividad = agenda_repo.buscarActividadRestaurant(usuarioID, destinoID)
-                        #     lugarA = agenda_repo.buscarLugar(actividad.id)
-                        #     if lugarA.horaApertura < hora_actual < lugarA.horaCierre:
-                        #         if actividad.id not in gustos_agregados:
-                        #             actividades = {
-                        #                 'dia': fecha_actual,
-                        #                 'hora_inicio': hora_actual,
-                        #                 'hora_fin': hora_cierre_intervalo,
-                        #                 'actividad': actividad,
-                        #                 'lugar': lugar.nombre
-                        #             }
-                        #             agenda.append(actividades)
-                        #             gustos_agregados.add(actividad.id)
-                        #             break
-                        
-                        if lugar.horaApertura <= hora_actual < lugar.horaCierre:
+                        if lugar.horaapertura <= hora_actual < lugar.horacierre:
 
                             siguiente_actividad = actividadIds[idx + 1] if idx + 1 < len(actividadIds) else None
                             if siguiente_actividad:
@@ -291,3 +272,20 @@ class AgendaService:
                 fecha_actual += delta_dias
 
         return agenda
+    
+        # podria traer una query que traiga un lugar de tipo restaurante y los meta aca
+        # if hora_actual in self.horas:
+        #     actividad = agenda_repo.buscarActividadRestaurant(usuarioID, destinoID)
+        #     lugarA = agenda_repo.buscarLugar(actividad.id)
+        #     if lugarA.horaApertura < hora_actual < lugarA.horaCierre:
+        #         if actividad.id not in gustos_agregados:
+        #             actividades = {
+        #                 'dia': fecha_actual,
+        #                 'hora_inicio': hora_actual,
+        #                 'hora_fin': hora_cierre_intervalo,
+        #                 'actividad': actividad,
+        #                 'lugar': lugar.nombre
+        #             }
+        #             agenda.append(actividades)
+        #             gustos_agregados.add(actividad.id)
+        #             break

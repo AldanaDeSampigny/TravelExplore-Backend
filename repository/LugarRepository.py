@@ -34,7 +34,7 @@ class LugarRepository:
     
     def getCiudad(self, codigoCiudad):
         ciudad = self.db_session.query(Ciudad).\
-            filter((Ciudad.codigo == codigoCiudad) |(Ciudad.codigo.is_(None))).first()
+            filter((Ciudad.codigo == codigoCiudad)).first()
 
         return ciudad
     

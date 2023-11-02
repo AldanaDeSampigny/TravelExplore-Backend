@@ -10,8 +10,6 @@ class Actividad(Base):
   __tablename__ = 'actividades'
   id = Column(Integer, primary_key=True)
   nombre = Column(String)
-  horaInicio = Column(Time)
-  horaFin = Column(Time)
   valoracion = Column(Integer)
   duracion = Column(Time)
   id_lugar = Column(db.ForeignKey("lugares.id"))
@@ -22,8 +20,6 @@ class Actividad(Base):
       return {
         "id": self.id,
         "nombre": self.nombre,
-        "horaInicio": self.horaInicio,
-        "horaFin": self.horaFin,
         "valoracion": self.valoracion,
         "duracion": self.duracion,
       }
