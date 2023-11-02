@@ -1,5 +1,8 @@
 from sqlalchemy import update
 
+from ..models.ActividadesFavoritas import ActividadesFavoritas
+from ..models.Actividad import Actividad
+
 from ..models.Ciudad import Ciudad
 from ..models.Usuario import Usuario
 from ..models.Lugar import Lugar
@@ -50,6 +53,49 @@ class FavoritoRepository:
 
         return lugaresFavoritosUsuario
     
+
+    def getActividadUsuario(self,idUsuario,idActividad):
+        actividadFavoritaUsuario = self.db_session.query(
+            ActividadesFavoritas.actividad_id,
+            ActividadesFavoritas.usuario_id,
+            ActividadesFavoritas.like,
+            Actividad.id).\
+        join(Actividad,ActividadesFavoritas.actividad_id == Actividad.id).\
+        filter(ActividadesFavoritas.usuario_id == idUsuario).\
+        filter(Actividad.id == idActividad)
+
+        return actividadFavoritaUsuario.first()
+
+    def getActividad(self, idActividad):
+        actividad = self.db_session.query(ActividadesFavoritas).\
+            filter(ActividadesFavoritas.actividad_id == idActividad).first()
+
+        return actividad
+
+    def updateLikeActividad(self, usuarioId, idActividad, nuevoLike):
+        nuevaActividad = self.getActividad(idActividad)
+        nuevaActividad.like = nuevoLike
+
+        self.db_session.add(nuevaActividad)
+        self.db_session.commit()
+
+
+    """ def actividadesFavoritasUsuario(self, usuarioID):
+        lugaresFavoritosUsuario = self.db_session.query(
+            Actividad.nombre,
+            Ciudad.nombre,
+            Usuario.nombre,
+            LugaresFavoritos.like,
+            ).\
+        join(Lugar, LugaresFavoritos.lugar_id == Lugar.id).\
+        join(Usuario, LugaresFavoritos.usuario_id == Usuario.id).\
+        join(Ciudad,Lugar.id_ciudad == Ciudad.id).\
+        filter(Usuario.id == usuarioID).\
+        filter(LugaresFavoritos.like == 1).all()
+
+        return lugaresFavoritosUsuario """
+    
+
 """         self.db_session.execute(\
             update(LugaresFavoritos).\
             where(LugaresFavoritos.usuario_id == usuarioId and LugaresFavoritos.lugar_id == idLugar).\
