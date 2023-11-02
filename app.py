@@ -2,6 +2,8 @@ from collections import defaultdict
 from datetime import datetime
 import dbm
 
+from .PruebaIA import PruebaIA
+
 from .service.ActividadFavoritaService import ActividadFavoritaService
 
 from .service.LugarFavoritoService import LugarFavoritoService
@@ -130,6 +132,20 @@ def getFavoritos(usuarioID):
     return jsonify(favoritosJson)
 
 
+@app.route('/recomendacionIA/<int:usuarioID>',methods=['GET'])
+def recomendacion(usuarioID):
+    recomendaciones = PruebaIA(getEngine())
+    #lugar = request.get_json()
+    
+    #recomendaciones.cargadoDeIA(usuarioID)
+    recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
+
+    return '{"data": "recomendaciones obtenidas"}'
+    #for recomendacion in recomendaciones:
+        
+    #lugarFavoritoService.agregarGusto(usuarioID,lugar)    
+
+    #return '{ "data":Recomendaciones del usuario obtenidas" }'
 
 @app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
