@@ -166,7 +166,7 @@ with Session(getEngine()) as session:
     # Continuar con el entrenamiento del modelo
     model.fit(train_data, np.array(valoraciones, dtype=np.float32), epochs=50)
 
-    model.save_weights('modeloConH5.h5')
+    model.save_weights('modeloConH5.h5')#'modeloConH5.h5')
 
     # categoriasDelUsuario = CRepo.getCategoriaUsuario(22)
     # new = np.zeros(num_categorias, dtype=int)

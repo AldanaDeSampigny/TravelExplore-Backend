@@ -61,6 +61,19 @@ with Session(getEngine()) as session:
 
     activities_dataset = tf.data.Dataset.from_tensor_slices(actividadesInfo)
     
+    interactions_dataset = tf.data.Dataset.zip(
+        (activities_dataset))
+    train_size = int(0.8 * len(interactions_dataset))
+    """   train_dataset = tf.data.Dataset.from_tensor_slices(
+        {
+            'input_1': user_inputs,  # Datos del usuario
+            'input_2': actividadesInfo  # Datos de las actividades
+        }
+    ) """
+    
+    train_dataset = interactions_dataset.take(train_size)
+    test_dataset = interactions_dataset.skip(train_size)
+
     # Definir la misma arquitectura del modelo
     user_model = tf.keras.Sequential([
         tf.keras.layers.Input(shape=(num_categorias,)),
@@ -100,8 +113,6 @@ with Session(getEngine()) as session:
             return self.task(user_embeddings, activity_embeddings)
 
         def call(self, inputs, training=False):
-            print("owo ",inputs)
-            print("owo2 ", inputs['input_1'])
             user_embeddings = self.user_model(inputs['input_1'])
             activity_embeddings = self.activity_model(inputs['input_2'])
             return self.task(user_embeddings, activity_embeddings)
@@ -112,16 +123,16 @@ with Session(getEngine()) as session:
     loss_fn = tf.keras.losses.MeanSquaredError()  # tfrs.pointwise()
 
     # Compila el modelo con el optimizador y la función de pérdida
-    model.compile(optimizer, loss=loss_fn)
+    model.compile(optimizer)#, loss=loss_fn)
     # Cargar los pesos en el modelo
 
     dummy_input = {
         'input_1': tf.zeros((1, num_categorias), dtype=tf.float32),
-        'input_2': tf.zeros((1, num_actividades), dtype=tf.float32)
+        'input_2': tf.zeros((1, num_categorias), dtype=tf.float32)
     }
     _ = model(dummy_input)
 
-    model.load_weights('modeloConH5.h5')
+    model.load_weights('modeloConH5.h5')#'modeloConH5.h5')
 
     # Continuar con las predicciones utilizando el modelo cargado
     categoriasDelUsuario = CRepo.getCategoriaUsuario(22)
@@ -136,96 +147,51 @@ with Session(getEngine()) as session:
 
     # Crear el tensor de entrada con las preferencias del usuario
     new_tensor = tf.convert_to_tensor(new, dtype=tf.float32)
+    #new_tensor = tf.expand_dims(new_tensor, axis=0)
     actividadesInfo_tensor = tf.convert_to_tensor(actividadesInfo, dtype=tf.float32)
 
+
+    index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
+    index.index_from_dataset(tf.data.Dataset.zip((activities_dataset.batch(100), activities_dataset.batch(100).map(model.activity_model)))) 
+
+    _, top_recommendations = index(np.array([new_tensor], dtype=np.int32))
+    print(f"Recomendaciones para el usuario: {top_recommendations}")
+    """ index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
+    _,recommended_indices = index(np.array([new_tensor], dtype=np.int32))  # Reemplaza new_tensor con las preferencias del usuario
+    print(f"recomendaciones para el usuario : {recommended_indices[0, 6:9]}") """
+    #actividades_recomendadas = []
+
+
+
     # Obtener recomendaciones para el usuario
-    _, recommended_indices = model({'input_1': new_tensor, 'input_2': actividadesInfo_tensor})
-    print(f"Recomendaciones para el usuario: {recommended_indices[0, 6:9]}")
+    """    _,recommended_indices = model({'input_1': new_tensor, 'input_2': actividadesInfo_tensor})
+    _,recommended_indices = recommended_indices.numpy()  # Convierte el tensor a un arreglo NumPy """
+
+    """  # top_k = 10  # Número de actividades principales para recomendar
+    recommended_indices = tf.argsort(recommended_indices, direction='DESCENDING')
+    top_activities = recommended_indices[0, :top_k].numpy()
+
+    # Obtener la lista de actividades recomendadas
+    recommended_activities = [actividades[i] for i in top_activities]
+
+    print("Actividades recomendadas:")
+    for activity in recommended_activities:
+        print(activity) # # # # # # #  """
+    """  index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
+    # # recommends movies out of the entire movies dataset.
+    index.index_from_dataset(tf.data.Dataset.zip((activities_dataset.batch(100), activities_dataset.batch(100).map(model.activity_model)))) 
+    recommended_indices = index(np.array([new_tensor], dtype=np.int32)) # Reemplaza new_tensor con las preferencias del usuario
+    print("AAA", recommended_indices)
+    print(f"recomendaciones para el usuario : {recommended_indices[0, 6:9]}") """
+    # Ahora puedes acceder a los índices de las actividades recomendadas
+    #print("recomendacion ",recommended_indices)
+    
+    # if recommended_indices.shape[0] > 0:
+    #         elements = recommended_indices[0, 6:9]
+    #         print(f"Elementos recomendados: {elements}")
+    # else:
+    #         print("No se encontraron elementos recomendados en la salida del modelo.")
+    #print(f"Recomendaciones para el usuario: {recommended_indices[0, 6:9]}")
 
 
-# import tensorflow_recommenders as tfrs
-# from tensorflow import keras
-# import numpy as np
-# from collections import defaultdict
-# from tensorflow.keras.models import load_model
-# from .bd.conexion import getSession, getEngine
-# from sqlalchemy.orm import Session
-# import tensorflow as tf
-
-# from .repository.ActividadRepository import ActividadRepository
-# from .repository.UsuarioRepository import UsuarioRepository
-# from .repository.CategoriaRepository import CategoriaRepository
-
-
-# ## It can be used to reconstruct the model identically.
-# #reconstructed_model = keras.models.load_model("my_model.keras")
-# #model = tf.saved_model.load('modeloConH5.h5')#tf.load_model('modelo.keras')
-# #loaded_model = keras.models.load_model('modeloConH5.h5')
-# model = keras.models.load_weights('modeloConH5.h5')
-# #model = load_model(arguments['model'])
-
-# engine = getEngine()
-# deDatos = getSession()
-# with Session(getEngine()) as session:
-#     categorias_actividades = defaultdict(list)
-#     userRepo = UsuarioRepository(session)
-#     aRepo = ActividadRepository(session)
-#     CRepo = CategoriaRepository(session)
-
-#     actividades = aRepo.getActividades()
-
-#     categorias = CRepo.getCategorias()
-
-#     categorias = np.array(categorias)
-#     actividades = np.array(actividades)
-
-#     num_categorias = len(categorias) + 1  
-#     num_actividades = len(actividades)  
-
-#     for acti in actividades:
-#         categorias_actividades[acti.id].append(CRepo.getCategoriaActividad(acti.id))
-
-
-#     actividadesInfo = np.zeros((num_actividades, (num_categorias)))
-#     actividadDatos = list(categorias_actividades.keys())
-
-#     for i, actividadID in enumerate(actividadDatos):
-#         actividades_categorias = [] 
-#         for categoria in categorias_actividades[actividadID]:
-#             actividades_categorias.append(categoria)
-        
-#         for c in range(0, num_categorias):
-#             inner_list = actividades_categorias[0] if actividades_categorias else [] 
-#             if c in inner_list:
-#                 actividadesInfo[i, c] = 1
-#             else:
-#                 actividadesInfo[i, c] = 0
-
-#     activities_dataset = tf.data.Dataset.from_tensor_slices(actividadesInfo)
-
-#     categoriasDelUsuario = CRepo.getCategoriaUsuario(22)
-#     new = np.zeros(num_categorias, dtype=int)
-#     usuarioCategoria= []
-#     for i in range(1, num_categorias):
-#         for categoria in enumerate(categoriasDelUsuario):
-#             if i == categoria[1][0]:
-#                 new[i] = 1
-#             else:
-#                 new[i] = 0
-
-#     # Crear el tensor de entrada con las preferencias del usuario
-#     new_tensor = tf.convert_to_tensor(new, dtype=tf.float32)
-
-#     # Crear el índice para hacer recomendaciones
-#     index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
-
-
-#     # Indexar desde el dataset de actividades
-#     index.index_from_dataset(
-#         tf.data.Dataset.zip((activities_dataset.batch(100), activities_dataset.batch(100).map(model.activity_model)))
-#     )
-
-#     # Obtener recomendaciones para el usuario
-#     _, recommended_indices = model(new)#index(np.array([new_tensor], dtype=np.int32))
-#     print(f"Recomendaciones para el usuario: {recommended_indices[0, 6:9]}")
-#     #new_model = keras.models.load_model('path_to_my_model.h5')s
+    #print(f"Recomendaciones para el usuario: {recommended_indices[0, 6:9]}")
