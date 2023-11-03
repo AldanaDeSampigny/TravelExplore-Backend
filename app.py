@@ -319,6 +319,18 @@ def lugares():
 
     return lugares
 
+
+@app.route('/lugarBasico', methods=['GET'])  #DE ESTE OBTENEMOS MAS INFORMACION COMO FOTOS Y OPINIONES
+def placesRoutesBasico():
+    lugar_id = request.args.get('place_id')
+
+    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+
+    place_details = gmaps.place(place_id=lugar_id)
+
+    return jsonify(place_details)
+
+
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
     buscarLugar = request.args.get('ciudad')
