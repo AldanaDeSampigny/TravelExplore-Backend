@@ -182,6 +182,9 @@ class AgendaService:
             
         return cerca 
 
+    def getActividadesRecomendadas(self, usuarioID):
+        #recomendaciones = PruebaIA
+        print("holi")
 
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
