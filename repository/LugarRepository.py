@@ -1,6 +1,5 @@
+from ..models.CiudadCategoria import CiudadCategoria
 from ..models.LugarCategoria import LugarCategoria
-from ..models.Provincia import Provincia
-from ..models.Pais import Pais
 from ..models.Ciudad import Ciudad
 from ..models.Lugar import Lugar
 from sqlalchemy.orm import sessionmaker
@@ -26,6 +25,12 @@ class LugarRepository:
 
         return lugar
     
+    def getCiudadCategoria(self, idCiudad):
+        ciudad = self.db_session.query(CiudadCategoria).\
+            filter(CiudadCategoria.id_ciudad == idCiudad).first()
+
+        return ciudad
+    
     def getLugarById(self, id):
         lugar = self.db_session.query(Lugar).\
             filter(Lugar.codigo == id).first()
@@ -38,35 +43,9 @@ class LugarRepository:
 
         return ciudad
     
-    def getProvincia(self, codigoProvincia, nombreProvincia):
-        provincia = self.db_session.query(Provincia).\
-            filter((Provincia.codigo == codigoProvincia) | (Provincia.codigo.is_(None))).\
-            filter(Provincia.nombre == nombreProvincia).first()
-
-        return provincia
-    
-    def getPais(self, codigoPais, nombrePais):
-        pais = self.db_session.query(Pais).\
-            filter((Pais.codigo == codigoPais) | (Pais.codigo.is_(None))).\
-            filter(Pais.nombre == nombrePais).first()
-
-        return pais
-    
     def getCiudadLugar(self, nombreCiudad):
         ciudad = self.db_session.query(Ciudad).\
             filter(Ciudad.nombre == nombreCiudad).first()
         
         return ciudad
-    
-    def getProvinciaCiudad(self, nombreProvincia):
-        provincia = self.db_session.query(Provincia).\
-            join(Pais, Pais.id == Provincia.id_pais).\
-            filter(Provincia.nombre == nombreProvincia).first()
-        
-        return provincia
-        
-    def getPaisProvincia(self, nombrePais):
-        pais = self.db_session.query(Pais).\
-            filter(Pais.nombre == nombrePais).first()
-        
-        return pais
+

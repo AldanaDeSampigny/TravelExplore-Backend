@@ -28,14 +28,13 @@ import googlemaps
 import json
 from .consultas import obtenerDirecciones, validacionTransporte
 
+from .models.CiudadCategoria import CiudadCategoria
 from .models.ActividadAgenda import ActividadAgenda
 from .models.Usuario import Usuario
 from .models.ActividadCategoria import ActividadCategoria
 from .models.AgendaViaje import AgendaViaje
 from .models.UsuarioCategoria import UsuarioCategoria
 from .models.Ciudad import Ciudad
-from .models.Provincia import Provincia
-from .models.Pais import Pais
 from .models.Categoria import Categoria
 from .models.Itinerario import Itinerario
 from .models.Lugar import Lugar
@@ -59,8 +58,6 @@ Base.metadata.create_all(engine)
 
 nuevoUsuario = Usuario()
 nuevoViaje = Viaje()
-nuevoPais = Pais()
-nuevaProvincia = Provincia()
 nuevaCiudad = Ciudad()
 nuevoItinerario = Itinerario()
 nuevaAgendaDiaria = AgendaDiaria()
@@ -72,6 +69,7 @@ nuevoGustoActividad = ActividadesFavoritas()
 nuevoGustoLugar = LugaresFavoritos()
 nuevaCategoria = Categoria()
 nuevaActividadAgenda = ActividadAgenda()
+nuevoCategoriaCiudad = CiudadCategoria()
 nuevoCategoriaLugar = LugarCategoria()
 nuevoUsuarioCategoria = UsuarioCategoria()
 nuevaActividadCategoria = ActividadCategoria()
