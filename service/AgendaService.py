@@ -181,6 +181,13 @@ class AgendaService:
             #print(cerca)
             
         return cerca 
+    
+    def eliminarActividadAgeenda(self, idActividad, idItinerario):
+        with Session(getEngine()) as session:
+            agendaRepo = AgendaRepository(session)
+            agendasDiarias = agendaRepo.getAgendasDeItinerario(idItinerario)
+            for agenda in agendasDiarias:
+                agendaRepo.deleteActividadesDeAgenda(idActividad, agenda.id)
 
     def getActividadesRecomendadas(self, usuarioID):
         #recomendaciones = PruebaIA

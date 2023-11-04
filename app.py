@@ -129,6 +129,14 @@ def getFavoritos(usuarioID):
         favoritosJson.append(favorito)
     return jsonify(favoritosJson)
 
+@app.route('/actividadesAgenda/<int:actividadID>/<int:itinerarioID>',methods=['DELETE'])
+def pruebaDeObtencion(actividadID, itinerarioID):
+    agenda_service = AgendaService(getEngine())
+
+    agenda_service.eliminarActividadAgeenda(actividadID,itinerarioID)
+
+    return 'actividades de agenda: elimino?'
+
 
 @app.route('/recomendacionIA/<int:usuarioID>',methods=['GET'])
 def recomendacion(usuarioID):

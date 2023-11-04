@@ -1,4 +1,5 @@
-#from requests import Session
+from ..models.AgendaDiaria import AgendaDiaria
+from ..models.Itinerario import Itinerario
 from ..models.ActividadAgenda import ActividadAgenda
 from ..models.Actividad import Actividad
 from ..models.ActividadCategoria import ActividadCategoria
@@ -82,3 +83,17 @@ class AgendaRepository:
         result = query.first()  # Obtener el primer resultado
 
         return result
+
+    def deleteActividadesDeAgenda(self, idActividad, idAgenda):
+        self.db_session.query(ActividadAgenda).\
+            filter(ActividadAgenda.id_agenda == idAgenda,
+                ActividadAgenda.id_actividad == idActividad).delete()
+
+        self.db_session.commit()
+
+    def getAgendasDeItinerario(self, idItinerario):
+        agendasDiarias = self.db_session.query(AgendaDiaria).\
+            join(Itinerario, Itinerario.id == AgendaDiaria.itinerario_id).\
+            filter(Itinerario.id == idItinerario).all()
+        
+        return agendasDiarias

@@ -25,6 +25,4 @@ class AgendaDiaria(Base):
          "horaInicio": self.horaInicio,
          "horaFin": self.horaFin,
          "dia": self.dia,
-         "itinerario": self.itinerario_id,
-         "id_agenda_viaje": self.id_agenda_viaje
       }
