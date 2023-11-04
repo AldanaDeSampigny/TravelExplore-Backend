@@ -36,7 +36,7 @@ class LugarService:
                     self.guardarCategoria(lugarEncontrado, lugar['tipo'])
             
                 if(lugarEncontrado.valoracion is None or lugarEncontrado.imagen is None):
-                    lugarEncontrado.valoracion = lugar['valoracion']
+                    lugarEncontrado.valoracion = lugar['valoracion'] if lugar['valoracion'] != 'N/A' else 0
                     lugarEncontrado.imagen = lugar['imagen']
 
                 session.add(lugarEncontrado)
@@ -48,7 +48,7 @@ class LugarService:
                 nuevoLugar.tipo = lugar['tipo']
                 nuevoLugar.latitud = lugar['latitud']
                 nuevoLugar.longitud = lugar['longitud']
-                nuevoLugar.valoracion = lugar['valoracion']
+                nuevoLugar.valoracion = lugar['valoracion'] if lugar['valoracion'] != 'N/A' else 0
                 nuevoLugar.imagen = lugar['imagen']
 
                 ciudad = repository.getCiudadLugar(lugar['ciudad'])

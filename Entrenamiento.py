@@ -53,6 +53,7 @@ with Session(getEngine()) as session:
         
         for c in range(0, num_categorias):
             inner_list = actividades_categorias[0] if actividades_categorias else [] 
+            
             if c in inner_list:
                 actividadesInfo[i, c] = 1
             else:

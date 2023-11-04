@@ -183,4 +183,17 @@ class PruebaIA:
 
             # Imprimir las 3 mejores recomendaciones
             print(f"Las mejores recomendaciones para el usuario: {top_3_recommendations}")
+
+            # Crear un diccionario que mapee índices a IDs de actividades
+            activity_id_mapping = {indice: actividadID for indice, actividadID in enumerate(actividadDatos)}
+
+            # Obtener los índices de las actividades recomendadas
+            top_indices = top_recommendations[0, :5]
+
+            # Mapear los índices a IDs de actividades
+            recommended_activity_ids = [activity_id_mapping[indice] for indice in top_indices]
+
+            # Imprimir los IDs de las actividades recomendadas
+            print("Los IDs de las actividades recomendadas son:", recommended_activity_ids)
+
             return top_recommendations
