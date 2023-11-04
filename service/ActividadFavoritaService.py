@@ -14,7 +14,7 @@ class ActividadFavoritaService:
         with Session(getEngine()) as session:
             gusto = FavoritoRepository(session)
 
-            gustoObtenido = gusto.getActividadUsuarioUsuario(idUsuario,idActividad)
+            gustoObtenido = gusto.getActividadUsuario(idUsuario,idActividad)
 
         return gustoObtenido
 

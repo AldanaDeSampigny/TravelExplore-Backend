@@ -264,7 +264,7 @@ def generar_y_mostrar_agenda(usuarioID):
             dia = actividad_data['dia']
             agenda_por_dia[dia].append(actividad_data)
 
-        agenda_json = []
+        agendaJSON = []
         for dia, actividades in sorted(agenda_por_dia.items()):
             dia_json = {
                 'dia': dia.strftime('%d-%m-%Y'),
@@ -279,11 +279,13 @@ def generar_y_mostrar_agenda(usuarioID):
                     'hora_fin': actividad_data['hora_fin'].strftime('%H:%M:%S'),
                 }
                 dia_json['actividades'].append(actividad_json)
-            agenda_json.append(dia_json)
 
-        agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agenda_json)
-        print(agenda_json)
-        return jsonify(agenda_json)
+            
+            agendaJSON.append(dia_json)
+
+        agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agendaJSON)
+        print(agendaJSON)
+        return jsonify(agendaJSON)
 
 
 
@@ -303,9 +305,6 @@ def obtenerCiudades():
 
         return jsonify(ciudades)
     
-
-
-
 @app.route('/lugares', methods=['GET'])
 def lugares():
     with Session(getEngine()) as session:
@@ -600,31 +599,47 @@ def getAgenda(usuarioID,agendaID):
     agendaUsuario = agendaService.getAgenda(usuarioID,agendaID)  # Supongo que obtienes los resultados de tu función
 
     # Crear un diccionario para almacenar los datos en el formato deseado
-    agenda_data = {}
+    agendaRecibida = {}
 
     for row in agendaUsuario:
         dia =  row[1].strftime("%Y-%m-%d") if row[1] else None
-        id = row[6]
         actividad = {
+            "id" :row[2],
             "nombre_actividad": row[3],
             "horadesde":row[4].strftime("%H:%M:%S") if row[4] else None,
             "horahasta": row[5].strftime("%H:%M:%S") if row[5] else None,
+            "valoracion" : row[7],
+            "duracion" : row[8].strftime("%H:%M:%S") if row[8] else None,
+            "id_lugar" : row[9],
+        }
+
+        actividadFavorita = ActividadFavoritaService(getEngine()).getActividadFavorita(usuarioID,row[2])
+
+        if(actividadFavorita != None):
+            likeActividad = actividadFavorita.like
+        else:
+            likeActividad = -1
+        
+        gustoActividad = {
+            'actividad':  actividad,
+            'like':  likeActividad
         }
 
         # Si el día ya existe en el diccionario, agregamos la actividad a la lista de actividades
-        if dia in agenda_data:
-            agenda_data[dia]["actividades"].append(actividad)
+        if dia in agendaRecibida:
+
+            agendaRecibida[dia]["actividadesSugeridas"].append(gustoActividad)
         else:
             # Si el día no existe, creamos una entrada nueva
-            agenda_data[dia] = {
+            agendaRecibida[dia] = {
                 "dia": dia,
-                "actividades": [actividad]
+                "actividadesSugeridas": [gustoActividad]
             }
 
         #Convertir el diccionario en una lista de valores y devolverlo
-        agenda_json = list(agenda_data.values())
+        agendaJSON = list(agendaRecibida.values())
 
-    return agenda_json
+    return agendaJSON
 
 @app.route('/verAgendaUsuario/<int:usuarioID>' ,methods = ['GET'])
 def verAgendaUsuario(usuarioID):
@@ -633,34 +648,34 @@ def verAgendaUsuario(usuarioID):
     agendaService = AgendaService(getEngine())
     agendasUsuario = agendaService.obtenerAgendasUsuario(usuarioID)  # Supongo que obtienes los resultados de tu función
     
-    agenda_data = agendasUsuario #.all()
+    agendaRecibida = agendasUsuario #.all()
 
-    agendaActual = agenda_data[0][0]
+    agendaActual = agendaRecibida[0][0]
 
-    agenda_json = {
-        "destino" : str(agenda_data[0][8]),
-        "fechaDesde": str(agenda_data[0][6] if agenda_data[0][6] else None),
-        "fechaHasta": str(agenda_data[0][7] if agenda_data[0][7] else None),
+    agendaJSON = {
+        "destino" : str(agendaRecibida[0][8]),
+        "fechaDesde": str(agendaRecibida[0][6] if agendaRecibida[0][6] else None),
+        "fechaHasta": str(agendaRecibida[0][7] if agendaRecibida[0][7] else None),
         "diaViaje": []
     }
 
-    # for diaViaje in agenda_data:
-    #     for actividad in agenda_data:
+    # for diaViaje in agendaRecibida:
+    #     for actividad in agendaRecibida:
     #         diaViajeJson = {
     #             """ "fecha": diaViaje[1],
     #             "actividades"={
-    #                 "nombre" = agenda_data[] """
+    #                 "nombre" = agendaRecibida[] """
     #             }
     #             #"id_agenda": diaViaje[0]
         
 
-    #     agenda_json['diaViaje'].append(diaViajeJson)
+    #     agendaJSON['diaViaje'].append(diaViajeJson)
 
-    # agenda_data = {}
+    # agendaRecibida = {}
 
 
     for row in agendasUsuario:
-        for row in agenda_data:
+        for row in agendaRecibida:
             print("row ", row)
             actividadRepo = agendaService.obtenerActividadAgenda(row[2], row[0])
             dia =  row[1].strftime("%Y-%m-%d") if row[1] else None
@@ -674,25 +689,25 @@ def verAgendaUsuario(usuarioID):
             }
 
             # Si el día ya existe en el diccionario, agregamos la actividad a la lista de actividades
-            if dia in agenda_data:
-                agenda_json['diaViaje'].append(actividad)
+            if dia in agendaRecibida:
+                agendaJSON['diaViaje'].append(actividad)
             else:
                 # Si el día no existe, creamos una entrada nueva
-                agenda_json[dia] = {
+                agendaJSON[dia] = {
                     "dia": dia,
                     "actividades": [actividad]
                 }
 
  
 
-    return jsonify(agenda_json)
+    return jsonify(agendaJSON)
 
 @app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
 def verAgendas(usuarioID):
     agendaService = AgendaService(getEngine())
     agendasUsuario = agendaService.obtenerAgendasUsuarioConDestino(usuarioID)
 
-    agenda_json = []
+    agendaJSON = []
     
     for agendaUsuario in agendasUsuario:
         agenda = {
@@ -701,9 +716,9 @@ def verAgendas(usuarioID):
             "fechaHasta": str(agendaUsuario[1]),
             "idAgendaViaje" :str(agendaUsuario[3])
         }
-        agenda_json.append(agenda)
+        agendaJSON.append(agenda)
 
-    return jsonify(agenda_json)
+    return jsonify(agendaJSON)
 
 @app.route('/directions', methods=['GET'])
 def directions():

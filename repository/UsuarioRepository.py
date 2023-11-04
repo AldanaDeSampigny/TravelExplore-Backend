@@ -1,5 +1,7 @@
 from sqlalchemy import func
 
+from ..models.Lugar import Lugar
+
 from ..models.Actividad import Actividad
 from ..models.ActividadAgenda import ActividadAgenda
 from ..models.Ciudad import Ciudad
@@ -34,10 +36,14 @@ class UsuarioRepository:
                 Actividad.nombre,
                 ActividadAgenda.horadesde,
                 ActividadAgenda.horahasta,
-                AgendaViaje.id
+                AgendaViaje.id,
+                Actividad.valoracion,
+                Actividad.duracion,
+                Actividad.id_lugar
             )
             .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
             .join(Actividad, Actividad.id == ActividadAgenda.id_actividad)
+            .join(Lugar, Actividad.id_lugar == Lugar.id)
             .join(AgendaViaje, AgendaDiaria.id_agenda_viaje == AgendaViaje.id)
             .join(Itinerario, Itinerario.id == AgendaDiaria.itinerario_id)
             .join(Viaje, Viaje.id == Itinerario.id_viaje)
@@ -46,7 +52,7 @@ class UsuarioRepository:
             .filter(AgendaViaje.id == idAgenda)
             .order_by(ActividadAgenda.horadesde)
         )
-     
+
         return agenda
     #query para mstrar una agenda del usuario
     def obtenerAgendasUsuario(self,usuarioID):
