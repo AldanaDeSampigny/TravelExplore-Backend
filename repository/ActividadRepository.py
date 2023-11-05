@@ -28,3 +28,15 @@ class ActividadRepository:
             filter(Categoria.id == categoriaID)
 
         return actividad
+
+    def getActividadCategorias(self, categoriaIDs):
+        subquery = self.db_session.query(ActividadCategoria.id_actividad).\
+            filter(ActividadCategoria.id_categoria.in_(categoriaIDs)).\
+            group_by(ActividadCategoria.id_actividad).\
+            having(func.count(ActividadCategoria.id_categoria) == len(categoriaIDs)).subquery()
+
+        actividades = self.db_session.query(Actividad).\
+            join(ActividadCategoria, Actividad.id == ActividadCategoria.id_actividad).\
+            filter(Actividad.id.in_(subquery))
+
+        return actividades

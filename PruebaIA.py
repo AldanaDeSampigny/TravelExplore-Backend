@@ -155,19 +155,71 @@ class PruebaIA:
             index.index_from_dataset(tf.data.Dataset.zip((activities_dataset.batch(100), activities_dataset.batch(100).map(model.activity_model)))) 
 
             _, top_recommendations = index(np.array([new_tensor], dtype=np.int32))
-            
-            #con probabilidad
-            """ scores = index.get_candidates(queries=new_tensor, k=top_recommendations.shape[-1])
+            #solo el top 3 FUNCIONAAA
+            #top_3_recommendations = top_recommendations[0, :5]
+            top_3_recommendations = top_recommendations[0, :5].numpy()
+            print(f"Las mejores recomendaciones para el usuario: {top_3_recommendations}") 
+
+            #buscar actividad a partir de las caracteristicas
+            # indicesCate = []
+            # actividadReco = []
+            # for filaRecomendacion in top_3_recommendations:
+            #     print("fila -->", filaRecomendacion)
+            #     for columnaRecomendacion in filaRecomendacion:
+            #         #[0 1 2 3]       
+            #         #[0,1,1,0]
+            #         print("Columna ---> ", columnaRecomendacion)
+            #         print("recomendacion -->", columnaRecomendacion)
+            #         if (columnaRecomendacion == 1.0):
+            #             indicesCate.append(columnaRecomendacion)
+
+            #     #busca actividad a partir de las categorias
+            #     actividadReco.append(aRepo.getActividadCategorias(indicesCate).all())               
+
+            # for actividad in actividadReco:
+            #     print("id de la actividades: ", " - ",actividad.nombre)
+            actividadReco = []  # Lista para almacenar las actividades relacionadas con las categorías
+
+            for filaRecomendacion in top_3_recommendations:
+                indicesCate = []  # Lista para almacenar los índices de las categorías relevantes para cada fila
+
+                for columnaRecomendacion in range(0, len(filaRecomendacion)):
+                    if filaRecomendacion[columnaRecomendacion] == 1.0:
+                        indicesCate.append(columnaRecomendacion)
+
+                # Busca actividades a partir de las categorías
+                actividades = aRepo.getActividadCategorias(indicesCate) # Ejecuta la consulta y obtén todos los resultados
+
+                for actividad in actividades:
+                    print("Nombre de la actividad:", actividad.nombre)
+
+                actividadReco.extend(actividades)  # Agrega las actividades relacionadas a la lista actividadReco
+
+            # Ahora actividadReco contiene todas las actividades relacionadas con las categorías
+
+        return top_recommendations
+
+
+
+
+        # SELECT id_actividad
+        # FROM actividades_categorias
+        # WHERE id_categoria = any(array[1, 10])
+        # GROUP BY id_actividad
+        # HAVING count(id_actividad) = 2;
+
+        #con probabilidad
+        """ scores = index.get_candidates(queries=new_tensor, k=top_recommendations.shape[-1])
 
             # Calcular los porcentajes utilizando la función sigmoide
             percentages = tf.nn.sigmoid(scores) """
 
-            """ # Verificar si percentages es un tensor válido antes de ordenarlo
+        """ # Verificar si percentages es un tensor válido antes de ordenarlo
             if tf.reduce_prod(tf.shape(percentages)) > 0:
                 # Obtener las índices ordenados en función de los porcentajes (de mayor a menor)
                 sorted_indices = tf.argsort(percentages, direction='DESCENDING') """
 
-            """     # Seleccionar las 3 mejores recomendaciones si hay al menos 3
+        """     # Seleccionar las 3 mejores recomendaciones si hay al menos 3
                 if len(sorted_indices) >= 3:
                     top_3_recommendations = sorted_indices[:3]
                     top_3_percentages = percentages[top_3_recommendations]
@@ -177,11 +229,20 @@ class PruebaIA:
                     print("No hay suficientes recomendaciones para mostrar.")
             else:
                 print("No se encontraron recomendaciones válidas.") """
+        """ 
+            # Crear un diccionario que mapee índices a IDs de actividades
+            activity_id_mapping = {indice: actividadID for indice, actividadID in enumerate(actividadDatos)}
 
-            #solo el top 3 FUNCIONAAA
-            top_3_recommendations = top_recommendations[0, :5]
+            # Obtener los índices de las actividades recomendadas
+            top_indices = top_recommendations[0, :5]
 
+            # Mapear los índices a IDs de actividades
+            recommended_activity_ids = [activity_id_mapping[indice] for indice in top_indices]
+
+            # Imprimir los IDs de las actividades recomendadas
+            print("Los IDs de las actividades recomendadas son:", recommended_activity_ids)
             # Imprimir las 3 mejores recomendaciones
+            #print(f"Las mejores recomendaciones para el usuario: {top_3_recommendations}") 
             print(f"Las mejores recomendaciones para el usuario: {top_3_recommendations}")
 
             # Crear un diccionario que mapee índices a IDs de actividades
@@ -196,4 +257,4 @@ class PruebaIA:
             # Imprimir los IDs de las actividades recomendadas
             print("Los IDs de las actividades recomendadas son:", recommended_activity_ids)
 
-            return top_recommendations
+            return top_recommendations """
