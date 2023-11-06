@@ -182,10 +182,10 @@ class AgendaService:
             
         return cerca 
     
-    def eliminarActividadAgeenda(self, idActividad, idItinerario):
+    def eliminarActividadAgeenda(self, idActividad, idAgendaViaje):
         with Session(getEngine()) as session:
             agendaRepo = AgendaRepository(session)
-            agendasDiarias = agendaRepo.getAgendasDeItinerario(idItinerario)
+            agendasDiarias = agendaRepo.getAgendasDeViaje(idAgendaViaje)
             for agenda in agendasDiarias:
                 agendaRepo.deleteActividadesDeAgenda(idActividad, agenda.id)
 

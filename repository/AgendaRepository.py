@@ -1,3 +1,4 @@
+from ..models.AgendaViaje import AgendaViaje
 from ..models.AgendaDiaria import AgendaDiaria
 from ..models.Itinerario import Itinerario
 from ..models.ActividadAgenda import ActividadAgenda
@@ -91,9 +92,9 @@ class AgendaRepository:
 
         self.db_session.commit()
 
-    def getAgendasDeItinerario(self, idItinerario):
+    def getAgendasDeViaje(self, idViaje):
         agendasDiarias = self.db_session.query(AgendaDiaria).\
-            join(Itinerario, Itinerario.id == AgendaDiaria.itinerario_id).\
-            filter(Itinerario.id == idItinerario).all()
+            join(AgendaViaje, AgendaViaje.id == AgendaDiaria.id_agenda_viaje).\
+            filter(AgendaViaje.id == idViaje).all()
         
         return agendasDiarias
