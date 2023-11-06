@@ -82,6 +82,8 @@ class AgendaService:
                 # En caso de error, realiza un rollback
                 session.rollback()
                 raise e
+            
+            return agendaViajeNueva.id
 
     def calcularTiempoTraslado(self,origenM, destinoM, transporteM):
         with Session(getEngine()) as session:

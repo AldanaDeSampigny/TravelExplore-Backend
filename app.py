@@ -295,7 +295,7 @@ def generar_y_mostrar_agenda(usuarioID):
 
         agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agendaJSON)
         print(agendaJSON)
-        return jsonify(agendaJSON)
+        return jsonify(agendaNueva)#agendaJSON)
 
 @app.route('/ciudades', methods=['GET'])
 def obtenerCiudades():
