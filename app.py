@@ -140,21 +140,22 @@ def EliminarActividad(actividadID, AgendaViajeID):
     else:
         return 'no'
 
-
 @app.route('/recomendacionIA/<int:usuarioID>',methods=['GET'])
 def recomendacion(usuarioID):
     recomendaciones = PruebaIA(getEngine())
-    #lugar = request.get_json()
-    
-    #recomendaciones.cargadoDeIA(usuarioID)
     recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
 
-    return '{"data": "recomendaciones obtenidas"}'
-    #for recomendacion in recomendaciones:
-        
-    #lugarFavoritoService.agregarGusto(usuarioID,lugar)    
-
-    #return '{ "data":Recomendaciones del usuario obtenidas" }'
+    recomendaciones_json = []
+    for actividad in recomendacionesIA:
+        recomendacion_dict = {
+            'nombre': actividad.nombre,
+            'valoracion' : actividad.valoracion,
+            'duracion' : actividad.duracion.strftime("%H:%M:%S"),
+            'id_lugar' : actividad.id_lugar
+        }
+        recomendaciones_json.append(recomendacion_dict)
+    
+    return jsonify(recomendaciones_json)
 
 @app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
@@ -173,7 +174,6 @@ def likeActividad(usuarioID):
     actividadFavoritaService.agregarGustoActividad(usuarioID,actividad)    
 
     return '{ "data": "Gusto Actividad Actualizado" }'
-
 
 @app.route('/dislike/<int:usuarioID>',methods=['POST'])
 def dislike(usuarioID):
@@ -296,8 +296,6 @@ def generar_y_mostrar_agenda(usuarioID):
         print(agendaJSON)
         return jsonify(agendaJSON)
 
-
-
 @app.route('/ciudades', methods=['GET'])
 def obtenerCiudades():
     with Session(getEngine()) as session:
@@ -328,7 +326,6 @@ def lugares():
             lugares.append(lugar_data)
 
     return lugares
-
 
 @app.route('/lugarBasico', methods=['GET'])  #DE ESTE OBTENEMOS MAS INFORMACION COMO FOTOS Y OPINIONES
 def placesRoutesBasico():
@@ -756,56 +753,3 @@ def directions():
 @app.route('/mostrar_mapa', methods=['GET'])
 def mostrar_mapa():
     return render_template('mapa.html') 
-
-"""    
-    # Geocoding an address
-    #geocode_result = gmaps.geocode('1600 , Mountain View, CA')
-
-    # Look up an address with reverse geocoding
-    reverse_geocode_result = gmaps.reverse_geocode((-42.6852871,-65.3535526))
-
-    # Request directions via public transit
-    now = datetime.now() """
-"""  directions_result = gmaps.directions("Sydney Town Hall",
-                                        "Parramatta, NSW",
-                                        mode="transit",
-                                        departure_time=now)
-
-    # Validate an address with address validation
-    addressvalidation_result =  gmaps.addressvalidation(['1600 Amphitheatre Pk'], 
-                                                        regionCode='US',
-                                                        locality='Mountain View', 
-                                                        enableUspsCass=True) """
-
-
-# def obtener_descripcion_lugar(nombre_lugar):
-#     # Utiliza la API de Wikipedia para buscar información sobre el lugar con coincidencias parciales
-#     url = f"https://es.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&list=search&srsearch={nombre_lugar}"
-#     response = requests.get(url)
-
-#     if response.status_code == 200:
-#         data = response.json()
-#         search_results = data.get("query", {}).get("search", [])
-
-#         if search_results:
-#             # Obtiene el título de la primera página de resultados (la que mejor coincide)
-#             primer_resultado = search_results[0]
-#             titulo_pagina = primer_resultado.get("title")
-
-#             # Utiliza el título de la página para obtener la descripción completa
-#             url_pagina = f"https://es.wikipedia.org/w/api.php?action=query&format=json&prop=extracts&exintro=true&titles={titulo_pagina}"
-#             response_pagina = requests.get(url_pagina)
-
-#             if response_pagina.status_code == 200:
-#                 data_pagina = response_pagina.json()
-#                 pages = data_pagina.get("query", {}).get("pages", {})
-#                 for page_id, page_info in pages.items():
-#                     if "extract" in page_info:
-#                         # Utiliza BeautifulSoup para eliminar etiquetas HTML
-#                         soup = BeautifulSoup(
-#                             page_info["extract"], "html.parser")
-#                         text = soup.get_text()
-#                         return text.strip()
-
-#     # Si no se encuentra una descripción, puedes devolver un valor predeterminado o "No disponible"
-#     return "No disponible"
