@@ -231,7 +231,8 @@ class AgendaService:
 
                 if fecha_actual.date().strftime('%Y-%m-%d') in horariosElegidos:
                     hora_actual = datetime.strptime(horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][0], '%H:%M:%S').time()
-                    horario_fin = datetime.strptime(horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][1], '%H:%M:%S').time()
+                    horario_fin = datetime.strptime(
+                        horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][1], '%H:%M:%S').time()
                 else:
                     hora_actual = datetime.strptime(horaInicio, '%H:%M:%S').time() 
                     horario_fin = datetime.strptime(horaFin, '%H:%M:%S').time()
