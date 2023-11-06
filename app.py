@@ -470,7 +470,21 @@ def lugaresCercanos():
             'pais': pais if pais else 'N/A',
             'website': place.get('website', None)
         }
-        lugares.append(lugar)
+        
+
+        lugarFavorito = LugarFavoritoService(getEngine()).getLugarFavorito(1,lugar['id'])
+
+        if(lugarFavorito != None):
+            likeLugarFavorito = lugarFavorito.like
+        else:
+            likeLugarFavorito = -1
+
+        lugarGusto = {
+            'lugar': lugar,
+            'like':  likeLugarFavorito
+        }
+
+        lugares.append(lugarGusto)
 
     return jsonify(lugares)
 
