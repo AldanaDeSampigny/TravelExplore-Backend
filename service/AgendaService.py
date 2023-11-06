@@ -5,6 +5,8 @@ import json
 import numpy as np
 from sqlalchemy import Row
 
+from ..PruebaIA import PruebaIA
+
 from ..models.Lugar import Lugar
 
 from ..repository.UsuarioRepository import UsuarioRepository
@@ -190,8 +192,11 @@ class AgendaService:
                 agendaRepo.deleteActividadesDeAgenda(idActividad, agenda.id)
 
     def getActividadesRecomendadas(self, usuarioID):
-        #recomendaciones = PruebaIA
-        print("holi")
+        with Session(getEngine()) as session:
+            recomendaciones = PruebaIA(session)
+            recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
+            
+            return recomendacionesIA
 
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
@@ -204,6 +209,11 @@ class AgendaService:
 
             gustos_agregados = set()
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
+            
+            recomendadas = []
+            recomendadas = self.getActividadesRecomendadas(usuarioID)
+            for recomendacion in recomendadas:
+                actividadIds.append(recomendacion.id)
 
             listaInicial = []
             listaInicial.append(actividadIds[0][0])

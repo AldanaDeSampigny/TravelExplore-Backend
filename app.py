@@ -145,7 +145,8 @@ def recomendacion(usuarioID):
     recomendaciones_json = []
     for actividad in recomendacionesIA:
         recomendacion_dict = {
-            'nombre': actividad.nombre,
+            'id': actividad.id,
+            'nombre_actividad': actividad.nombre,
             'valoracion' : actividad.valoracion,
             'duracion' : actividad.duracion.strftime("%H:%M:%S"),
             'id_lugar' : actividad.id_lugar
