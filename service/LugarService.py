@@ -212,6 +212,7 @@ class LugarService:
             'tourist_attraction': self.guardarLugar,
             'insurance_agency': self.guardarLugar,
             'lodging': self.guardarLugar,
+            'bar': self.guardarLugar,
             'city': self.guardarCiudad,
             'locality': self.guardarCiudad,
         }

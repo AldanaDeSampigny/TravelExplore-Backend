@@ -414,6 +414,7 @@ def placesRoutes():
 def lugaresCercanos():
     latitud = float(request.args.get('latitud'))
     longitud = float(request.args.get('longitud'))
+    tipo = request.args.get('type')
 
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
 
@@ -421,7 +422,7 @@ def lugaresCercanos():
     radio = 45000  # Radio en metros (45 km)
 
     # Realiza la búsqueda de lugares cercanos
-    places = gmaps.places_nearby(location=localizacion, radius=radio)
+    places = gmaps.places_nearby(location=localizacion, type=tipo, radius=radio)
 
     # Filtra los primeros 5 resultados si hay más disponibles
     lugares_cercanos = places['results'][:5]
