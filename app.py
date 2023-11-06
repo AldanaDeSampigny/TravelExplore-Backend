@@ -114,20 +114,42 @@ def mostrarDistancia(usuarioID, destinoID):
 def getFavoritos(usuarioID):
     lugarFavoritoService = LugarFavoritoService(getEngine())
 
-    gustos = lugarFavoritoService.gustosUsuario(usuarioID)    
-    
+    gustosLugar = lugarFavoritoService.gustosUsuario(usuarioID)    
+
     favoritosJson = []
-    
-    for gusto in gustos:
+    for gusto in gustosLugar:
         favorito= {
             "lugar" : str(gusto[0]),
             "ciudad" : str(gusto[1]),
             "usuario":str(gusto[2]),
             "like":str(gusto[3]),
+            "codigo" :  str(gusto[4]),
         }
 
         favoritosJson.append(favorito)
+
     return jsonify(favoritosJson)
+
+@app.route('/getActividadesFavoritas/<int:usuarioID>',methods=['GET'])
+def getActividadesFavoritas(usuarioID):
+    actividadFavoritaService = ActividadFavoritaService(getEngine())
+
+    gustosActividad = actividadFavoritaService.getActividadesFavoritas(usuarioID)    
+    
+    actividadesJson = []
+    for gustoActividad in gustosActividad:
+        actividad = {
+            "nombre_actividad" : str(gustoActividad[0]),
+            "valoracion" : str(gustoActividad[1]),
+            "duracion":str(gustoActividad[2]),
+            "like":str(gustoActividad[4]),
+        }
+
+
+        actividadesJson.append(actividad)
+    return jsonify(actividadesJson)
+    
+
 
 @app.route('/eliminarActividadesAgenda/<int:actividadID>/<int:AgendaViajeID>',methods=['DELETE'])
 def EliminarActividad(actividadID, AgendaViajeID):

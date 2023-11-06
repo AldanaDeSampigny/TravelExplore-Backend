@@ -111,7 +111,6 @@ class LugarFavoritoService:
             if gustoObtenido != None and gustoObtenido.like == 0:
                 gusto.updateLike(idUsuario, idLugar, -1)
 
-
     def gustosUsuario(self,idUsuario):
         with Session(getEngine()) as session:
             gustoRepository = FavoritoRepository(session)

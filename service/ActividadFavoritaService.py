@@ -114,6 +114,16 @@ class ActividadFavoritaService:
                 print("llego al -1")
                 gusto.updateLikeActividad(idUsuario, id, -1)
 
+
+    def getActividadesFavoritas(self,usuarioID):
+        with Session(getEngine()) as session:
+            gustoRepository = FavoritoRepository(session)
+
+            gustos = gustoRepository.actividadesFavoritasUsuario(usuarioID)
+
+            return gustos
+
+
     """  def gustosUsuario(self,idUsuario):
         with Session(getEngine()) as session:
             gustoRepository = FavoritoRepository(session)

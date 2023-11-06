@@ -44,6 +44,7 @@ class FavoritoRepository:
             Ciudad.nombre,
             Usuario.nombre,
             LugaresFavoritos.like,
+            Lugar.codigo
             ).\
         join(Lugar, LugaresFavoritos.lugar_id == Lugar.id).\
         join(Usuario, LugaresFavoritos.usuario_id == Usuario.id).\
@@ -79,6 +80,22 @@ class FavoritoRepository:
         self.db_session.add(nuevaActividad)
         self.db_session.commit()
 
+
+    def actividadesFavoritasUsuario(self, usuarioID):
+        actividades = self.db_session.query(
+            Actividad.nombre,
+            Actividad.valoracion,
+            Actividad.duracion,
+            Usuario.nombre,
+            ActividadesFavoritas.like,
+            ).\
+        join(Actividad, ActividadesFavoritas.actividad_id == Actividad.id).\
+        join(Usuario, ActividadesFavoritas.usuario_id == Usuario.id).\
+        filter(Usuario.id == usuarioID).\
+        filter(ActividadesFavoritas.like == 1).all()
+
+        return actividades
+    
 
     """ def actividadesFavoritasUsuario(self, usuarioID):
         lugaresFavoritosUsuario = self.db_session.query(
