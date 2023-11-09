@@ -312,7 +312,6 @@ def generar_y_mostrar_agenda(usuarioID):
                 }
                 dia_json['actividades'].append(actividad_json)
 
-            
             agendaJSON.append(dia_json)
 
         agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agendaJSON)
@@ -667,8 +666,10 @@ def getAgenda(usuarioID,agendaID):
             "valoracion" : row[7],
             "duracion" : row[8].strftime("%H:%M:%S") if row[8] else None,
             "id_lugar" : row[9],
-            "id_viaje": row[6]
+            "id_viaje": row[6],
+            "nombre_lugar" : row[11]
         }
+
 
         actividadFavorita = ActividadFavoritaService(getEngine()).getActividadFavorita(usuarioID,row[2])
 

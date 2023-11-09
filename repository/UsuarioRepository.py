@@ -40,7 +40,8 @@ class UsuarioRepository:
                 Actividad.valoracion,
                 Actividad.duracion,
                 Actividad.id_lugar,
-                Ciudad.nombre
+                Ciudad.nombre,
+                Lugar.nombre
             )
             .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
             .join(Actividad, Actividad.id == ActividadAgenda.id_actividad)
