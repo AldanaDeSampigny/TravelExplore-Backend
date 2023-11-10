@@ -190,8 +190,12 @@ class LugarService:
                     session.commit()
                     print("se modifico ciudad")
 
-
-
+    def getLugarByID(self,id):
+        with Session(getEngine()) as session:
+            repository = LugarRepository(session)
+            lugarEncontrado = repository.getLugarID(id)
+            
+        return lugarEncontrado
 #primero basico, luego que guarde los horarios en una nueva tabla, y luego dividir si son ciudades pa q las guarde
     def guardarSitio(self, sitio): 
         tipoSitio = sitio.get('tipo', 'N/A')
