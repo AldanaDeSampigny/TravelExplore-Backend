@@ -204,6 +204,7 @@ class AgendaService:
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             agenda = []
+            direccion = None
 
             fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
@@ -248,6 +249,7 @@ class AgendaService:
                     for idx, m_id in enumerate(actividadIds):
 
                         m = session.query(Actividad).get(m_id)
+                        print("actividad ", m.nombre)
                         lugar = agenda_repo.buscarLugar(m.id)
 
                         if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
@@ -262,53 +264,41 @@ class AgendaService:
                         hora_cierre_intervalo = hora_actual.replace(hour=(hora_actual.hour + (minutos_duracion // 60)) % 24, minute=(hora_actual.minute + minutos_duracion % 60) % 60)
 
                         if lugar.horaapertura <= hora_actual < lugar.horacierre:
+                            print("ac inio ", m.horainicio)
+                            print("ac  ", hora_actual)
+                            print("ac fin ", m.horafin)
+                            if m.horainicio <= hora_actual < m.horafin:
+                                print("entro ", hora_actual)
+                                siguiente_actividad = actividadIds[idx + 1] if idx + 1 < len(actividadIds) else None
+                                if siguiente_actividad:
+                                    siguiente_actividad_obj = session.query(Actividad).get(siguiente_actividad)
+                                    siguiente_lugar = agenda_repo.buscarLugar(siguiente_actividad_obj.id)
 
-                            siguiente_actividad = actividadIds[idx + 1] if idx + 1 < len(actividadIds) else None
-                            if siguiente_actividad:
-                                siguiente_actividad_obj = session.query(Actividad).get(siguiente_actividad)
-                                siguiente_lugar = agenda_repo.buscarLugar(siguiente_actividad_obj.id)
-
-                            direccion = self.calcularTiempoTraslado(lugar, siguiente_lugar, transporte)
-                            if direccion:
-                                hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
-                                hora_actual = (hora_inicio_datetime + direccion).time()
-        
-                            if m.id not in gustos_agregados:
-                                actividad = {
-                                    'dia': fecha_actual,
-                                    'hora_inicio': hora_actual,
-                                    'hora_fin': hora_cierre_intervalo,
-                                    'actividad': m,
-                                    'lugar': lugar.nombre
-                                }
-                                agenda.append(actividad)
-                                gustos_agregados.add(m.id)
-                                break
+                                direccion = self.calcularTiempoTraslado(lugar, siguiente_lugar, transporte)
+                                if direccion:
+                                    hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
+                                    hora_actual = (hora_inicio_datetime + direccion).time()
+            
+                                if m.id not in gustos_agregados:
+                                    actividad = {
+                                        'dia': fecha_actual,
+                                        'hora_inicio': hora_actual,
+                                        'hora_fin': hora_cierre_intervalo,
+                                        'actividad': m,
+                                        'lugar': lugar.nombre
+                                    }
+                                    agenda.append(actividad)
+                                    gustos_agregados.add(m.id)
+                                    break
                             
                     if datetime.strptime('00:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('04:00:00', '%H:%M:%S').time():
                         break
 
-                    hora_inicio_datetime = datetime.combine(datetime.now().date(), hora_cierre_intervalo)  # Crear un objeto datetime
-                    hora_inicio_datetime += direccion  # Sumar la dirección al objeto datetime
+                    hora_inicio_datetime = datetime.combine(datetime.now().date(), hora_cierre_intervalo)
+                    if direccion:
+                        hora_inicio_datetime += direccion
                     hora_actual = hora_inicio_datetime.time() 
                 
                 fecha_actual += delta_dias
 
         return agenda
-    
-        # podria traer una query que traiga un lugar de tipo restaurante y los meta aca
-        # if hora_actual in self.horas:
-        #     actividad = agenda_repo.buscarActividadRestaurant(usuarioID, destinoID)
-        #     lugarA = agenda_repo.buscarLugar(actividad.id)
-        #     if lugarA.horaApertura < hora_actual < lugarA.horaCierre:
-        #         if actividad.id not in gustos_agregados:
-        #             actividades = {
-        #                 'dia': fecha_actual,
-        #                 'hora_inicio': hora_actual,
-        #                 'hora_fin': hora_cierre_intervalo,
-        #                 'actividad': actividad,
-        #                 'lugar': lugar.nombre
-        #             }
-        #             agenda.append(actividades)
-        #             gustos_agregados.add(actividad.id)
-        #             break

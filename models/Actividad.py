@@ -12,6 +12,8 @@ class Actividad(Base):
   nombre = Column(String)
   valoracion = Column(Integer)
   duracion = Column(Time)
+  horainicio= Column(Time)
+  horafin= Column(Time)
   id_lugar = Column(db.ForeignKey("lugares.id"))
   
   metadata_obj.create_all(getEngine())
@@ -22,4 +24,6 @@ class Actividad(Base):
         "nombre": self.nombre,
         "valoracion": self.valoracion,
         "duracion": self.duracion,
+        "horainicio": self.horainicio,
+        "horafin": self.horafin
       }
