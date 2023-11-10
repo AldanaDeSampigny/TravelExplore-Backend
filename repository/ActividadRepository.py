@@ -21,6 +21,12 @@ class ActividadRepository:
 
         return actividad
     
+    def getActividadNombre(self, nombre):
+        actividad = self.db_session.query(Actividad).\
+            filter(Actividad.id == id).first()
+        return actividad
+    
+    
     def getActividadCategoria(self, categoriaID):
         actividad = self.db_session.query(Actividad.id).\
         join(Categoria, Categoria.id == ActividadCategoria.id_categorias).\

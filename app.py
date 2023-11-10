@@ -162,23 +162,46 @@ def EliminarActividad(actividadID, AgendaViajeID):
     else:
         return 'no'
 
-@app.route('/recomendacionIA/<int:usuarioID>',methods=['GET'])
-def recomendacion(usuarioID):
+@app.route('/recomendacionLugaresIA/<int:usuarioID>',methods=['GET'])
+def lugarRecomendacion(usuarioID):
     recomendaciones = PruebaIA(getEngine())
     recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
+    lugarService = LugarService(getEngine())
 
     recomendaciones_json = []
     for actividad in recomendacionesIA:
-        recomendacion_dict = {
-            'id': actividad.id,
-            'nombre_actividad': actividad.nombre,
-            'valoracion' : actividad.valoracion,
-            'duracion' : actividad.duracion.strftime("%H:%M:%S"),
-            'id_lugar' : actividad.id_lugar
-        }
-        recomendaciones_json.append(recomendacion_dict)
-    
+        if(actividad.id_lugar != None):
+            lugar = lugarService.getLugarByID(actividad.id_lugar)
+            print("lugar", lugar)
+            recomendacion_dict = {
+                'id': lugar.id,
+                'nombre': lugar.nombre,
+                'tipo' : lugar.tipo,
+                'valoracion' :  lugar.valoracion
+            }
+            recomendaciones_json.append(recomendacion_dict)
+
     return jsonify(recomendaciones_json)
+
+
+@app.route('/recomendacionActividadesIA/<int:usuarioID>',methods=['GET'])
+def actividadRecomendacion(usuarioID):
+    recomendaciones = PruebaIA(getEngine())
+    recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
+    lugarService = LugarService(getEngine())
+
+    recomendacionesActividad_json = []
+    for actividad in recomendacionesIA:
+        if actividad.id_lugar is None:
+            recomendacionesActividad_dict= {
+                'id': actividad.id,
+                'nombre_actividad': actividad.nombre,
+                'valoracion' : actividad.valoracion,
+                'duracion' : actividad.duracion.strftime("%H:%M:%S")
+            }
+            recomendacionesActividad_json.append(recomendacionesActividad_dict)
+    
+    return jsonify(recomendacionesActividad_json)
 
 @app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
@@ -312,7 +335,6 @@ def generar_y_mostrar_agenda(usuarioID):
                 }
                 dia_json['actividades'].append(actividad_json)
 
-            
             agendaJSON.append(dia_json)
 
         agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agendaJSON)
@@ -667,8 +689,10 @@ def getAgenda(usuarioID,agendaID):
             "valoracion" : row[7],
             "duracion" : row[8].strftime("%H:%M:%S") if row[8] else None,
             "id_lugar" : row[9],
-            "id_viaje": row[6]
+            "id_viaje": row[6],
+            "nombre_lugar" : row[11]
         }
+
 
         actividadFavorita = ActividadFavoritaService(getEngine()).getActividadFavorita(usuarioID,row[2])
 

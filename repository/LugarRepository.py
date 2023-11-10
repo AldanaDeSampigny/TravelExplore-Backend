@@ -18,6 +18,12 @@ class LugarRepository:
             filter(Lugar.codigo == codigoLugar).first()
 
         return lugar
+
+    def getLugarID(self, lugarID):
+        lugar = self.db_session.query(Lugar).\
+            filter(Lugar.id == lugarID).first()
+
+        return lugar
     
     def getLugarCategoria(self, idLugar):
         lugar = self.db_session.query(LugarCategoria).\
