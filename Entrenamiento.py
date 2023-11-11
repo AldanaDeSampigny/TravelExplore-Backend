@@ -35,10 +35,11 @@ with Session(getEngine()) as session:
 
     # Ahora puedes acceder a las dimensiones de las matrices
     num_categorias = len(categorias) + 1  
-    num_actividades = len(actividades)  
+    num_actividades = len(actividades) 
+    print("cant actividades", num_actividades) 
 
     num_usuarios = len(datos)
-    
+    print("cant usuarios", num_usuarios)
     for acti in actividades:
         categorias_actividades[acti.id].append(CRepo.getCategoriaActividad(acti.id))
 
@@ -79,6 +80,14 @@ with Session(getEngine()) as session:
                 preferencias_usuarios[i, c] = 0
 
     #preferencias_usuarios = np.array(preferencias_usuarios)
+
+    if len(actividadesInfo) > len(preferencias_usuarios):
+        max_size = len(actividadesInfo)
+        preferencias_usuarios = np.pad(preferencias_usuarios, ((0, max_size - len(preferencias_usuarios)), (0, 0)), 'constant')
+    else:
+        max_size = len(preferencias_usuarios)
+        actividadesInfo = np.pad(actividadesInfo, ((0, max_size - len(actividadesInfo)), (0, 0)), 'constant')
+
 
     users_dataset = tf.data.Dataset.from_tensor_slices(preferencias_usuarios)
     activities_dataset = tf.data.Dataset.from_tensor_slices(actividadesInfo)
@@ -165,7 +174,7 @@ with Session(getEngine()) as session:
     }
 
     # Continuar con el entrenamiento del modelo
-    model.fit(train_data, np.array(valoraciones, dtype=np.float32), epochs=100)
+    model.fit(train_data, np.array(valoraciones, dtype=np.float32), epochs=150)
 
     model.save_weights('modeloConH5.h5')#'modeloConH5.h5')
 
