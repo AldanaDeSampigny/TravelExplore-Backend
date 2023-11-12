@@ -217,6 +217,8 @@ class LugarService:
             'insurance_agency': self.guardarLugar,
             'lodging': self.guardarLugar,
             'bar': self.guardarLugar,
+            'travel_agency': self.guardarLugar,
+            'cafe': self.guardarLugar,
             'city': self.guardarCiudad,
             'locality': self.guardarCiudad,
         }
