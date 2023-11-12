@@ -1,3 +1,4 @@
+from ..models.Horario import Horario
 from ..models.CiudadCategoria import CiudadCategoria
 from ..models.LugarCategoria import LugarCategoria
 from ..models.Ciudad import Ciudad
@@ -54,4 +55,10 @@ class LugarRepository:
             filter(Ciudad.nombre == nombreCiudad).first()
         
         return ciudad
+    
+    def getLugarHorario(self, idlugar):
+        horario = self.db_session.query(Horario.dia, Horario.horaInicio, Horario.horaFin).\
+            filter(Horario.id_lugar == idlugar).all()
+
+        return horario
 

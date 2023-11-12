@@ -1,6 +1,7 @@
 import math
 from turtle import update
 import json
+from ..repository.LugarRepository import LugarRepository
 
 import numpy as np
 from sqlalchemy import Row
@@ -27,6 +28,10 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 
 class AgendaService:
+
+    dias_semana = ["Monday", "Tuesday", "Wednesday",
+                   "Thursday", "Friday", "Saturday", "Sunday"]
+    
     def __init__(self, db_session):
         self.db_session = db_session
 
@@ -199,16 +204,32 @@ class AgendaService:
             recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
             
             return recomendacionesIA
+        
+    def lugarHorarios(self, idlugar):
+        with Session(getEngine()) as session:
+            lugarRepo = LugarRepository(session)
+            horariosDelLugar = lugarRepo.getLugarHorario(idlugar)
+            horarios = []
+
+            for row in horariosDelLugar:
+                horario = {
+                    "dia": row[0],
+                    "horaInicio": row[1].strftime("%H:%M:%S") if row[1] else None,
+                    "horaFin": row[2].strftime("%H:%M:%S") if row[2] else None,
+                }
+                horarios.append(horario)
+
+            return horarios
 
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             agenda = []
+            horarios = []
             direccion = None
 
             fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
-            delta_dias = timedelta(days=1)
 
             gustos_agregados = set()
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
@@ -245,6 +266,7 @@ class AgendaService:
                 if gustos_agregados == actividadIds_set:
                     gustos_agregados.clear()
 
+                lugarAbierto = False
                 while hora_actual < horario_fin:
                     for idx, m_id in enumerate(actividadIds):
 
@@ -262,11 +284,31 @@ class AgendaService:
                             
                         minutos_duracion = m.duracion.hour * 60 + m.duracion.minute
                         hora_cierre_intervalo = hora_actual.replace(hour=(hora_actual.hour + (minutos_duracion // 60)) % 24, minute=(hora_actual.minute + minutos_duracion % 60) % 60)
+                        
+                        if m.id_lugar != None:
+                            horarios = self.lugarHorarios(lugar.id)
 
-                        if lugar.horaapertura <= hora_actual < lugar.horacierre:
-                            print("ac inio ", m.horainicio)
+                            if horarios is None:
+                                print("horarios ", horarios)
+                                lugarAbierto = True
+
+                            horarios_filtrados = list(
+                                filter(lambda horario: horario['dia'] == self.dias_semana[fecha_actual.weekday()], horarios))
+
+                            print("aaaaa ", fecha_actual.weekday())
+                            for horario in horarios_filtrados:
+                                print("dia ", horario['dia'], " | fecha ", fecha_actual)
+                                hora_inicio = datetime.strptime(horario['horaInicio'], "%H:%M:%S").time()
+                                hora_fin = datetime.strptime(horario['horaFin'], "%H:%M:%S").time() 
+                                if hora_inicio <= hora_actual < hora_fin:
+                                    print("inicio ", hora_inicio, " fin ", hora_fin)
+                                    lugarAbierto = True
+                        else: 
+                                    lugarAbierto = True
+                        
+                        
+                        if lugarAbierto:
                             print("ac  ", hora_actual)
-                            print("ac fin ", m.horafin)
                             if m.horainicio <= hora_actual < m.horafin:
                                 print("entro ", hora_actual)
                                 siguiente_actividad = actividadIds[idx + 1] if idx + 1 < len(actividadIds) else None
@@ -299,6 +341,6 @@ class AgendaService:
                         hora_inicio_datetime += direccion
                     hora_actual = hora_inicio_datetime.time() 
                 
-                fecha_actual += delta_dias
+                fecha_actual += timedelta(days=1)
 
         return agenda
