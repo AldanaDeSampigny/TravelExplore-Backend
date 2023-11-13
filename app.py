@@ -2,14 +2,12 @@ from collections import defaultdict
 from datetime import datetime
 import dbm
 
+from .service.UsuarioService import UsuarioService
+
 from .PruebaIA import PruebaIA
-
 from .service.ActividadFavoritaService import ActividadFavoritaService
-
 from .service.LugarFavoritoService import LugarFavoritoService
-
 from .repository.AgendaRepository import AgendaRepository
-
 from .repository.LugarRepository import LugarRepository
 
 from .models.Horario import Horario
@@ -815,3 +813,25 @@ def directions():
 @app.route('/mostrar_mapa', methods=['GET'])
 def mostrar_mapa():
     return render_template('mapa.html') 
+
+@app.route('/buscarUsuario', methods=['GET'])
+def usuarioIniciado():
+    #buscarLugar = request.args.get('ciudad')
+    usuarioService = UsuarioService(getEngine())
+    nombre = request.args.get('nombre')
+    print('nombre',nombre)
+
+    contrasenia = request.args.get('contrasenia')
+    print('constraseña',contrasenia)
+    usuarioIniciado = usuarioService.getUsuarioIniciado(nombre, contrasenia)
+    
+    print('usuario ', usuarioIniciado)
+    if usuarioIniciado is None:
+            error_message = "El Usuario o Contraseña son incorrectos"
+            response = jsonify({"error":error_message})
+            response.status_code = 400
+            response.headers['Content-Type'] = 'application/json'
+            print(response)
+            return response
+    else:
+        return str(usuarioIniciado)
