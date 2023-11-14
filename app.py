@@ -667,6 +667,45 @@ def lugarEspecifico(id):
     else:
         return jsonify({'error': 'Place not found'})
 
+
+
+
+@app.route('/usuarioID/<int:ID>', methods = ['GET'])
+def getUsuarioID(ID):
+    usuarioService = UsuarioService(getEngine())
+
+    usuarioAux = usuarioService.getUsuarioID(ID)
+
+    usuario = {
+        "id": usuarioAux.id,
+        "nombre": usuarioAux.nombre,
+        "gmail": usuarioAux.gmail,
+        "contraseña": usuarioAux.contrasenia,
+        "imagen": usuarioAux.imagen
+    }
+
+    return jsonify(usuario)
+
+
+@app.route('/editarUsuario', methods=['POST'])
+def editarUsuario():
+    usuarioService = UsuarioService(getEngine())
+
+    try:
+        if request.is_json:
+            print('json ', request.json)
+            usuario = request.json
+            usuarioService.editarUsuario(usuario)
+            return 'editao'
+        else:
+            return 'La solicitud no incluye datos JSON', 400
+    except Exception as e:
+        print(f"Error en la edición de usuario: {str(e)}")
+        return 'Error en la edición de usuario', 500
+
+
+
+
 @app.route('/agendaID/<int:usuarioID>/<int:agendaID>' ,methods = ['GET'])
 def getAgenda(usuarioID,agendaID):
     # Leer el json recibido

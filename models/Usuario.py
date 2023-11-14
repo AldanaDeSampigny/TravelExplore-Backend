@@ -13,6 +13,7 @@ class Usuario(Base):
    gmail = Column(String)
    contrasenia = Column(String)
    admin = Column(Boolean)
+   imagen = Column(String)
    
    metadata_obj.create_all(getEngine())
 
@@ -22,5 +23,6 @@ class Usuario(Base):
          "nombre": self.nombre,
          "gmail": self.gmail,
          "contrasenia": self.contrasenia,
-         "admin": self.admin
+         "admin": self.admin,
+         "imagen": self.imagen
       }

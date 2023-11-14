@@ -1,3 +1,4 @@
+from ..models.Usuario import Usuario
 from ..repository.UsuarioRepository import UsuarioRepository
 from ..bd.conexion import getEngine
 from sqlalchemy.orm import Session
@@ -14,3 +15,30 @@ class UsuarioService:
 
             print('service ',usuarioIniciado.id)
         return usuarioIniciado.id
+    
+    def getUsuarioID(self, ID):
+        with Session(getEngine()) as session:
+            usuarioRepository = UsuarioRepository(session)
+
+            usuarioIniciado = usuarioRepository.getUsuarioID(ID)
+
+            print('service ', usuarioIniciado.nombre)
+        return usuarioIniciado
+    
+    def editarUsuario(self, usuarioEditado):
+        with Session(getEngine()) as session:
+            usuarioRepository = UsuarioRepository(session)
+            print('id', usuarioEditado['id'])
+            usuario = usuarioRepository.getUsuarioID(usuarioEditado['id'])
+
+            if usuario:
+                print(usuario.nombre)
+                usuario.nombre = usuarioEditado['nombre']
+                usuario.gmail = usuarioEditado['gmail']
+                usuario.imagen = usuarioEditado['imagen']
+                usuario.contrasenia = usuarioEditado['contraseña']
+
+                session.add(usuario)
+                session.commit()
+            else:
+                print('usuario no encontrado')
