@@ -1,7 +1,11 @@
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 import dbm
+import threading
+import schedule
+import time
 
+from .Entrenamiento import entrenarIA
 from .service.UsuarioService import UsuarioService
 
 from .PruebaIA import PruebaIA
@@ -74,16 +78,61 @@ nuevoCategoriaLugar = LugarCategoria()
 nuevoUsuarioCategoria = UsuarioCategoria()
 nuevaActividadCategoria = ActividadCategoria()
 
+
 @app.route('/', methods=['GET'])
 def clean_publications():
     return "Hola mundo!"
 
 """ if __name__ == '__main__':
-    app.run(debug=True) """
+    app.run(debug=True)  """
 
 def serialize_timedelta(td):
     return str(td)
 
+
+# Definir una función para ejecutar las recomendaciones automáticamente
+def entrenar_IA():
+    entrenarIA()
+
+def ejecutar_recomendaciones_auto(usuarioID):
+    print("entra a metodo")
+    with app.app_context():
+        lugarRecomendacion(usuarioID)
+        actividadRecomendacion(usuarioID) 
+
+hora_programada = datetime.now() + timedelta(minutes=1)
+print("hora progrmada",hora_programada)
+hora_programada_str = hora_programada.strftime("%H:%M")
+print("hora progrmada string ",hora_programada_str)
+schedule.every().day.at(hora_programada_str).do(entrenarIA)
+
+if __name__ == '__main__':
+    print("entro if")
+    entrenarIA()  
+
+    schedule_thread = threading.Thread(target=schedule.run_continuously)
+    schedule_thread.start()
+
+    app.run(host="if012atur.fi.mdn.unp.edu.ar", debug=True, port=28001)
+
+
+@app.route('/registrarUsuario',methods=['POST'])
+def nuevoUsuario():
+    with Session(getEngine()) as session:
+        usuarioService = UsuarioService(getEngine())
+        nuevoUsuario = request.get_json()
+
+
+        if(nuevoUsuario.get('confirmarContrasena') != nuevoUsuario.get('contrasenia')):
+            error_message = "Las contraseñas no coniciden"
+            response = jsonify({"error":error_message})
+            response.status_code = 400
+            response.headers['Content-Type'] = 'application/json'
+            return response
+
+        usuarioService.agregarUsuario(nuevoUsuario.get('nombre'),nuevoUsuario.get('email'),nuevoUsuario.get('contrasenia')) 
+        return '{ "data": "Usuario Registrado" }'
+    
 @app.route('/generarprueba/<int:usuarioID>/<int:destinoID>',methods=['GET'])
 def mostrarDistancia(usuarioID, destinoID):
     with Session(getEngine()) as session:
