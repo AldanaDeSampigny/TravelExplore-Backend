@@ -2,6 +2,8 @@ from collections import defaultdict
 from datetime import datetime
 import dbm
 
+from .service.CategoriaService import CategoriaService
+
 from .service.UsuarioService import UsuarioService
 
 from .PruebaIA import PruebaIA
@@ -685,6 +687,43 @@ def getUsuarioID(ID):
     }
 
     return jsonify(usuario)
+
+
+@app.route('/guardarGustos/<int:usuarioID>', methods=['GET'])
+def guardarGustos(usuarioID):
+    categoriaService = CategoriaService(getEngine())
+    gustos_str = request.args.get('gustos')
+    gustos = json.loads(gustos_str)
+    idsGustos = []
+    print('str ', gustos_str)
+
+    idsGustos = [gusto['id'] for gusto in gustos]
+    categoriaService.guardarGustos(usuarioID, idsGustos)
+
+    # Ahora, 'gustos' es una lista de objetos con la estructura {id, nombre}
+    # Puedes hacer lo que necesites con esta información en tu backend.
+
+    return jsonify({'message': 'Gustos recibidos correctamente'})
+
+
+
+@app.route('/categorias', methods= ['GET'])
+def getCategorias():
+    categoriaService = CategoriaService(getEngine())
+    categoriasAux = []
+
+    categorias = categoriaService.getCategorias()
+
+    for cate in categorias:
+        categoria = {
+            "id": cate.id,
+            "nombre": cate.nombre
+        }
+        categoriasAux.append(categoria)
+
+    return jsonify(categoriasAux)
+
+
 
 
 @app.route('/editarUsuario', methods=['POST'])
