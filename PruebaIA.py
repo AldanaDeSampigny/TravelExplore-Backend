@@ -176,10 +176,5 @@ class PruebaIA:
 
         return actividadReco
 
-        # SELECT id_actividad
-        # FROM actividades_categorias
-        # WHERE id_categoria = any(array[1, 10])
-        # GROUP BY id_actividad
-        # HAVING count(id_actividad) = 2;
 
 
