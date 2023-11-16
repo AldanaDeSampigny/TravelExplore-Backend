@@ -10,13 +10,13 @@ class UsuarioService:
     def getUsuarioIniciado(self, usuario, contraseña):
         with Session(getEngine()) as session:   
             usuarioRepository = UsuarioRepository(session)
-
+            print('service nombre ',usuario)
             usuarioIniciado = usuarioRepository.getUsuarioLogin(usuario, contraseña)
 
-            print('service ',usuarioIniciado.id)
+            print('service1 ',usuarioIniciado.id)
+            #print('service ',usuarioIniciado.id)
         return usuarioIniciado.id
     
-<<<<<<< HEAD
     def agregarUsuario(self,nombre,email,contrasenia):
         with Session(getEngine()) as session:   
             nuevoUsuario = Usuario()
@@ -28,7 +28,7 @@ class UsuarioService:
             session.commit()
 
             return nuevoUsuario.id
-=======
+        
     def getUsuarioID(self, ID):
         with Session(getEngine()) as session:
             usuarioRepository = UsuarioRepository(session)
@@ -55,4 +55,3 @@ class UsuarioService:
                 session.commit()
             else:
                 print('usuario no encontrado')
->>>>>>> 06547e1bcd4cadf906dbe5e3d929f946d7f83ad5
