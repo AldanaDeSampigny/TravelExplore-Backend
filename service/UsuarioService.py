@@ -13,9 +13,7 @@ class UsuarioService:
             print('service nombre ',usuario)
             usuarioIniciado = usuarioRepository.getUsuarioLogin(usuario, contraseña)
 
-            print('service1 ',usuarioIniciado.id)
-            #print('service ',usuarioIniciado.id)
-        return usuarioIniciado.id
+        return usuarioIniciado
     
     def agregarUsuario(self,nombre,email,contrasenia):
         with Session(getEngine()) as session:   
@@ -33,10 +31,20 @@ class UsuarioService:
         with Session(getEngine()) as session:
             usuarioRepository = UsuarioRepository(session)
 
-            usuarioIniciado = usuarioRepository.getUsuarioID(ID)
+            usuarioObtenido = usuarioRepository.getUsuarioID(ID)
 
-            print('service ', usuarioIniciado.nombre)
-        return usuarioIniciado
+            print('service ', usuarioObtenido.nombre)
+        return usuarioObtenido
+    
+
+    def getUsuarioNombre(self, nombre):
+        with Session(getEngine()) as session:
+            usuarioRepository = UsuarioRepository(session)
+
+            usuario = usuarioRepository.getUsuarioNombre(nombre)
+
+        return usuario
+    
     
     def editarUsuario(self, usuarioEditado):
         with Session(getEngine()) as session:
