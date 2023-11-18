@@ -26,6 +26,12 @@ class UsuarioRepository:
             filter(Usuario.id == id).first()
         
         return usuario
+    
+    def getUsuarioNombre(self, nombre):
+        usuario = self.db_session.query(Usuario).\
+            filter(Usuario.nombre == nombre).first()
+        
+        return usuario
 
     def getUsuarios(self):
         usuarios = self.db_session.query(Usuario).all()

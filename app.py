@@ -123,7 +123,14 @@ def nuevoUsuario():
     with Session(getEngine()) as session:
         usuarioService = UsuarioService(getEngine())
         nuevoUsuario = request.get_json()
-
+        
+        nombreUsuario = usuarioService.getUsuarioNombre(nuevoUsuario.get('nombre'))
+        if(nombreUsuario != None):
+            error_message = "El usuario ya existe"
+            responseNombre = jsonify({"e.rror":error_message})
+            responseNombre.status_code = 401
+            responseNombre.headers['Content-Type'] = 'application/json'
+            return responseNombre
 
         if(nuevoUsuario.get('confirmarContrasena') != nuevoUsuario.get('contrasenia')):
             error_message = "Las contraseñas no coniciden"
@@ -156,8 +163,6 @@ def mostrarDistancia(usuarioID, destinoID):
             print("inicial ", listaInicial)
 
     return listaInicial
-
-
 
 @app.route('/getGustosUsuario/<int:usuarioID>',methods=['GET'])
 def getFavoritos(usuarioID):
@@ -718,9 +723,6 @@ def lugarEspecifico(id):
     else:
         return jsonify({'error': 'Place not found'})
 
-
-
-
 @app.route('/usuarioID/<int:ID>', methods = ['GET'])
 def getUsuarioID(ID):
     usuarioService = UsuarioService(getEngine())
@@ -790,9 +792,6 @@ def editarUsuario():
     except Exception as e:
         print(f"Error en la edición de usuario: {str(e)}")
         return 'Error en la edición de usuario', 500
-
-
-
 
 @app.route('/agendaID/<int:usuarioID>/<int:agendaID>' ,methods = ['GET'])
 def getAgenda(usuarioID,agendaID):
@@ -947,18 +946,33 @@ def directions():
 def mostrar_mapa():
     return render_template('mapa.html') 
 
-@app.route('/buscarUsuario', methods=['GET'])
+@app.route('/buscarUsuario', methods=['POST'])
 def usuarioIniciado():
-    #buscarLugar = request.args.get('ciudad')
+    usuario = request.get_json()
     usuarioService = UsuarioService(getEngine())
-    nombre = request.args.get('nombre')
-    print('nombre',nombre)
+    nombre = usuario.get('nombre')
 
-    contrasenia = request.args.get('contrasenia')
-    print('constraseña',contrasenia)
+    contrasenia = usuario.get('contrasenia')
     usuarioIniciado = usuarioService.getUsuarioIniciado(nombre, contrasenia)
+
+    """ print(usuarioIniciado )
+    if (usuarioIniciado.contrasenia != contrasenia):
+            error_message = "Contraseña incorrecta "
+            response = jsonify({"error":error_message})
+            response.status_code = 403
+            response.headers['Content-Type'] = 'application/json'
+            print(response)
+            return response
+
+
+    if (usuarioIniciado.nombre != nombre):
+            error_message = "Nombre incorrecto "
+            response = jsonify({"error":error_message})
+            response.status_code = 402
+            response.headers['Content-Type'] = 'application/json'
+            print(response)
+            return response """
     
-    print('usuario ', usuarioIniciado)
     if usuarioIniciado is None:
             error_message = "El Usuario o Contraseña son incorrectos"
             response = jsonify({"error":error_message})
@@ -967,4 +981,11 @@ def usuarioIniciado():
             print(response)
             return response
     else:
-        return str(usuarioIniciado)
+        usuario = {
+            "id" : usuarioIniciado.id,
+            "nombre" : usuarioIniciado.nombre,
+            "contrasenia" : usuarioIniciado.contrasenia,
+            "gmail" : usuarioIniciado.gmail,
+            "imagen" : usuarioIniciado.imagen
+        }
+        return usuario
