@@ -815,7 +815,13 @@ def getAgenda(usuarioID,agendaID):
             "duracion" : row[8].strftime("%H:%M:%S") if row[8] else None,
             "id_lugar" : row[9],
             "id_viaje": row[6],
-            "nombre_lugar" : row[11]
+            "nombre_lugar" : row[11],
+            "lugar": {
+                "id": row[9],  # Ajusta según tus necesidades
+                "nombre": row[11],  # Ajusta según tus necesidades
+                "latitud": row[12],  # Ajusta según tus necesidades
+                "longitud": row[13]
+            }
         }
 
 

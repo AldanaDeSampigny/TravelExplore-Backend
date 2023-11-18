@@ -47,7 +47,10 @@ class UsuarioRepository:
                 Actividad.duracion,
                 Actividad.id_lugar,
                 Ciudad.nombre,
-                Lugar.nombre
+                Lugar.nombre,
+                Lugar.latitud,
+                Lugar.longitud,
+                Lugar
             )
             .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
             .join(Actividad, Actividad.id == ActividadAgenda.id_actividad)
