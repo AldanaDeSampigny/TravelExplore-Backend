@@ -10,7 +10,6 @@ class UsuarioService:
     def getUsuarioIniciado(self, usuario, contraseña):
         with Session(getEngine()) as session:   
             usuarioRepository = UsuarioRepository(session)
-            print('service nombre ',usuario)
             usuarioIniciado = usuarioRepository.getUsuarioLogin(usuario, contraseña)
 
         return usuarioIniciado

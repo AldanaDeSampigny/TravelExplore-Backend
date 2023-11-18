@@ -739,8 +739,6 @@ def getUsuarioID(ID):
 
     return jsonify(usuario)
 
-<<<<<<< HEAD
-=======
 
 @app.route('/guardarGustos/<int:usuarioID>', methods=['GET'])
 def guardarGustos(usuarioID):
@@ -779,7 +777,6 @@ def getCategorias():
 
 
 
->>>>>>> 020f8919310e18d2c5b6e4350a7139a70c23e1f1
 @app.route('/editarUsuario', methods=['POST'])
 def editarUsuario():
     usuarioService = UsuarioService(getEngine())
@@ -943,7 +940,7 @@ def directions():
 def mostrar_mapa():
     return render_template('mapa.html') 
 
-@app.route('/buscarUsuario', methods=['GET'])
+@app.route('/buscarUsuario', methods=['POST'])
 def usuarioIniciado():
     usuario = request.get_json()
     usuarioService = UsuarioService(getEngine())
@@ -951,6 +948,24 @@ def usuarioIniciado():
 
     contrasenia = usuario.get('contrasenia')
     usuarioIniciado = usuarioService.getUsuarioIniciado(nombre, contrasenia)
+
+    """ print(usuarioIniciado )
+    if (usuarioIniciado.contrasenia != contrasenia):
+            error_message = "Contraseña incorrecta "
+            response = jsonify({"error":error_message})
+            response.status_code = 403
+            response.headers['Content-Type'] = 'application/json'
+            print(response)
+            return response
+
+
+    if (usuarioIniciado.nombre != nombre):
+            error_message = "Nombre incorrecto "
+            response = jsonify({"error":error_message})
+            response.status_code = 402
+            response.headers['Content-Type'] = 'application/json'
+            print(response)
+            return response """
     
     if usuarioIniciado is None:
             error_message = "El Usuario o Contraseña son incorrectos"
@@ -960,4 +975,11 @@ def usuarioIniciado():
             print(response)
             return response
     else:
-        return jsonify(usuarioIniciado)
+        usuario = {
+            "id" : usuarioIniciado.id,
+            "nombre" : usuarioIniciado.nombre,
+            "contrasenia" : usuarioIniciado.contrasenia,
+            "gmail" : usuarioIniciado.gmail,
+            "imagen" : usuarioIniciado.imagen
+        }
+        return usuario
