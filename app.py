@@ -780,18 +780,26 @@ def getCategorias():
 @app.route('/editarUsuario', methods=['POST'])
 def editarUsuario():
     usuarioService = UsuarioService(getEngine())
-
+    
     try:
         if request.is_json:
-            print('json ', request.json)
             usuario = request.json
             usuarioService.editarUsuario(usuario)
-            return 'editao'
+
+            usuarioEditado = {
+                "id": usuario.get('id'),  
+                "nombre": usuario.get('nombre'),
+                "gmail": usuario.get('gmail'),
+                "imagen": usuario.get('imagen')
+            }
+            return jsonify(usuarioEditado)
         else:
             return 'La solicitud no incluye datos JSON', 400
     except Exception as e:
         print(f"Error en la edición de usuario: {str(e)}")
         return 'Error en la edición de usuario', 500
+
+
 
 @app.route('/agendaID/<int:usuarioID>/<int:agendaID>' ,methods = ['GET'])
 def getAgenda(usuarioID,agendaID):
@@ -958,7 +966,7 @@ def usuarioIniciado():
     if usuarioIniciado is None:
             error_message = "El Usuario o Contraseña son incorrectos"
             response = jsonify({"error":error_message})
-            response.status_code = 100
+            response.status_code = 400
             response.headers['Content-Type'] = 'application/json'
             print(response)
             return response
