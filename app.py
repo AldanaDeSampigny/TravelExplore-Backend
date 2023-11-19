@@ -948,24 +948,6 @@ def usuarioIniciado():
 
     contrasenia = usuario.get('contrasenia')
     usuarioIniciado = usuarioService.getUsuarioIniciado(nombre, contrasenia)
-
-    """ print(usuarioIniciado )
-    if (usuarioIniciado.contrasenia != contrasenia):
-            error_message = "Contraseña incorrecta "
-            response = jsonify({"error":error_message})
-            response.status_code = 403
-            response.headers['Content-Type'] = 'application/json'
-            print(response)
-            return response
-
-
-    if (usuarioIniciado.nombre != nombre):
-            error_message = "Nombre incorrecto "
-            response = jsonify({"error":error_message})
-            response.status_code = 402
-            response.headers['Content-Type'] = 'application/json'
-            print(response)
-            return response """
     
     if usuarioIniciado is None:
             error_message = "El Usuario o Contraseña son incorrectos"
