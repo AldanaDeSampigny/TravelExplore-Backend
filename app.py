@@ -958,7 +958,7 @@ def usuarioIniciado():
     if usuarioIniciado is None:
             error_message = "El Usuario o Contraseña son incorrectos"
             response = jsonify({"error":error_message})
-            response.status_code = 400
+            response.status_code = 100
             response.headers['Content-Type'] = 'application/json'
             print(response)
             return response
