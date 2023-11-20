@@ -770,7 +770,6 @@ def guardarGustos(usuarioID):
     return jsonify({'message': 'Gustos recibidos correctamente'})
 
 
-
 @app.route('/categorias', methods= ['GET'])
 def getCategorias():
     categoriaService = CategoriaService(getEngine())
@@ -786,8 +785,6 @@ def getCategorias():
         categoriasAux.append(categoria)
 
     return jsonify(categoriasAux)
-
-
 
 
 @app.route('/editarUsuario', methods=['POST'])
@@ -976,7 +973,6 @@ def usuarioIniciado():
     contrasenia = usuario.get('contrasenia')
     usuarioIniciado = usuarioService.getUsuarioIniciado(nombre, contrasenia)
     print("usuario", usuarioIniciado)
-    
 
     if usuarioIniciado is None:
             error_message = "El Usuario o Contraseña son incorrectos"
