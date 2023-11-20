@@ -49,6 +49,7 @@ from .service.AgendaService import AgendaService
 from .models.Actividad import Actividad
 from .models.AgendaDiaria import AgendaDiaria
 from .models.Viaje import Viaje
+from werkzeug.security import check_password_hash
 
 from .bd.conexion import getSession, getEngine, Base
 from flask_cors import CORS
@@ -127,20 +128,32 @@ def nuevoUsuario():
         nombreUsuario = usuarioService.getUsuarioNombre(nuevoUsuario.get('nombre'))
         if(nombreUsuario != None):
             error_message = "El usuario ya existe"
-            responseNombre = jsonify({"e.rror":error_message})
+            responseNombre = jsonify({"error":error_message})
             responseNombre.status_code = 401
             responseNombre.headers['Content-Type'] = 'application/json'
             return responseNombre
+        else:
+            if(nuevoUsuario.get('confirmarContrasena') != nuevoUsuario.get('contrasenia')):
+                error_message = "Las contraseñas no coniciden"
+                response = jsonify({"error":error_message})
+                response.status_code = 400
+                response.headers['Content-Type'] = 'application/json'
+                return response
+            else:
+                usuarioRegistrado = usuarioService.agregarUsuario(nuevoUsuario.get('nombre'),nuevoUsuario.get('email'),nuevoUsuario.get('contrasenia')) 
+                print("id usuario registrado", usuarioRegistrado)
 
-        if(nuevoUsuario.get('confirmarContrasena') != nuevoUsuario.get('contrasenia')):
-            error_message = "Las contraseñas no coniciden"
-            response = jsonify({"error":error_message})
-            response.status_code = 400
-            response.headers['Content-Type'] = 'application/json'
-            return response
+                usuario = usuarioService.getUsuarioID(usuarioRegistrado)
 
-        usuarioService.agregarUsuario(nuevoUsuario.get('nombre'),nuevoUsuario.get('email'),nuevoUsuario.get('contrasenia')) 
-        return '{ "data": "Usuario Registrado" }'
+                nuevoUsuarioJson = {
+                    "id" : usuario.id,
+                    "nombre": usuario.nombre,
+                    "contrasenia": usuario.contrasenia,
+                    "gmail": usuario.gmail,
+                    "imagen": usuario.imagen
+                }
+
+            return  nuevoUsuarioJson
     
 @app.route('/generarprueba/<int:usuarioID>/<int:destinoID>',methods=['GET'])
 def mostrarDistancia(usuarioID, destinoID):
@@ -962,7 +975,9 @@ def usuarioIniciado():
 
     contrasenia = usuario.get('contrasenia')
     usuarioIniciado = usuarioService.getUsuarioIniciado(nombre, contrasenia)
+    print("usuario", usuarioIniciado)
     
+
     if usuarioIniciado is None:
             error_message = "El Usuario o Contraseña son incorrectos"
             response = jsonify({"error":error_message})
