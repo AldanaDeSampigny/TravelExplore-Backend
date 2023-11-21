@@ -181,8 +181,3 @@ def entrenarIA():
         model.fit(train_data, np.array(valoraciones, dtype=np.float32), epochs=150)
 
         model.save_weights('modeloConH5.h5')#'modeloConH5.h5')
-    
-        while True:
-            print("entro a hiloo")
-            schedule.run_pending()
-            time.sleep(2000)
