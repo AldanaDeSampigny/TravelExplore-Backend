@@ -33,6 +33,7 @@ from geopy.geocoders import Nominatim
 import googlemaps
 import json
 from .consultas import obtenerDirecciones, validacionTransporte
+from apscheduler.schedulers.background import BackgroundScheduler
 
 from .models.CiudadCategoria import CiudadCategoria
 from .models.ActividadAgenda import ActividadAgenda
@@ -54,6 +55,7 @@ from werkzeug.security import check_password_hash
 from .bd.conexion import getSession, getEngine, Base
 from flask_cors import CORS
 import difflib
+
 
 from .models.ActividadesFavoritas import ActividadesFavoritas
 
@@ -86,37 +88,28 @@ nuevaActividadCategoria = ActividadCategoria()
 def clean_publications():
     return "Hola mundo!"
 
-""" if __name__ == '__main__':
-    app.run(debug=True)  """
+def entrenar_IA():
+    print("Entrenamiento iniciado")
+    scheduler = BackgroundScheduler()
+
+    #schedule_thread = threading.Thread(target=schedule.run_continuously)
+    scheduler.add_job(entrenarIA, 'cron',hour=14, minute=20)
+    scheduler.start()
+
+entrenar_IA()
+
+if __name__ == '__main__':
+    app.run(host="if012atur.fi.mdn.unp.edu.ar", debug=True, port=28001)
 
 def serialize_timedelta(td):
     return str(td)
 
 
-# Definir una función para ejecutar las recomendaciones automáticamente
-def entrenar_IA():
-    entrenarIA()
-
 def ejecutar_recomendaciones_auto(usuarioID):
-    print("entra a metodo")
     with app.app_context():
         lugarRecomendacion(usuarioID)
         actividadRecomendacion(usuarioID) 
 
-hora_programada = datetime.now() + timedelta(minutes=1)
-print("hora progrmada",hora_programada)
-hora_programada_str = hora_programada.strftime("%H:%M")
-print("hora progrmada string ",hora_programada_str)
-schedule.every().day.at(hora_programada_str).do(entrenarIA)
-
-if __name__ == '__main__':
-    print("entro if")
-    entrenarIA()  
-
-    schedule_thread = threading.Thread(target=schedule.run_continuously)
-    schedule_thread.start()
-
-    app.run(host="if012atur.fi.mdn.unp.edu.ar", debug=True, port=28001)
 
 
 @app.route('/registrarUsuario',methods=['POST'])
@@ -216,8 +209,6 @@ def getActividadesFavoritas(usuarioID):
         actividadesJson.append(actividad)
     return jsonify(actividadesJson)
     
-
-
 @app.route('/eliminarActividadesAgenda/<int:actividadID>/<int:AgendaViajeID>',methods=['DELETE'])
 def EliminarActividad(actividadID, AgendaViajeID):
     if request.method == 'DELETE':
@@ -449,7 +440,6 @@ def placesRoutesBasico():
 
     return jsonify(place_details)
 
-
 @app.route('/lugar', methods=['GET'])
 def placesRoutes():
     buscarLugar = request.args.get('ciudad')
@@ -519,7 +509,6 @@ def placesRoutes():
         None, x['nombre'], buscarLugar).ratio(), reverse=True)
     
     return jsonify(lugares)
-
 
 @app.route('/lugares/cercanos', methods=['GET'])
 def lugaresCercanos():
@@ -599,7 +588,6 @@ def lugaresCercanos():
         lugares.append(lugarGusto)
 
     return jsonify(lugares)
-
 
 @app.route('/lugarGustos/<int:usuarioId>', methods=['GET'])
 def favoritos(usuarioId):
@@ -685,7 +673,6 @@ def favoritos(usuarioId):
     
     return jsonify(lugares)
 
-
 @app.route('/lugar/<id>', methods=['GET']) #guardar aca, si el lugar ya esta no guardar(query con pais provincia ciudad)
 def lugarEspecifico(id):
     gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
@@ -752,7 +739,6 @@ def getUsuarioID(ID):
 
     return jsonify(usuario)
 
-
 @app.route('/guardarGustos/<int:usuarioID>', methods=['GET'])
 def guardarGustos(usuarioID):
     categoriaService = CategoriaService(getEngine())
@@ -769,8 +755,6 @@ def guardarGustos(usuarioID):
 
     return jsonify({'message': 'Gustos recibidos correctamente'})
 
-
-
 @app.route('/categorias', methods= ['GET'])
 def getCategorias():
     categoriaService = CategoriaService(getEngine())
@@ -786,9 +770,6 @@ def getCategorias():
         categoriasAux.append(categoria)
 
     return jsonify(categoriasAux)
-
-
-
 
 @app.route('/editarUsuario', methods=['POST'])
 def editarUsuario():
@@ -811,8 +792,6 @@ def editarUsuario():
     except Exception as e:
         print(f"Error en la edición de usuario: {str(e)}")
         return 'Error en la edición de usuario', 500
-
-
 
 @app.route('/agendaID/<int:usuarioID>/<int:agendaID>' ,methods = ['GET'])
 def getAgenda(usuarioID,agendaID):
@@ -976,7 +955,6 @@ def usuarioIniciado():
     contrasenia = usuario.get('contrasenia')
     usuarioIniciado = usuarioService.getUsuarioIniciado(nombre, contrasenia)
     print("usuario", usuarioIniciado)
-    
 
     if usuarioIniciado is None:
             error_message = "El Usuario o Contraseña son incorrectos"

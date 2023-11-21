@@ -66,7 +66,6 @@ class LugarFavoritoService:
                 print("llego al -1")
                 gusto.updateLike(idUsuario, idLugar, -1)
     
-
     def quitarGusto(self,idUsuario,lugar):
         with Session(getEngine()) as session:
             gusto = FavoritoRepository(session)
