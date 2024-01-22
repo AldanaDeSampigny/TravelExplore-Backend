@@ -185,9 +185,8 @@ class AgendaService:
                     })
                     
             distancias_ordenadas = sorted(distancias, key=lambda x: x["distancia"])
-            #print(distancias_ordenadas)
+            print("distancias ",distancias_ordenadas)
             cerca = distancias_ordenadas[0]["actividad"]
-            #print(cerca)
             
         return cerca 
     
@@ -234,22 +233,23 @@ class AgendaService:
             gustos_agregados = set()
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
             
+            print("acti ", actividadIds)
             recomendadas = []
             recomendadas = self.getActividadesRecomendadas(usuarioID)
             for recomendacion in recomendadas:
                 actividadIds.append(recomendacion.id)
 
-            listaInicial = []
-            listaInicial.append(actividadIds[0][0])
-            cerca = self.calculoDeDistancias(
-                1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
-            listaInicial.append(cerca)
-            for i in range(0, len(actividadIds)):
-                cerca = self.calculoDeDistancias(
-                    1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
-                listaInicial.append(cerca)
+            # listaInicial = []
+            # listaInicial.append(actividadIds[0][0])
+            # cerca = self.calculoDeDistancias(
+            #     1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
+            # listaInicial.append(cerca)
+            # for i in range(0, len(actividadIds)):
+            #     cerca = self.calculoDeDistancias(
+            #         1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
+            #     listaInicial.append(cerca)
 
-            actividadIds = listaInicial.copy()
+            #actividadIds = listaInicial.copy()
 
             while fecha_actual <= fecha_hasta:
 

@@ -217,9 +217,13 @@ class LugarService:
             'insurance_agency': self.guardarLugar,
             'lodging': self.guardarLugar,
             'bar': self.guardarLugar,
+            'night_club': self.guardarLugar,
+            'spa': self.guardarLugar,
+            'beauty_salon': self.guardarLugar,
             'travel_agency': self.guardarLugar,
             'cafe': self.guardarLugar,
             'city': self.guardarCiudad,
+            'country': self.guardarCiudad,
             'locality': self.guardarCiudad,
         }
 
