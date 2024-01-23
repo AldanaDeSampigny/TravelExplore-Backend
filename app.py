@@ -83,6 +83,7 @@ nuevoCategoriaLugar = LugarCategoria()
 nuevoUsuarioCategoria = UsuarioCategoria()
 nuevaActividadCategoria = ActividadCategoria()
 
+llave = None  # 'AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
 
 @app.route('/', methods=['GET'])
 def clean_publications():
@@ -315,7 +316,7 @@ def generar_y_mostrar_agenda(usuarioID):
             print(response)
             return response
 
-        gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+        gmaps = googlemaps.Client(key=llave)
 
         resultado = gmaps.places(query=destino.get('nombre')+' '+destino.get('pais'))
         if 'results' in resultado:
@@ -434,7 +435,7 @@ def lugares():
 def placesRoutesBasico():
     lugar_id = request.args.get('place_id')
 
-    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+    gmaps = googlemaps.Client(key=llave)
 
     place_details = gmaps.place(place_id=lugar_id)
 
@@ -445,7 +446,7 @@ def placesRoutes():
     buscarLugar = request.args.get('ciudad')
     idiomas_permitidos = ['es', 'mx', 'uy', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
 
-    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+    gmaps = googlemaps.Client(key=llave)
 
     places = gmaps.places(query=buscarLugar)
     
@@ -516,7 +517,7 @@ def lugaresCercanos():
     longitud = float(request.args.get('longitud'))
     tipo = request.args.get('type')
 
-    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+    gmaps = googlemaps.Client(key=llave)
 
     localizacion = (latitud, longitud)
     radio = 45000  # Radio en metros (45 km)
@@ -594,7 +595,7 @@ def favoritos(usuarioId):
     buscarLugar = request.args.get('ciudad')
     idiomas_permitidos = ['es', 'mx', 'uy', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
 
-    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+    gmaps = googlemaps.Client(key=llave)
 
     places = gmaps.places(query=buscarLugar)
     
@@ -675,7 +676,7 @@ def favoritos(usuarioId):
 
 @app.route('/lugar/<id>', methods=['GET']) #guardar aca, si el lugar ya esta no guardar(query con pais provincia ciudad)
 def lugarEspecifico(id):
-    gmaps = googlemaps.Client(key='AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk')
+    gmaps = googlemaps.Client(key=llave)
 
     place = gmaps.place(place_id=id)
 

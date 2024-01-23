@@ -3,8 +3,10 @@ from flask import jsonify
 import googlemaps
 from datetime import datetime, timedelta
 
+llave = None  # 'AIzaSyAQ2FMwWtoGGlOE5Urq3QmyX7hHG8G0wi0'
+
 def validacionTransporte(latitud, longitud, transporte):
-    gmaps = googlemaps.Client(key='AIzaSyAQ2FMwWtoGGlOE5Urq3QmyX7hHG8G0wi0')
+    gmaps = googlemaps.Client(key=llave)
 
     origen = (latitud, longitud)
     destino = (latitud + 0.01, longitud + 0.01)
@@ -22,7 +24,7 @@ def obtenerDirecciones(origen, destino, transporte):
     if not origen or not destino:
         return jsonify({'error': 'Se requieren las coordenadas de origen y destino'})
 
-    gmaps_directions = googlemaps.Client(key='AIzaSyAQ2FMwWtoGGlOE5Urq3QmyX7hHG8G0wi0')
+    gmaps_directions = googlemaps.Client(key=llave)
 
     # Realizar la solicitud a la API Directions
     directions_result = gmaps_directions.directions(origen, destino, mode=transporte)
