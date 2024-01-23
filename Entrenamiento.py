@@ -178,6 +178,6 @@ def entrenarIA():
         }
 
         # Continuar con el entrenamiento del modelo
-        model.fit(train_data, np.array(valoraciones, dtype=np.float32), epochs=150)
+        model.fit(train_data, np.array(valoraciones, dtype=np.float32), epochs=90)
 
         model.save_weights('modeloConH5.h5')#'modeloConH5.h5')

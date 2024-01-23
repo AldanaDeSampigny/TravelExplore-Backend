@@ -93,7 +93,7 @@ def entrenar_IA():
     scheduler = BackgroundScheduler()
 
     #schedule_thread = threading.Thread(target=schedule.run_continuously)
-    scheduler.add_job(entrenarIA, 'cron',hour=14, minute=20)
+    scheduler.add_job(entrenarIA, 'cron',hour=4, minute=15)
     scheduler.start()
 
 entrenar_IA()
@@ -812,17 +812,16 @@ def getAgenda(usuarioID,agendaID):
             "horahasta": row[5].strftime("%H:%M:%S") if row[5] else None,
             "valoracion" : row[7],
             "duracion" : row[8].strftime("%H:%M:%S") if row[8] else None,
-            "id_lugar" : row[9],
+            #"id_lugar" : row[9],
             "id_viaje": row[6],
-            "nombre_lugar" : row[11],
-            "lugar": {
-                "id": row[9],  # Ajusta según tus necesidades
-                "nombre": row[11],  # Ajusta según tus necesidades
-                "latitud": row[12],  # Ajusta según tus necesidades
-                "longitud": row[13]
-            }
+            #"nombre_lugar" : row[11],
+            #"lugar": {
+                #"id": row[9],  # Ajusta según tus necesidades
+                #"nombre": row[11],  # Ajusta según tus necesidades
+                #"latitud": row[12],  # Ajusta según tus necesidades
+                #"longitud": row[13]
+            #}
         }
-
 
         actividadFavorita = ActividadFavoritaService(getEngine()).getActividadFavorita(usuarioID,row[2])
 
