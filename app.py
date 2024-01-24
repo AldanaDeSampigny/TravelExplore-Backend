@@ -15,11 +15,8 @@ from .service.ActividadFavoritaService import ActividadFavoritaService
 from .service.LugarFavoritoService import LugarFavoritoService
 from .repository.AgendaRepository import AgendaRepository
 from .repository.LugarRepository import LugarRepository
-
-from .models.Horario import Horario
 from .service.LugarService import LugarService
 
-from .models.LugaresFavoritos import LugaresFavoritos
 from .repository.CiudadRepository import CiudadRepository
 from sqlalchemy.orm import Session
 
@@ -35,6 +32,9 @@ import json
 from .consultas import obtenerDirecciones, validacionTransporte
 from apscheduler.schedulers.background import BackgroundScheduler
 
+from .models.LugaresFavoritos import LugaresFavoritos
+from .models.ActividadLugar import ActividadLugar
+from .models.Horario import Horario
 from .models.CiudadCategoria import CiudadCategoria
 from .models.ActividadAgenda import ActividadAgenda
 from .models.Usuario import Usuario
@@ -56,7 +56,6 @@ from .bd.conexion import getSession, getEngine, Base
 from flask_cors import CORS
 import difflib
 
-
 from .models.ActividadesFavoritas import ActividadesFavoritas
 
 app = Flask(__name__)
@@ -74,6 +73,7 @@ nuevaAgendaViaje = AgendaViaje()
 nuevoHorario = Horario()
 nuevoLugar = Lugar()
 nuevaActividad = Actividad()
+nuevoActividadLugar = ActividadLugar()
 nuevoGustoActividad = ActividadesFavoritas()
 nuevoGustoLugar = LugaresFavoritos()
 nuevaCategoria = Categoria()
