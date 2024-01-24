@@ -51,16 +51,16 @@ class UsuarioRepository:
                 AgendaViaje.id,
                 Actividad.valoracion,
                 Actividad.duracion,
-                Actividad.id_lugar,
+                #Actividad.id_lugar,
                 Ciudad.nombre,
-                Lugar.nombre,
-                Lugar.latitud,
-                Lugar.longitud,
-                Lugar
+                #Lugar.nombre,
+                #Lugar.latitud,
+                #Lugar.longitud
+                
             )
             .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
             .join(Actividad, Actividad.id == ActividadAgenda.id_actividad)
-            .join(Lugar, Actividad.id_lugar == Lugar.id)
+            #.join(Lugar, Actividad.id_lugar == Lugar.id)
             .join(AgendaViaje, AgendaDiaria.id_agenda_viaje == AgendaViaje.id)
             .join(Itinerario, Itinerario.id == AgendaDiaria.itinerario_id)
             .join(Ciudad, Ciudad.id == Itinerario.id_ciudad)
