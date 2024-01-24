@@ -1,3 +1,4 @@
+from ..models.ActividadLugar import ActividadLugar
 from ..models.AgendaViaje import AgendaViaje
 from ..models.AgendaDiaria import AgendaDiaria
 from ..models.Itinerario import Itinerario
@@ -43,7 +44,8 @@ class AgendaRepository:
             join(Categoria, ActividadCategoria.id_categoria == Categoria.id).\
             join(UsuarioCategoria, Categoria.id == UsuarioCategoria.id_categorias).\
             join(Usuario, UsuarioCategoria.id_usuario == Usuario.id).\
-            join(Lugar, Actividad.id_lugar == Lugar.id).\
+            join(ActividadLugar, ActividadLugar.id_actividad == Actividad.id).\
+            join(Lugar, ActividadLugar.id_lugar == Lugar.id).\
             join(Ciudad, Lugar.id_ciudad == Ciudad.id).\
             filter(Usuario.id == usuarioID).\
             filter(Ciudad.id == ciudadID).\
@@ -55,12 +57,16 @@ class AgendaRepository:
 
         return result
 
-    def buscarLugar(self, actividadID):
-        lugar = self.db_session.query(Lugar).\
-            join(Actividad, Actividad.id_lugar == Lugar.id).\
-            filter(Actividad.id == actividadID).first()
+    def buscarLugares(self, actividadID, destinoID):
+        lugares = self.db_session.query(Lugar).\
+            join(ActividadLugar, ActividadLugar.id_lugar == Lugar.id).\
+            join(Actividad, Actividad.id == ActividadLugar.id_actividad).\
+            filter(Lugar.id_ciudad == destinoID).\
+            filter(Actividad.id == actividadID).\
+            group_by(Lugar.id).\
+            order_by(func.max(Lugar.valoracion)).all()
         
-        return lugar
+        return lugares
 
     def buscarActividadRestaurant(self, usuarioID, ciudadID):
         subquery_cat_ids = self.db_session.query(Categoria.id).\

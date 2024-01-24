@@ -316,17 +316,21 @@ def generar_y_mostrar_agenda(usuarioID):
             print(response)
             return response
 
-        gmaps = googlemaps.Client(key=llave)
+        #gmaps = googlemaps.Client(key=llave)
 
-        resultado = gmaps.places(query=destino.get('nombre')+' '+destino.get('pais'))
+        # gmaps.places(query=destino.get('nombre')+' '+destino.get('pais'))
+        resultado = " results Puerto Madryn Argentina"
         if 'results' in resultado:
-            primer_resultado = resultado['results'][0]
+            primer_resultado = None#resultado['results'][0]
             ciudadRecibido = LugarRepository(
-                session).getCiudad(primer_resultado['place_id'])
+                session).getCiudad('ChIJ0eqih141Ar4RgkO0ECgNiR4')  # primer_resultado['place_id'])
             
             if ciudadRecibido:
+                print("entro")
                 destino = ciudadRecibido.id
+                print("AAAAAAAAAAAAAAAA ", destino)
             else:
+                print("no entro")
                 ciudad = {
                     'id': primer_resultado['place_id'],
                     'nombre': primer_resultado['name'],
@@ -347,16 +351,16 @@ def generar_y_mostrar_agenda(usuarioID):
         horaFin = data.get('horarioGeneral')['horaHasta'] + ':00'
         transporte = data.get('transporte')
 
-        try:
-            AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
-            AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
-            validacionTransporte(-42.767470, -65.036549, transporte)
-        except ValueError as e:
-            error_message = str(e)
-            response = jsonify({"error":error_message})
-            response.status_code = 400
-            response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
-            return response
+        # try:
+        #     AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
+        #     AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
+        #     validacionTransporte(-42.767470, -65.036549, transporte)
+        # except ValueError as e:
+        #     error_message = str(e)
+        #     response = jsonify({"error":error_message})
+        #     response.status_code = 400
+        #     response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
+        #     return response
         
         horariosEspecificos = {}
         for horarioEspecifico in data.get('horariosEspecificos'):
