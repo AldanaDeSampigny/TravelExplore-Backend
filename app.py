@@ -120,6 +120,7 @@ def nuevoUsuario():
         nuevoUsuario = request.get_json()
         
         nombreUsuario = usuarioService.getUsuarioNombre(nuevoUsuario.get('nombre'))
+        print("nombre usuario", nombreUsuario)
         if(nombreUsuario != None):
             error_message = "El usuario ya existe"
             responseNombre = jsonify({"error":error_message})
