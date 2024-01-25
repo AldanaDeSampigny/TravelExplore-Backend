@@ -14,7 +14,7 @@ class Actividad(Base):
   duracion = Column(Time)
   horainicio= Column(Time)
   horafin= Column(Time)
-  id_lugar = Column(db.ForeignKey("lugares.id"))
+  #id_lugar = Column(db.ForeignKey("lugares.id"))
   
   metadata_obj.create_all(getEngine())
 
