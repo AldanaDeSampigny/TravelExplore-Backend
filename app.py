@@ -4,7 +4,7 @@ import dbm
 import threading
 import schedule
 import time
-
+import uuid 
 from .service.CategoriaService import CategoriaService
 
 from .Entrenamiento import entrenarIA
@@ -110,7 +110,6 @@ def ejecutar_recomendaciones_auto(usuarioID):
     with app.app_context():
         lugarRecomendacion(usuarioID)
         actividadRecomendacion(usuarioID) 
-
 
 
 @app.route('/registrarUsuario',methods=['POST'])
@@ -957,9 +956,10 @@ def usuarioIniciado():
     usuarioService = UsuarioService(getEngine())
     nombre = usuario.get('nombre')
 
+
     contrasenia = usuario.get('contrasenia')
     usuarioIniciado = usuarioService.getUsuarioIniciado(nombre, contrasenia)
-    print("usuario", usuarioIniciado)
+    print("usuario", usuarioIniciado.nombre)
 
     if usuarioIniciado is None:
             error_message = "El Usuario o Contraseña son incorrectos"
@@ -969,11 +969,29 @@ def usuarioIniciado():
             print(response)
             return response
     else:
-        usuario = {
+        #crear token
+        #guardar token
+
+        token = uuid.uuid1() 
+        usuarioConToken = usuarioService.agregarTokenUsuario(usuarioIniciado,token)
+
+        print("usuario token", usuarioConToken.token)
+        usuarioToken = {
+            #"id" : usuarioConToken.id,
+            "nombre" : usuarioConToken.nombre,
+            "contrasenia" : usuarioConToken.contrasenia,
+            "gmail" : usuarioConToken.gmail,
+            "imagen" : usuarioConToken.imagen,
+            "token" : usuarioConToken.token
+        }
+        
+        print("usuario ", usuarioToken)
+        """usuario = {
             "id" : usuarioIniciado.id,
             "nombre" : usuarioIniciado.nombre,
             "contrasenia" : usuarioIniciado.contrasenia,
             "gmail" : usuarioIniciado.gmail,
             "imagen" : usuarioIniciado.imagen
-        }
-        return usuario
+        } """
+
+        return usuarioToken

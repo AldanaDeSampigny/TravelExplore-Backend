@@ -14,6 +14,7 @@ class Usuario(Base):
    contrasenia = Column(String)
    admin = Column(Boolean)
    imagen = Column(String)
+   token = Column(String)
    
    metadata_obj.create_all(getEngine())
 
@@ -24,5 +25,6 @@ class Usuario(Base):
          "gmail": self.gmail,
          "contrasenia": self.contrasenia,
          "admin": self.admin,
-         "imagen": self.imagen
+         "imagen": self.imagen,
+         "token": self.token
       }

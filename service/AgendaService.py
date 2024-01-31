@@ -251,11 +251,7 @@ class AgendaService:
             #     listaInicial.append(cerca)
 
             #actividadIds = listaInicial.copy()
-<<<<<<< HEAD
-
-=======
             
->>>>>>> 6c9993be93df73b39db8531f780dd92db8e1d29c
             while fecha_actual <= fecha_hasta:
 
                 if fecha_actual.date().strftime('%Y-%m-%d') in horariosElegidos:

@@ -116,8 +116,8 @@ class UsuarioRepository:
         return agendas
     
     def getUsuarioLogin(self, usuario, contraseña):
-        usuario = self.db_session.query(Usuario).\
+        user = self.db_session.query(Usuario).\
             filter(Usuario.nombre == usuario).\
             filter(Usuario.contrasenia == contraseña).first()
 
-        return usuario
+        return user
