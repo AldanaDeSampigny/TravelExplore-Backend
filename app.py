@@ -977,7 +977,7 @@ def usuarioIniciado():
 
         print("usuario token", usuarioConToken.token)
         usuarioToken = {
-            #"id" : usuarioConToken.id,
+            "id" : usuarioConToken.id,
             "nombre" : usuarioConToken.nombre,
             "contrasenia" : usuarioConToken.contrasenia,
             "gmail" : usuarioConToken.gmail,
