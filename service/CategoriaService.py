@@ -1,3 +1,4 @@
+from ..models.Categoria import Categoria
 from ..models.UsuarioCategoria import UsuarioCategoria
 from ..repository.CategoriaRepository import CategoriaRepository
 from ..bd.conexion import getEngine
@@ -25,3 +26,24 @@ class CategoriaService:
 
                 session.add(usuarioCategoriaNuevo)
                 session.commit()
+
+    def buscarGusto(self, usuarioID, nombresGustos):
+        with Session(getEngine()) as session:
+            categoriaRepository = CategoriaRepository(session)
+
+            for nombre in nombresGustos:
+                if categoriaRepository.buscarProhibido(nombre) is None:
+                    nuevaCategoria = Categoria()
+                    nuevaCategoria.nombre = nombre
+
+                    session.add(nuevaCategoria)
+                    session.commit()
+
+                    usuarioCategoriaNuevo = UsuarioCategoria()
+                    usuarioCategoriaNuevo.id_usuario = usuarioID
+                    usuarioCategoriaNuevo.id_categorias = nuevaCategoria.id
+
+                    session.add(usuarioCategoriaNuevo)
+                    session.commit()
+                else:
+                    raise ValueError(f"La categoria '{nombre}' no puede ingresarse")

@@ -32,6 +32,7 @@ import json
 from .consultas import obtenerDirecciones, validacionTransporte
 from apscheduler.schedulers.background import BackgroundScheduler
 
+from .models.PalabrasProhibidas import PalabrasProhibidas
 from .models.LugaresFavoritos import LugaresFavoritos
 from .models.ActividadLugar import ActividadLugar
 from .models.Horario import Horario
@@ -82,6 +83,7 @@ nuevoCategoriaCiudad = CiudadCategoria()
 nuevoCategoriaLugar = LugarCategoria()
 nuevoUsuarioCategoria = UsuarioCategoria()
 nuevaActividadCategoria = ActividadCategoria()
+nuevaPalabrasProhibidas = PalabrasProhibidas()
 
 llave = None  # 'AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
 
@@ -752,11 +754,18 @@ def guardarGustos(usuarioID):
     idsGustos = []
     print('str ', gustos_str)
 
-    idsGustos = [gusto['id'] for gusto in gustos]
-    categoriaService.guardarGustos(usuarioID, idsGustos)
-
-    # Ahora, 'gustos' es una lista de objetos con la estructura {id, nombre}
-    # Puedes hacer lo que necesites con esta información en tu backend.
+    try:
+        nombreGustosNuevos = [gusto['nombre'] for gusto in gustos if gusto['id'] == 0]
+        categoriaService.buscarGusto(usuarioID, nombreGustosNuevos)
+    
+        idsGustos = [gusto['id'] for gusto in gustos if gusto['id'] != 0]
+        categoriaService.guardarGustos(usuarioID, idsGustos)
+    except ValueError as e:
+        error_message = str(e)
+        response = jsonify({"error":error_message})
+        response.status_code = 400
+        response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
+        return response
 
     return jsonify({'message': 'Gustos recibidos correctamente'})
 

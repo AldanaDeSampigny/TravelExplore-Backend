@@ -1,3 +1,4 @@
+from ..models.PalabrasProhibidas import PalabrasProhibidas
 from ..models.ActividadCategoria import ActividadCategoria
 from ..models.Categoria import Categoria
 from ..models.UsuarioCategoria import UsuarioCategoria
@@ -36,3 +37,9 @@ class CategoriaRepository:
         categorias = self.db_session.query(Categoria).all()
 
         return categorias
+    
+    def buscarProhibido(self, nombre):
+        palabrasProhibidas = self.db_session.query(PalabrasProhibidas).\
+            filter(PalabrasProhibidas.palabra == nombre).first()
+
+        return palabrasProhibidas
