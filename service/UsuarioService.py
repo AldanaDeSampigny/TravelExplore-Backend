@@ -26,6 +26,22 @@ class UsuarioService:
 
             return nuevoUsuario.id
         
+
+    
+    def agregarTokenUsuario(self, usuario, token):
+        with Session(getEngine()) as session: 
+            usuarioRepository = UsuarioRepository(session)
+            user = usuarioRepository.getUsuarioID(usuario.id)
+            
+            user.token = token
+
+            session.add(user)
+
+            session.commit()
+            print('usuario token ', user.nombre, user.token,user.contrasenia)
+
+            return user
+
     def getUsuarioID(self, ID):
         with Session(getEngine()) as session:
             usuarioRepository = UsuarioRepository(session)

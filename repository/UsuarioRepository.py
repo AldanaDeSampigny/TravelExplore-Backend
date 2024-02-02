@@ -29,9 +29,10 @@ class UsuarioRepository:
     
     def getUsuarioNombre(self, nombre):
         usuario = self.db_session.query(Usuario).\
-            filter(Usuario.nombre == nombre).first()
+        filter(Usuario.nombre == nombre).first()
         
         return usuario
+
 
     def getUsuarios(self):
         usuarios = self.db_session.query(Usuario).all()
@@ -115,8 +116,8 @@ class UsuarioRepository:
         return agendas
     
     def getUsuarioLogin(self, usuario, contraseña):
-        usuario = self.db_session.query(Usuario).\
+        user = self.db_session.query(Usuario).\
             filter(Usuario.nombre == usuario).\
             filter(Usuario.contrasenia == contraseña).first()
 
-        return usuario
+        return user
