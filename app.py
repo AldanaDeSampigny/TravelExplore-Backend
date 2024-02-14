@@ -986,12 +986,34 @@ def usuarioIniciado():
         }
         
         print("usuario ", usuarioToken)
-        """usuario = {
-            "id" : usuarioIniciado.id,
-            "nombre" : usuarioIniciado.nombre,
-            "contrasenia" : usuarioIniciado.contrasenia,
-            "gmail" : usuarioIniciado.gmail,
-            "imagen" : usuarioIniciado.imagen
-        } """
 
         return usuarioToken
+
+
+""" 
+!#ESTO VA A SERVIR PARA PODER OBTENER LA LATITUD Y LONGITUD DE UNA CIUDAD 
+def obtener_coordenadas_ciudad(nombre_ciudad):
+    # Utiliza la API de OpenCage Geocoding para obtener las coordenadas de la ciudad
+    api_key = 'TU_CLAVE_DE_API'  # Reemplaza con tu clave de API de OpenCage
+    url_geocoding = f'https://api.opencagedata.com/geocode/v1/json?q={nombre_ciudad}&key={api_key}'
+    
+    respuesta_geocoding = requests.get(url_geocoding)
+    
+    if respuesta_geocoding.status_code == 200:
+        datos_geocoding = respuesta_geocoding.json()
+        coordenadas = datos_geocoding['results'][0]['geometry']
+        return coordenadas['lat'], coordenadas['lng']
+    else:
+        return None, None """
+    
+
+@app.route('/obtenerInfoLugar/<float:latitud>/<float:longitud>', methods=['GET'])
+def obtenerInfoLugar(latitud, longitud):
+    url = f'https://overpass-api.de/api/interpreter?data=[out:json];node["amenity"="restaurant"](around:1000,{latitud},{longitud});out;'
+    respuesta = requests.get(url)
+    
+    if respuesta.status_code == 200:
+        datos_json = respuesta.json()
+        return datos_json
+    else:
+        return None
