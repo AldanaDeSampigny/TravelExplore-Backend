@@ -54,9 +54,9 @@ class UsuarioRepository:
                 Actividad.duracion,
                 #Actividad.id_lugar,
                 Ciudad.nombre,
-                #Lugar.nombre,
-                #Lugar.latitud,
-                #Lugar.longitud
+                Lugar.nombre,
+                Lugar.latitud,
+                Lugar.longitud,
                 
             )
             .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
@@ -71,7 +71,6 @@ class UsuarioRepository:
             .filter(AgendaViaje.id == idAgenda)
             .order_by(ActividadAgenda.horadesde)
         )
-
         return agenda
     #query para mstrar una agenda del usuario
     def obtenerAgendasUsuario(self,usuarioID):

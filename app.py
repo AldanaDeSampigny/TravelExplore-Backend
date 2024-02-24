@@ -85,7 +85,7 @@ nuevoUsuarioCategoria = UsuarioCategoria()
 nuevaActividadCategoria = ActividadCategoria()
 nuevaPalabrasProhibidas = PalabrasProhibidas()
 
-llave = None  # 'AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
+llave = 'AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
 
 @app.route('/', methods=['GET'])
 def clean_publications():
@@ -810,7 +810,7 @@ def editarUsuario():
 @app.route('/agendaID/<int:usuarioID>/<int:agendaID>' ,methods = ['GET'])
 def getAgenda(usuarioID,agendaID):
     # Leer el json recibido
-    # agenda = request.get_json()
+    #agenda = request.get_json()
     agendaService = AgendaService(getEngine())
     agendaUsuario = agendaService.getAgenda(usuarioID,agendaID)  # Supongo que obtienes los resultados de tu función
 
@@ -826,15 +826,15 @@ def getAgenda(usuarioID,agendaID):
             "horahasta": row[5].strftime("%H:%M:%S") if row[5] else None,
             "valoracion" : row[7],
             "duracion" : row[8].strftime("%H:%M:%S") if row[8] else None,
-            #"id_lugar" : row[9],
+            "id_lugar" : row[9],
             "id_viaje": row[6],
             #"nombre_lugar" : row[11],
-            #"lugar": {
-                #"id": row[9],  # Ajusta según tus necesidades
-                #"nombre": row[11],  # Ajusta según tus necesidades
-                #"latitud": row[12],  # Ajusta según tus necesidades
-                #"longitud": row[13]
-            #}
+            "lugar": {
+                "id": row[9],  # Ajusta según tus necesidades
+                "nombre": row[10],  # Ajusta según tus necesidades
+                "latitud": row[11],  # Ajusta según tus necesidades
+                "longitud": row[12]
+            }
         }
 
         actividadFavorita = ActividadFavoritaService(getEngine()).getActividadFavorita(usuarioID,row[2])
@@ -980,11 +980,9 @@ def usuarioIniciado():
     else:
         #crear token
         #guardar token
-
         token = uuid.uuid1() 
         usuarioConToken = usuarioService.agregarTokenUsuario(usuarioIniciado,token)
 
-        print("usuario token", usuarioConToken.token)
         usuarioToken = {
             "id" : usuarioConToken.id,
             "nombre" : usuarioConToken.nombre,
@@ -993,36 +991,5 @@ def usuarioIniciado():
             "imagen" : usuarioConToken.imagen,
             "token" : usuarioConToken.token
         }
-        
-        print("usuario ", usuarioToken)
 
         return usuarioToken
-
-
-""" 
-!#ESTO VA A SERVIR PARA PODER OBTENER LA LATITUD Y LONGITUD DE UNA CIUDAD 
-def obtener_coordenadas_ciudad(nombre_ciudad):
-    # Utiliza la API de OpenCage Geocoding para obtener las coordenadas de la ciudad
-    api_key = 'TU_CLAVE_DE_API'  # Reemplaza con tu clave de API de OpenCage
-    url_geocoding = f'https://api.opencagedata.com/geocode/v1/json?q={nombre_ciudad}&key={api_key}'
-    
-    respuesta_geocoding = requests.get(url_geocoding)
-    
-    if respuesta_geocoding.status_code == 200:
-        datos_geocoding = respuesta_geocoding.json()
-        coordenadas = datos_geocoding['results'][0]['geometry']
-        return coordenadas['lat'], coordenadas['lng']
-    else:
-        return None, None """
-    
-
-@app.route('/obtenerInfoLugar/<float:latitud>/<float:longitud>', methods=['GET'])
-def obtenerInfoLugar(latitud, longitud):
-    url = f'https://overpass-api.de/api/interpreter?data=[out:json];node["amenity"="restaurant"](around:1000,{latitud},{longitud});out;'
-    respuesta = requests.get(url)
-    
-    if respuesta.status_code == 200:
-        datos_json = respuesta.json()
-        return datos_json
-    else:
-        return None
