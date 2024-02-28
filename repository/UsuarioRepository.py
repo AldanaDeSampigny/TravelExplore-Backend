@@ -73,7 +73,7 @@ class UsuarioRepository:
             .join(Viaje, Viaje.id == Itinerario.id_viaje)
             .join(Usuario, Usuario.id == Viaje.id_usuario)
             .filter(Usuario.id == usuarioID)
-            .filter(AgendaViaje.id == idAgenda)
+            .filter(Viaje.id == idAgenda)
             .order_by(ActividadAgenda.horadesde)
         )
         return agenda
