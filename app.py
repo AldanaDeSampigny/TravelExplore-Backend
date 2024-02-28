@@ -831,9 +831,9 @@ def getAgenda(usuarioID,agendaID):
             #"nombre_lugar" : row[11],
             "lugar": {
                 "id": row[9],  # Ajusta según tus necesidades
-                "nombre": row[10],  # Ajusta según tus necesidades
-                "latitud": row[11],  # Ajusta según tus necesidades
-                "longitud": row[12]
+                "nombre": row[11],  # Ajusta según tus necesidades
+                "latitud": row[12],  # Ajusta según tus necesidades
+                "longitud": row[13]
             }
         }
 
@@ -865,11 +865,11 @@ def getAgenda(usuarioID,agendaID):
 
     return agendaJSON
 
-@app.route('/verAgendaUsuario/<int:usuarioID>' ,methods = ['GET'])
-def verAgendaUsuario(usuarioID):
+""" @app.route('/verAgendaUsuario/<int:usuarioID>' ,methods = ['GET'])
+def verAgendaUsuario(usuarioID): """
 # Leer el json recibido
 # agenda = request.get_json()
-    agendaService = AgendaService(getEngine())
+"""  agendaService = AgendaService(getEngine())
     agendasUsuario = agendaService.obtenerAgendasUsuario(usuarioID)  # Supongo que obtienes los resultados de tu función
     
     agendaRecibida = agendasUsuario #.all()
@@ -882,7 +882,7 @@ def verAgendaUsuario(usuarioID):
         "fechaHasta": str(agendaRecibida[0][7] if agendaRecibida[0][7] else None),
         "diaViaje": []
     }
-
+"""
     # for diaViaje in agendaRecibida:
     #     for actividad in agendaRecibida:
     #         diaViajeJson = {
@@ -898,7 +898,7 @@ def verAgendaUsuario(usuarioID):
     # agendaRecibida = {}
 
 
-    for row in agendasUsuario:
+"""  for row in agendasUsuario:
         for row in agendaRecibida:
             print("row ", row)
             actividadRepo = agendaService.obtenerActividadAgenda(row[2], row[0])
@@ -924,7 +924,7 @@ def verAgendaUsuario(usuarioID):
 
  
 
-    return jsonify(agendaJSON)
+    return jsonify(agendaJSON) """
 
 @app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
 def verAgendas(usuarioID):

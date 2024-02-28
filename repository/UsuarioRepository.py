@@ -1,5 +1,7 @@
 from sqlalchemy import func
 
+from ..models.ActividadLugar import ActividadLugar
+
 from ..models.Lugar import Lugar
 
 from ..models.Actividad import Actividad
@@ -52,16 +54,19 @@ class UsuarioRepository:
                 AgendaViaje.id,
                 Actividad.valoracion,
                 Actividad.duracion,
-                #Actividad.id_lugar,
+                ActividadLugar.id_lugar,
                 Ciudad.nombre,
                 Lugar.nombre,
                 Lugar.latitud,
                 Lugar.longitud,
-                
+
+                #ActividadLugar.id_actividad,
             )
             .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
             .join(Actividad, Actividad.id == ActividadAgenda.id_actividad)
-            #.join(Lugar, Actividad.id_lugar == Lugar.id)
+            .join(ActividadLugar, ActividadLugar.id_actividad == Actividad.id)
+            .join(ActividadLugar, ActividadLugar.id_lugar == Lugar.id)
+            .join(Lugar, ActividadLugar.id_lugar == Lugar.id)
             .join(AgendaViaje, AgendaDiaria.id_agenda_viaje == AgendaViaje.id)
             .join(Itinerario, Itinerario.id == AgendaDiaria.itinerario_id)
             .join(Ciudad, Ciudad.id == Itinerario.id_ciudad)
