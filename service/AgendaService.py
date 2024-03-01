@@ -77,6 +77,7 @@ class AgendaService:
                     for actividadAgenda in agendaDiaria.get('actividades', []):
                         actividadAgendaNueva = ActividadAgenda()
                         actividadAgendaNueva.id_actividad = actividadAgenda.get('id', None)
+                        actividadAgendaNueva.id_lugar = actividadAgenda.get('lugar', None)
                         actividadAgendaNueva.horadesde = actividadAgenda.get('hora_inicio', None)
                         actividadAgendaNueva.horahasta = actividadAgenda.get('hora_fin', None)
                         actividadAgendaNueva.id_agenda = nuevaAgendaDiaria.id
@@ -111,6 +112,7 @@ class AgendaService:
 
             agendaUsuario = agenda.getAgendaUsuario(usuarioID,agendaID)
 
+            print("agenda usuario ", agendaUsuario)
         return agendaUsuario;
         
 
@@ -200,7 +202,9 @@ class AgendaService:
     def getActividadesRecomendadas(self, usuarioID):
         with Session(getEngine()) as session:
             recomendaciones = PruebaIA(session)
+            print("recomendaciones", recomendaciones.cargadoDeIA(usuarioID))
             recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
+
             
             return recomendacionesIA
         
@@ -372,7 +376,7 @@ class AgendaService:
 
                     hora_inicio_datetime = datetime.combine(datetime.now().date(), hora_cierre_intervalo)
                     if tiempotraslado:
-                        hora_inicio_datetime += tiempotraslado
+                        hora_inicio_datetime = datetime.combine(hora_inicio_datetime, tiempotraslado)
                     hora_actual = hora_inicio_datetime.time() 
                 
                 fecha_actual += timedelta(days=1)
