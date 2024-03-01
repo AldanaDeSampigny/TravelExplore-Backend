@@ -77,6 +77,7 @@ class AgendaService:
                     for actividadAgenda in agendaDiaria.get('actividades', []):
                         actividadAgendaNueva = ActividadAgenda()
                         actividadAgendaNueva.id_actividad = actividadAgenda.get('id', None)
+                        actividadAgendaNueva.id_lugar = actividadAgenda.get('lugar', None)
                         actividadAgendaNueva.horadesde = actividadAgenda.get('hora_inicio', None)
                         actividadAgendaNueva.horahasta = actividadAgenda.get('hora_fin', None)
                         actividadAgendaNueva.id_agenda = nuevaAgendaDiaria.id
@@ -111,6 +112,7 @@ class AgendaService:
 
             agendaUsuario = agenda.getAgendaUsuario(usuarioID,agendaID)
 
+            print("agenda usuario ", agendaUsuario)
         return agendaUsuario;
         
 
@@ -200,7 +202,9 @@ class AgendaService:
     def getActividadesRecomendadas(self, usuarioID):
         with Session(getEngine()) as session:
             recomendaciones = PruebaIA(session)
+            print("recomendaciones", recomendaciones.cargadoDeIA(usuarioID))
             recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
+
             
             return recomendacionesIA
         
@@ -234,11 +238,11 @@ class AgendaService:
             
             print("actiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii ", actividadIds)
             #parte de la IA
-            recomendadas = []
-            recomendadas = self.getActividadesRecomendadas(usuarioID)
-            for recomendacion in recomendadas:
-                print("reco ", recomendacion.id)
-                recomendacion_id = (recomendacion.id,) if not isinstance(recomendacion.id, tuple) else recomendacion.id
+            # recomendadas = []
+            # recomendadas = self.getActividadesRecomendadas(usuarioID)
+            # for recomendacion in recomendadas:
+            #     print("reco ", recomendacion.id)
+            #     recomendacion_id = (recomendacion.id,) if not isinstance(recomendacion.id, tuple) else recomendacion.id
 
             # listaInicial = []
             # listaInicial.append(actividadIds[0][0])
@@ -321,23 +325,32 @@ class AgendaService:
                                     siguiente_actividad_obj = session.query(Actividad).get(siguiente_actividad)
                                     siguiente_lugar = agenda_repo.buscarLugar(siguiente_actividad_obj.id)
 
-                                if lugares[0]:
-                                    tiempotraslado = '00:05:00' #self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
+
+                                """  if lugares[0]:
+                                    tiempotraslado = datetime.strptime('00:05:00', '%H:%M:%S')#.time() #self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
                                 
                                 if tiempotraslado:
                                     hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
-                                    hora_actual = (hora_inicio_datetime + tiempotraslado).time()
-            
+                                    hora_actual = (hora_inicio_datetime + tiempotraslado)#.time() """
+                                if lugares[0]:
+                                    tiempotraslado = datetime.strptime('00:05:00', '%H:%M:%S').time() #self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
+    
+                                if tiempotraslado:
+                                    tiempotraslado_timedelta = timedelta(hours=tiempotraslado.hour, minutes=tiempotraslado.minute, seconds=tiempotraslado.second)
+                                    hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
+                                    hora_actual_datetime = hora_inicio_datetime + tiempotraslado_timedelta
+                                    hora_actual = hora_actual_datetime.time()
+
                                 if actividad.id not in gustos_agregados:
-                                    actividad = {
+                                    actividadDict = {
                                         'dia': fecha_actual,
                                         'hora_inicio': hora_actual,
                                         'hora_fin': hora_cierre_intervalo,
                                         'actividad': actividad,
-                                        'lugar': lugares[0].nombre if lugares else "null",
-                                        'lugares': lugares
+                                        'lugar': lugares[0].id if lugares else "null",
+                                        #'lugares': lugares
                                     }
-                                    agenda.append(actividad)
+                                    agenda.append(actividadDict)
                                     gustos_agregados.add(actividad.id)
                                     break
                             
@@ -346,7 +359,7 @@ class AgendaService:
 
                     hora_inicio_datetime = datetime.combine(datetime.now().date(), hora_cierre_intervalo)
                     if tiempotraslado:
-                        hora_inicio_datetime += tiempotraslado
+                        hora_inicio_datetime = datetime.combine(hora_inicio_datetime, tiempotraslado)
                     hora_actual = hora_inicio_datetime.time() 
                 
                 fecha_actual += timedelta(days=1)

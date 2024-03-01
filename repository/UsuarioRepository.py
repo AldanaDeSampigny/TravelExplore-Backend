@@ -51,29 +51,27 @@ class UsuarioRepository:
                 Actividad.nombre,
                 ActividadAgenda.horadesde,
                 ActividadAgenda.horahasta,
-                AgendaViaje.id,
+                Viaje.id,
                 Actividad.valoracion,
                 Actividad.duracion,
-                ActividadLugar.id_lugar,
+                ActividadAgenda.id_lugar,
                 Ciudad.nombre,
+                
                 Lugar.nombre,
                 Lugar.latitud,
                 Lugar.longitud,
 
-                #ActividadLugar.id_actividad,
             )
             .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
             .join(Actividad, Actividad.id == ActividadAgenda.id_actividad)
-            .join(ActividadLugar, ActividadLugar.id_actividad == Actividad.id)
-            .join(ActividadLugar, ActividadLugar.id_lugar == Lugar.id)
-            .join(Lugar, ActividadLugar.id_lugar == Lugar.id)
+            .join(Lugar, Lugar.id == ActividadAgenda.id_lugar)
             .join(AgendaViaje, AgendaDiaria.id_agenda_viaje == AgendaViaje.id)
             .join(Itinerario, Itinerario.id == AgendaDiaria.itinerario_id)
             .join(Ciudad, Ciudad.id == Itinerario.id_ciudad)
             .join(Viaje, Viaje.id == Itinerario.id_viaje)
             .join(Usuario, Usuario.id == Viaje.id_usuario)
             .filter(Usuario.id == usuarioID)
-            .filter(Viaje.id == idAgenda)
+            .filter(AgendaDiaria.id_agenda_viaje == idAgenda)
             .order_by(ActividadAgenda.horadesde)
         )
         return agenda

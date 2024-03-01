@@ -9,6 +9,7 @@ class ActividadAgenda(Base):
     __tablename__ = 'actividades_agendas'
     id_agenda = Column(db.ForeignKey("agendas_diarias.id"), primary_key= True)
     id_actividad = Column(db.ForeignKey("actividades.id"), primary_key= True)
+    id_lugar = Column(db.ForeignKey("lugares.id"))
     horadesde = Column(Time)
     horahasta = Column(Time)
     
@@ -18,6 +19,7 @@ class ActividadAgenda(Base):
       return { 
         "id_agenda": self.id_agenda,
         "id_actividad": self.id_actividad,
+        "id_lugar": self.id_lugar,
         "horadesde": self.horadesde,
         "horahasta": self.horahasta
       }
