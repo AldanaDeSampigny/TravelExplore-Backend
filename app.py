@@ -818,6 +818,7 @@ def getAgenda(usuarioID,agendaID):
     agendaRecibida = {}
 
     for row in agendaUsuario:
+        idAgendaDiaria = row[0],
         dia = row[1].strftime("%d-%m-%Y") if row[1] else None
         actividad = {
             "id" :row[2],
