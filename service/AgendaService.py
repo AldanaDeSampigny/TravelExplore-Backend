@@ -140,6 +140,14 @@ class AgendaService:
 
         return actividadAgenda
 
+    def obtenerLugaresDeActividades(self,idCiudad,idActividad):
+        with Session(getEngine()) as session:
+            agendaRepository = AgendaRepository(session)
+
+            lugaresDeActividad = agendaRepository.getLugaresDeActividad(idCiudad, idActividad)
+
+            return lugaresDeActividad
+
     def haversine_distance(self, lat1, lon1, lat2, lon2):
     # Radio de la Tierra en kilómetros
         R = 6371.0
