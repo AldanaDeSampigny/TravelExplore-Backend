@@ -1,6 +1,10 @@
+from ..models.ActividadLugar import ActividadLugar
 from ..models.ActividadCategoria import ActividadCategoria
 from ..models.Actividad import Actividad
 from ..models.Categoria import Categoria
+from ..models.Lugar import Lugar
+from ..models.Ciudad import Ciudad
+from ..models.AgendaDiaria import AgendaDiaria
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 
@@ -46,3 +50,36 @@ class ActividadRepository:
             filter(Actividad.id.in_(subquery))
 
         return actividades
+    
+    def getLugaresDeActividad(self, idCiudad, idActividad):
+        lugares = self.db_session.query(
+            Actividad.id,
+            Lugar.id,
+            Lugar.nombre,
+        ).join(ActividadLugar, ActividadLugar.id_lugar == Lugar.id).\
+        join(Actividad, Actividad.id == ActividadLugar.id_actividad).\
+        join(Ciudad, Ciudad.id == Lugar.id_ciudad).\
+        filter(Actividad.id == idActividad).\
+        filter(Ciudad.id == idCiudad).all()
+
+        return lugares
+    """         
+        def getAgendaDiaria(self, id):
+        agenda = (self.db_session.query(
+            AgendaDiaria.id,
+            AgendaDiaria.horaInicio,
+            AgendaDiaria.horaFin,
+
+            Actividad.id,
+            Lugar.id,
+            Ciudad.id,
+            
+        ).join(ActividadAgenda, ActividadAgenda.id_agenda == AgendaDiaria.id).\
+        join(Actividad, ActividadLugar.id_actividad == Actividad.id) .\
+        join(Lugar, ActividadLugar.id_lugar == Lugar.id).\
+        join (Ciudad, Itinenario.id_ciudad == Ciudad.id).\
+        filter (Actividad.id == ActividadLugar.id_actividad).\
+        filter (Lugar.id == ActividadLugar.id_lugar).\
+        filter (Ciudad.id == Itinerario.id_ciudad).\
+        
+    ) """
