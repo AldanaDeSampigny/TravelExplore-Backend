@@ -1,6 +1,8 @@
 import math
 from turtle import update
 import json
+
+from ..repository.ActividadRepository import ActividadRepository
 from ..repository.LugarRepository import LugarRepository
 
 import numpy as np
@@ -142,11 +144,19 @@ class AgendaService:
 
     def obtenerLugaresDeActividades(self,idCiudad,idActividad):
         with Session(getEngine()) as session:
-            agendaRepository = AgendaRepository(session)
+            actividadRepository = ActividadRepository(session)
 
-            lugaresDeActividad = agendaRepository.getLugaresDeActividad(idCiudad, idActividad)
+            lugaresDeActividad = actividadRepository.getLugaresDeActividad(idCiudad, idActividad)
 
             return lugaresDeActividad
+
+    def obtenerAgendaDiaria(self, idAgenda):
+        with Session(getEngine()) as session:
+            agendaRepository = AgendaRepository(session)
+
+            actividadesAgenda = agendaRepository.getAgendaDiaria(idAgenda)
+
+            return actividadesAgenda
 
     def haversine_distance(self, lat1, lon1, lat2, lon2):
     # Radio de la Tierra en kilómetros

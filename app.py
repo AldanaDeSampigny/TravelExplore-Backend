@@ -868,32 +868,40 @@ def getAgenda(usuarioID,agendaID):
 
     return agendaJSON
 
-@app.route('/getAgendaDiaria/<int:idCiudad>/<int:idActividad>', methods = ['GET'])
-def getAgendaDiaria(idCiudad, idActividad):
+@app.route('/getAgendaDiaria/<int:idAgenda>', methods = ['GET'])
+def getAgendaDiaria(idAgenda):
     agendaService = AgendaService(getEngine())
-    agendaDiaria = agendaService.obtenerLugaresDeActividades(idCiudad, idActividad)
-    
-    for row in agendaDiaria:
-        lugares = {
-            "id_actividad" : row[0],
-            "id_lugar" : row[1],
-            "nombre" : row[2],
+    agendaDiaria = agendaService.obtenerAgendaDiaria(idAgenda)
+
+    print("agendaDiaria", agendaDiaria[1][2]) 
+
+    agenda = []
+    #for row in agendaDiaria:
+    print("1")
+    lugares = agendaService.obtenerLugaresDeActividades(agendaDiaria[1][7], agendaDiaria[1][3])
+    lugaresDeLaActividad = []
+
+    for lugar in lugares:
+        lugarAgenda = {
+            "id_actividad": lugar[0],
+            "id_lugar": lugar[1],
+            "nombre": lugar[2],
         }
-    #lugaresJson = list(lugares.values())
-    return lugares
 
+        lugaresDeLaActividad.append(lugarAgenda)
 
-    """ recorrer acividades
-            recorrer lugares
-                actividad.horaInicio
-                actividad.horaInicio
-                
-    """
-    """    for actividad in agendaDiaria:
-        for actividad.lugares in agendaDiaria: """
+    agenda.append({
+        "id": agendaDiaria[1][0],
+        "horaInicio": agendaDiaria[1][1].strftime('%H:%M:%S'),
+        "horaFin": agendaDiaria[1][2].strftime('%H:%M:%S'),
+        "actividad": agendaDiaria[1][4],
+        "lugar": agendaDiaria[1][6],
+        "otrosLugares": lugaresDeLaActividad
+    }) 
 
-
-
+    print("AGENDA:",agenda)
+    print(type(agenda))
+    return jsonify(agenda)
 
 
 @app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
