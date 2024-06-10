@@ -220,6 +220,27 @@ class AgendaService:
 
             return horarios
 
+    def recomendacionesIA(self, usuarioID, actividadIds):
+        recomendadas = []
+        recomendadas = self.getActividadesRecomendadas(usuarioID)
+        for recomendacion in recomendadas:
+            print("reco ", recomendacion.id)
+            recomendacion_id = (recomendacion.id,) if not isinstance(
+                recomendacion.id, tuple) else recomendacion.id
+
+            listaInicial = []
+            listaInicial.append(actividadIds[0][0])
+            cerca = self.calculoDeDistancias(
+                1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
+            listaInicial.append(cerca)
+            for i in range(0, len(actividadIds)):
+                cerca = self.calculoDeDistancias(
+                    1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
+                listaInicial.append(cerca)
+
+            return listaInicial
+
+
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
@@ -234,23 +255,10 @@ class AgendaService:
             
             print("actiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii ", actividadIds)
             #parte de la IA
-            recomendadas = []
-            recomendadas = self.getActividadesRecomendadas(usuarioID)
-            for recomendacion in recomendadas:
-                print("reco ", recomendacion.id)
-                recomendacion_id = (recomendacion.id,) if not isinstance(recomendacion.id, tuple) else recomendacion.id
-
-            # listaInicial = []
-            # listaInicial.append(actividadIds[0][0])
-            # cerca = self.calculoDeDistancias(
-            #     1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
-            # listaInicial.append(cerca)
-            # for i in range(0, len(actividadIds)):
-            #     cerca = self.calculoDeDistancias(
-            #         1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
-            #     listaInicial.append(cerca)
+            #llamar aca
 
             #actividadIds = listaInicial.copy()
+            #actividadIds = this.recomendacionesID.copy()
             
             while fecha_actual <= fecha_hasta:
 
