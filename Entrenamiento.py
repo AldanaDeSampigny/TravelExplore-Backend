@@ -102,7 +102,6 @@ def entrenarIA():
         train_dataset = interactions_dataset.take(train_size)
         test_dataset = interactions_dataset.skip(train_size)
 
-        # desde aca lo nuevo
         # Define el modelo de usuario (reemplaza con tu lógica)
         user_model = tf.keras.Sequential([
             # Input con la misma forma que las preferencias de usuarios
