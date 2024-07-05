@@ -447,7 +447,7 @@ def placesRoutesBasico():
 
     return jsonify(place_details)
 
-@app.route('/lugar', methods=['GET'])
+""" @app.route('/lugar', methods=['GET'])
 def placesRoutes():
     buscarLugar = request.args.get('ciudad')
     idiomas_permitidos = ['es', 'mx', 'uy', 'ar', 'co', 'cl', 'pe', 've', 'ec', 'gt', 'cu', 'do', 'bo', 'hn', 'py', 'sv', 'ni', 'cr', 'pr']
@@ -506,6 +506,7 @@ def placesRoutes():
                     'website': place.get('website', None)
                 }
                 lugares.append(lugar)
+                print(lugar)
 
     if not lugares:
         # Si no se encontraron lugares, crea un mensaje JSON personalizado
@@ -515,7 +516,7 @@ def placesRoutes():
     lugares = sorted(lugares, key=lambda x: difflib.SequenceMatcher(
         None, x['nombre'], buscarLugar).ratio(), reverse=True)
     
-    return jsonify(lugares)
+    return jsonify(lugares) """
 
 @app.route('/lugares/cercanos', methods=['GET'])
 def lugaresCercanos():
@@ -679,7 +680,7 @@ def favoritos(usuarioId):
         None, x['lugar']['nombre'], buscarLugar).ratio(), reverse=True)
     
     return jsonify(lugares)
-
+#devuelve un lugar en pantalla 
 @app.route('/lugar/<id>', methods=['GET']) #guardar aca, si el lugar ya esta no guardar(query con pais provincia ciudad)
 def lugarEspecifico(id):
     gmaps = googlemaps.Client(key=llave)
@@ -724,8 +725,9 @@ def lugarEspecifico(id):
             'pais': pais if pais else 'N/A',
             'website': place.get('website', None)
         }
-
+        
         LugarService(getEngine()).guardarSitio(lugar)
+        print(lugar)
         return jsonify(lugar)
     else:
         return jsonify({'error': 'Place not found'})
@@ -884,10 +886,28 @@ def getAgendaDiaria(idAgenda):
     for lugar in lugares:
         lugarAgenda = {
             "id_actividad": lugar[0],
-            "id_lugar": lugar[1],
+            "id": lugar[1],
             "nombre": lugar[2],
         }
 
+
+
+        """ 
+            lugarAgenda: 
+                id
+                id_actividad
+                nombre
+
+
+            Actividades :
+                sddsad
+                sdadad
+                sdsadsdad
+                sdasd
+                LugarAgenda    
+            
+        """
+        
         lugaresDeLaActividad.append(lugarAgenda)
 
     agenda.append({
