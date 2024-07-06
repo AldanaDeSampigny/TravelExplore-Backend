@@ -183,8 +183,6 @@ class AgendaService:
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             distancias = []
-            # print("ultimo", ultimo)
-            # print("anteultimo", anteultimo)
             ultimoLugar = agenda_repo.buscarLugar(ultimo)
             #anteultimo = agenda_repo.buscarLugar(anteultimo[0])
 
@@ -242,113 +240,123 @@ class AgendaService:
 
             return horarios
 
-    def recomendacionesIA(self, usuarioID, actividadIds):
-        recomendadas = []
-        recomendadas = self.getActividadesRecomendadas(usuarioID)
-        for recomendacion in recomendadas:
-            print("reco ", recomendacion.id)
-            recomendacion_id = (recomendacion.id,) if not isinstance(
-                recomendacion.id, tuple) else recomendacion.id
+    #!en revisicion
+    # def recomendaciones_IA(self, usuarioID, actividadIds):
+    #     recomendadas = self.getActividadesRecomendadas(usuarioID)
+    #     listaInicial = [actividadIds[0][0]]
+    #     for _ in range(len(actividadIds)):
+    #         cerca = self.calculoDeDistancias(1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
+    #         listaInicial.append(cerca)
+    #     return listaInicial
+        # recomendadas = []
+        # recomendadas = self.getActividadesRecomendadas(usuarioID)
+        # for recomendacion in recomendadas:
+        #     print("reco ", recomendacion.id)
+        #     recomendacion_id = (recomendacion.id,) if not isinstance(
+        #         recomendacion.id, tuple) else recomendacion.id
 
-            listaInicial = []
-            listaInicial.append(actividadIds[0][0])
-            cerca = self.calculoDeDistancias(
-                1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
-            listaInicial.append(cerca)
-            for i in range(0, len(actividadIds)):
-                cerca = self.calculoDeDistancias(
-                    1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
-                listaInicial.append(cerca)
+        #     listaInicial = []
+        #     listaInicial.append(actividadIds[0][0])
+        #     cerca = self.calculoDeDistancias(
+        #         1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
+        #     listaInicial.append(cerca)
+        #     for _ in range(0, len(actividadIds)):
+        #         cerca = self.calculoDeDistancias(
+        #             1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
+        #         listaInicial.append(cerca)
 
-            return listaInicial
+        #     return listaInicial
+        
+    def calcular_horas_ocupado(self, fecha_actual, horariosOcupados, hora_actual, actividad):
+        print("prueba de que llega a calcular_horas ", hora_actual)
+        horarios = {
+            "hora_cierre_intervalo" : None,
+            "hora_actual": None
+        }
 
-    def buscarActividad(self, actividadIds, horariosOcupados, destinoID, fecha_actual):
+        if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
+            for horario_ocupado in horariosOcupados[fecha_actual.date().strftime('%Y-%m-%d')]:
+                horaInicioOcupado = datetime.strptime(horario_ocupado[0], '%H:%M:%S').time()
+                horaFinOcupado = datetime.strptime(horario_ocupado[1], '%H:%M:%S').time()
+                if horaInicioOcupado <= hora_actual < horaFinOcupado:
+                    horarios.hora_actual = horaFinOcupado
+                    break
+
+        minutos_duracion = actividad.duracion.hour * 60 + actividad.duracion.minute
+        horarios.hora_cierre_intervalo = hora_actual.replace(hour=(hora_actual.hour + (minutos_duracion // 60)) % 24, minute=(hora_actual.minute + minutos_duracion % 60) % 60)
+
+        return horarios
+    
+    def traslado(self, transporte, hora_actual, lugares, actividadIds, IDaux):
         with Session(getEngine()) as session:
-            actividadEncontrada = None
             agenda_repo = AgendaRepository(session)
+            horas = {"hora_actual": None, "tiempoTraslado": None}
+            siguiente_actividad = actividadIds[IDaux + 1] if IDaux + 1 < len(actividadIds) else None
+            if siguiente_actividad:
+                siguiente_actividad_obj = session.query(Actividad).get(siguiente_actividad)
+                siguiente_lugar = agenda_repo.buscarLugar(siguiente_actividad_obj.id)
 
-            for IDaux, actividad_id in enumerate(actividadIds):
-                print("hola3")
-                actividad = session.query(Actividad).get(actividad_id)
+            if lugares[0]:
+                horas.tiempoTraslado = self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
+            
+            if horas.tiempoTraslado:
+                hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
+                horas.hora_actual = (hora_inicio_datetime + horas.tiempoTraslado).time()
 
-                print("actividad ", actividad.nombre)
-                lugares = agenda_repo.buscarLugares(actividad.id, destinoID)
+            return horas
 
-                # if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
-                #     for horario_ocupado in horariosOcupados[fecha_actual.date().strftime('%Y-%m-%d')]:
-                #         horaInicioOcupado = datetime.strptime(horario_ocupado[0], '%H:%M:%S').time()
-                #         horaFinOcupado = datetime.strptime(horario_ocupado[1], '%H:%M:%S').time()
-                #         if horaInicioOcupado <= hora_actual < horaFinOcupado:
-                #             hora_actual = horaFinOcupado
-                #             break
+    def aceptar_actividad(self, actividad, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, hora_actual, hora_cierre_intervalo):
+        with Session(getEngine()) as session:
+            resultado = {"tiempoTraslado" : None, "actividad" : None}
+
+            #!probablemente borrar
+            # if lugares:
+            #     horarios = self.lugarHorarios(lugares[0].id)
+
+            #     horarios_filtrados = list(
+            #         filter(lambda horario: horario['dia'] == self.dias_semana[fecha_actual.weekday()], horarios))
+
+            #     for horario in horarios_filtrados:
+            #         hora_inicio = datetime.strptime(horario['horaInicio'], "%H:%M:%S").time()
+            #         hora_fin = datetime.strptime(horario['horaFin'], "%H:%M:%S").time() 
                     
-                # print("horaaaa ", hora_actual)
-                # minutos_duracion = actividad.duracion.hour * 60 + actividad.duracion.minute
-                # hora_cierre_intervalo = hora_actual.replace(hour=(hora_actual.hour + (minutos_duracion // 60)) % 24, minute=(hora_actual.minute + minutos_duracion % 60) % 60)
-                
-                if lugares:
-                    horarios = self.lugarHorarios(lugares[0].id)
+            #         if hora_inicio <= hora_actual < hora_fin:
+            #             print("inicio ", hora_inicio, " fin ", hora_fin)
+            
+            if actividad.horainicio <= hora_actual < actividad.horafin:
+                horas = self.traslado(transporte, hora_actual, lugares, actividadIds, IDaux)
 
-                    if horarios is None:
-                        print("horarios ", horarios)
-                        lugarAbierto = True
+                if actividad.id not in gustos_agregados:
+                    resultado.actividad = {
+                        'dia': fecha_actual,
+                        'hora_inicio': horas.hora_actual,
+                        'hora_fin': hora_cierre_intervalo,
+                        'actividad': actividad,
+                        'lugar': lugares[0].nombre if lugares else "null",
+                        'lugares': lugares
+                    }
 
-                    horarios_filtrados = list(
-                        filter(lambda horario: horario['dia'] == self.dias_semana[fecha_actual.weekday()], horarios))
-
-                    print("aaaaa ", fecha_actual.weekday())
-                    for horario in horarios_filtrados:
-                        print("dia ", horario['dia'], " | fecha ", fecha_actual)
-                        hora_inicio = datetime.strptime(horario['horaInicio'], "%H:%M:%S").time()
-                        hora_fin = datetime.strptime(horario['horaFin'], "%H:%M:%S").time() 
-                        if hora_inicio <= hora_actual < hora_fin:
-                            print("inicio ", hora_inicio, " fin ", hora_fin)
-                            lugarAbierto = True
-                else: 
-                            lugarAbierto = True
-                
-                if lugarAbierto:
-                    print("ac  ", hora_actual)
-                    if actividad.horainicio <= hora_actual < actividad.horafin:
-                        print("entro ", hora_actual)
-                        # siguiente_actividad = actividadIds[IDaux + 1] if IDaux + 1 < len(actividadIds) else None
-                        # if siguiente_actividad:
-                        #     siguiente_actividad_obj = session.query(Actividad).get(siguiente_actividad)
-                        #     siguiente_lugar = agenda_repo.buscarLugar(siguiente_actividad_obj.id)
-
-                        if lugares[0]:
-                            tiempotraslado = '00:05:00' #self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
-                        
-                        if tiempotraslado:
-                            hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
-                            hora_actual = (hora_inicio_datetime + tiempotraslado).time()
-
-                        if actividad.id not in gustos_agregados:
-                            actividad = {
-                                'dia': fecha_actual,
-                                'hora_inicio': hora_actual,
-                                'hora_fin': hora_cierre_intervalo,
-                                'actividad': actividad,
-                                'lugar': lugares[0].nombre if lugares else "null",
-                                'lugares': lugares
-                            }
-                            actividadEncontrada = actividad
-                            break
-
-            return actividadEncontrada
+            return resultado
+        
+    def obtener_horarios_dia(self, fecha_actual, horariosElegidos, horaInicio, horaFin):
+        if fecha_actual.date().strftime('%Y-%m-%d') in horariosElegidos:
+            hora_actual = datetime.strptime(horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][0], '%H:%M:%S').time()
+            horario_fin = datetime.strptime(horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][1], '%H:%M:%S').time()
+        else:
+            hora_actual = datetime.strptime(horaInicio, '%H:%M:%S').time()
+            horario_fin = datetime.strptime(horaFin, '%H:%M:%S').time()
+        return hora_actual, horario_fin
 
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             agenda = []
-            tiempotraslado = None
             gustos_agregados = set()
 
             fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
             
-            print("actiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii ", actividadIds)
             #parte de la IA
             #llamar aca
 
@@ -356,14 +364,7 @@ class AgendaService:
             #actividadIds = this.recomendacionesID.copy()
             
             while fecha_actual <= fecha_hasta:
-
-                if fecha_actual.date().strftime('%Y-%m-%d') in horariosElegidos:
-                    hora_actual = datetime.strptime(horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][0], '%H:%M:%S').time()
-                    horario_fin = datetime.strptime(
-                        horariosElegidos[fecha_actual.date().strftime('%Y-%m-%d')][1], '%H:%M:%S').time()
-                else:
-                    hora_actual = datetime.strptime(horaInicio, '%H:%M:%S').time() 
-                    horario_fin = datetime.strptime(horaFin, '%H:%M:%S').time()
+                hora_actual, horario_fin = self.obtener_horarios_dia(fecha_actual, horariosElegidos, horaInicio, horaFin)
 
                 actividadIds_set = set(np.array(actividadIds).flatten())
 
@@ -371,30 +372,26 @@ class AgendaService:
                     gustos_agregados.clear()
 
                 while hora_actual < horario_fin:
-                    
-                    if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
-                        for horario_ocupado in horariosOcupados[fecha_actual.date().strftime('%Y-%m-%d')]:
-                            horaInicioOcupado = datetime.strptime(horario_ocupado[0], '%H:%M:%S').time()
-                            horaFinOcupado = datetime.strptime(horario_ocupado[1], '%H:%M:%S').time()
-                            if horaInicioOcupado <= hora_actual < horaFinOcupado:
-                                hora_actual = horaFinOcupado
-                                break
+                    for IDaux, actividad_id in enumerate(actividadIds):
+                        actividad = session.query(Actividad).get(actividad_id)
 
-                    print("horaaaa ", hora_actual)
-                    minutos_duracion = actividad.duracion.hour * 60 + actividad.duracion.minute
-                    hora_cierre_intervalo = hora_actual.replace(hour=(hora_actual.hour + (minutos_duracion // 60)) % 24, minute=(hora_actual.minute + minutos_duracion % 60) % 60)
+                        lugares = agenda_repo.buscarLugares(actividad.id, destinoID)
 
-                    actividad = this.buscarActividad(actividadIds, horariosOcupados, destinoID, fecha_actual)
-                    
-                    agenda.append(actividad)
-                    gustos_agregados.add(actividad.id)
+                        horarios = self.calcular_horas_ocupado(fecha_actual, horariosOcupados, hora_actual, actividad)
+
+                        resultado = self.aceptar_actividad(actividad, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, horarios.hora_actual, horarios.hora_cierre_intervalo)
+                        
+                        hora_actual = resultado.hora_actual
+                        
+                        agenda.append(resultado.actividad)
+                        gustos_agregados.add(resultado.actividad.id)
                             
                     if datetime.strptime('00:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('04:00:00', '%H:%M:%S').time():
                         break
 
-                    hora_inicio_datetime = datetime.combine(datetime.now().date(), hora_cierre_intervalo)
-                    if tiempotraslado:
-                        hora_inicio_datetime = datetime.combine(hora_inicio_datetime, tiempotraslado)
+                    hora_inicio_datetime = datetime.combine(datetime.now().date(), horarios.hora_cierre_intervalo)
+                    if resultado.tiempoTraslado:
+                        hora_inicio_datetime += resultado.tiempoTraslado
                     hora_actual = hora_inicio_datetime.time() 
                 
                 fecha_actual += timedelta(days=1)
