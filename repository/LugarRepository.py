@@ -62,3 +62,11 @@ class LugarRepository:
 
         return horario
 
+    def agregarValoracionUsuario(self, id, valoracion):
+        lugarConValoracion = self.getLugarById(id)
+        if lugarConValoracion:
+            lugarConValoracion.valoracion_usuario = valoracion
+            self.db_session.add(lugarConValoracion)
+            self.db_session.commit()
+        return lugarConValoracion
+ 

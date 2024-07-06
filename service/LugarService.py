@@ -229,3 +229,9 @@ class LugarService:
 
         if tipoSitio in switch_dict:
             switch_dict[tipoSitio](sitio)
+
+    def guardarValoracionUsuario(self, id, valoracion):
+        with Session(getEngine()) as session:
+            lugarRepository = LugarRepository(session)
+            lugarConValoracion = lugarRepository.agregarValoracionUsuario(id, valoracion)
+        return lugarConValoracion
