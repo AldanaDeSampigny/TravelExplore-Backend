@@ -991,3 +991,18 @@ def usuarioIniciado():
         }
 
         return usuarioToken
+    
+
+@app.route('/valoracionUsuario', methods=['POST'])
+def agregarValoracionUsuario():
+    lugarService = LugarService(getEngine())
+    datosLugar = request.get_json()
+    idLugar = datosLugar.get('idLugar')  # Cambiar 'id' por 'idLugar'
+    valoracion = datosLugar.get('valoracion')
+
+    if idLugar is not None and valoracion is not None:
+        lugarService.guardarValoracionUsuario(idLugar, valoracion)
+        return jsonify({"data": "se guardo la valoracion"}), 200
+    else:
+        return jsonify({"error": "datos incompletos"}), 400
+
