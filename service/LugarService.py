@@ -235,3 +235,10 @@ class LugarService:
             lugarRepository = LugarRepository(session)
             lugarConValoracion = lugarRepository.agregarValoracionUsuario(id, valoracion)
         return lugarConValoracion
+
+
+    def guardarResenia(self,lugarID,resenia):
+        with Session(getEngine()) as session:
+            lugarRepository = LugarRepository(session)
+            reseniaAgregada = lugarRepository.agregarReseña(lugarID,resenia)
+        return reseniaAgregada

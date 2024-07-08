@@ -20,6 +20,7 @@ class Lugar(Base):
   horacierre = Column(Time)
   id_ciudad = Column(db.ForeignKey("ciudades.id"))
   valoracion_usuario = Column(Integer)
+  
   #categorias = relationship('Categoria', secondary='lugares_categorias', back_populates='lugares')
 
 

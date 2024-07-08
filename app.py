@@ -33,6 +33,7 @@ from .consultas import obtenerDirecciones, validacionTransporte
 from apscheduler.schedulers.background import BackgroundScheduler
 
 from .models.PalabrasProhibidas import PalabrasProhibidas
+from .models.Reseña import Reseña
 from .models.LugaresFavoritos import LugaresFavoritos
 from .models.ActividadLugar import ActividadLugar
 from .models.Horario import Horario
@@ -84,6 +85,7 @@ nuevoCategoriaLugar = LugarCategoria()
 nuevoUsuarioCategoria = UsuarioCategoria()
 nuevaActividadCategoria = ActividadCategoria()
 nuevaPalabrasProhibidas = PalabrasProhibidas()
+nuevaResenia = Reseña()
 
 llave = 'AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
 
@@ -997,7 +999,7 @@ def usuarioIniciado():
 def agregarValoracionUsuario():
     lugarService = LugarService(getEngine())
     datosLugar = request.get_json()
-    idLugar = datosLugar.get('idLugar')  # Cambiar 'id' por 'idLugar'
+    idLugar = datosLugar.get('idLugar')  
     valoracion = datosLugar.get('valoracion')
 
     if idLugar is not None and valoracion is not None:
@@ -1006,3 +1008,13 @@ def agregarValoracionUsuario():
     else:
         return jsonify({"error": "datos incompletos"}), 400
 
+@app.route('/agregarResenia', methods=['POST'])
+def agregarReseniaLugar():
+    lugarService = LugarService(getEngine())
+    datos = request.get_json()
+    idLugar = datos.get('idLugar')  
+    resenia= datos.get('resenia')  
+
+    lugarService.guardarResenia(idLugar,resenia)
+
+    return resenia
