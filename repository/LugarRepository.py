@@ -80,8 +80,18 @@ class LugarRepository:
             self.db_session.commit()
         else:
             raise ValueError("Lugar no encontrado")
-    
-        return nueva_resenia
         
+        return nueva_resenia
 
- 
+    def ultimasReseñas(self,lugarID):
+        lugar = self.getLugarById(lugarID)
+
+        obtenerResenias = (
+                self.db_session.query(Lugar.id, Reseña.resenia)
+                .join(Reseña, Lugar.id == Reseña.id_lugar)
+                .filter(Reseña.id_lugar == lugar.id)
+                .order_by(Reseña.id.desc())
+                .limit(3)
+            )
+
+        return obtenerResenias.all()

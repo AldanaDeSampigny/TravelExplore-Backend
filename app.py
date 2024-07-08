@@ -1018,3 +1018,27 @@ def agregarReseniaLugar():
     lugarService.guardarResenia(idLugar,resenia)
 
     return resenia
+
+@app.route('/ultimasResenias/', methods=['GET'])
+def getUltimasResenias():
+    lugarService = LugarService(getEngine())
+
+    datos= request.get_json()
+    idLugar = datos.get('idLugar')
+    
+    resenias = lugarService.getUltimasResenias(idLugar)
+
+    reseniasObtenidas = []
+        
+    for resenia in resenias:
+        resenia_data = {
+           'id_lugar': resenia[0], 
+            'resenia': resenia[1]
+        }
+        reseniasObtenidas.append(resenia_data)
+
+    print("app resenias", jsonify(reseniasObtenidas))
+
+    return jsonify(reseniasObtenidas)
+
+   

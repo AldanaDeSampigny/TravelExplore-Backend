@@ -242,3 +242,10 @@ class LugarService:
             lugarRepository = LugarRepository(session)
             reseniaAgregada = lugarRepository.agregarReseña(lugarID,resenia)
         return reseniaAgregada
+    
+    def getUltimasResenias(self,lugarID):
+        with Session(getEngine()) as session:
+            lugarRepo = LugarRepository(session)
+            
+            resenias = lugarRepo.ultimasReseñas(lugarID)
+        return resenias
