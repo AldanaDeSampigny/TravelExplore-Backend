@@ -71,11 +71,11 @@ class LugarRepository:
             self.db_session.commit()
         return lugarConValoracion
 
-    def agregarReseña(self, lugarID, resenia):
+    def agregarReseña(self, lugarID, resenia,idUsuario):
         lugar = self.getLugarById(lugarID)
         
         if lugar is not None:
-            nueva_resenia = Reseña(resenia=resenia, id_lugar=lugar.id)
+            nueva_resenia = Reseña(resenia=resenia, id_lugar=lugar.id,id_usuario=idUsuario)
             self.db_session.add(nueva_resenia)
             self.db_session.commit()
         else:
@@ -87,7 +87,7 @@ class LugarRepository:
         lugar = self.getLugarById(lugarID)
 
         obtenerResenias = (
-                self.db_session.query(Lugar.id, Reseña.resenia)
+                self.db_session.query(Lugar.id, Reseña.resenia,Reseña.id_usuario)
                 .join(Reseña, Lugar.id == Reseña.id_lugar)
                 .filter(Reseña.id_lugar == lugar.id)
                 .order_by(Reseña.id.desc())
