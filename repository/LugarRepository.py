@@ -3,6 +3,7 @@ from ..models.CiudadCategoria import CiudadCategoria
 from ..models.LugarCategoria import LugarCategoria
 from ..models.Ciudad import Ciudad
 from ..models.Lugar import Lugar
+from ..models.Reseña import Reseña
 from sqlalchemy.orm import sessionmaker
 
 class LugarRepository:
@@ -62,3 +63,35 @@ class LugarRepository:
 
         return horario
 
+    def agregarValoracionUsuario(self, id, valoracion):
+        lugarConValoracion = self.getLugarById(id)
+        if lugarConValoracion:
+            lugarConValoracion.valoracion_usuario = valoracion
+            self.db_session.add(lugarConValoracion)
+            self.db_session.commit()
+        return lugarConValoracion
+
+    def agregarReseña(self, lugarID, resenia):
+        lugar = self.getLugarById(lugarID)
+        
+        if lugar is not None:
+            nueva_resenia = Reseña(resenia=resenia, id_lugar=lugar.id)
+            self.db_session.add(nueva_resenia)
+            self.db_session.commit()
+        else:
+            raise ValueError("Lugar no encontrado")
+        
+        return nueva_resenia
+
+    def ultimasReseñas(self,lugarID):
+        lugar = self.getLugarById(lugarID)
+
+        obtenerResenias = (
+                self.db_session.query(Lugar.id, Reseña.resenia)
+                .join(Reseña, Lugar.id == Reseña.id_lugar)
+                .filter(Reseña.id_lugar == lugar.id)
+                .order_by(Reseña.id.desc())
+                .limit(3)
+            )
+
+        return obtenerResenias.all()

@@ -229,3 +229,23 @@ class LugarService:
 
         if tipoSitio in switch_dict:
             switch_dict[tipoSitio](sitio)
+
+    def guardarValoracionUsuario(self, id, valoracion):
+        with Session(getEngine()) as session:
+            lugarRepository = LugarRepository(session)
+            lugarConValoracion = lugarRepository.agregarValoracionUsuario(id, valoracion)
+        return lugarConValoracion
+
+
+    def guardarResenia(self,lugarID,resenia):
+        with Session(getEngine()) as session:
+            lugarRepository = LugarRepository(session)
+            reseniaAgregada = lugarRepository.agregarReseña(lugarID,resenia)
+        return reseniaAgregada
+    
+    def getUltimasResenias(self,lugarID):
+        with Session(getEngine()) as session:
+            lugarRepo = LugarRepository(session)
+            
+            resenias = lugarRepo.ultimasReseñas(lugarID)
+        return resenias

@@ -19,6 +19,8 @@ class Lugar(Base):
   horaapertura = Column(Time)  
   horacierre = Column(Time)
   id_ciudad = Column(db.ForeignKey("ciudades.id"))
+  valoracion_usuario = Column(Integer)
+
   #categorias = relationship('Categoria', secondary='lugares_categorias', back_populates='lugares')
 
 
@@ -34,5 +36,6 @@ class Lugar(Base):
       "longitud": self.longitud,
       "valoracion": self.valoracion,
       "horaapertura": self.horaapertura,
-      "horacierre": self.horacierre
+      "horacierre": self.horacierre,
+      "valoracion_usuario": self.valoracion_usuario
     }
