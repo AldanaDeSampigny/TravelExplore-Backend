@@ -1,3 +1,4 @@
+from ..models.Usuario import Usuario
 from ..models.Horario import Horario
 from ..models.CiudadCategoria import CiudadCategoria
 from ..models.LugarCategoria import LugarCategoria
@@ -87,8 +88,9 @@ class LugarRepository:
         lugar = self.getLugarById(lugarID)
 
         obtenerResenias = (
-                self.db_session.query(Lugar.id, Reseña.resenia,Reseña.id_usuario)
+                self.db_session.query(Lugar.id, Reseña.resenia,Usuario.nombre,Usuario.imagen)
                 .join(Reseña, Lugar.id == Reseña.id_lugar)
+                .join(Usuario, Usuario.id == Reseña.id_usuario)
                 .filter(Reseña.id_lugar == lugar.id)
                 .order_by(Reseña.id.desc())
                 .limit(3)

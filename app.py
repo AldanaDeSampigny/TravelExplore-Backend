@@ -1033,7 +1033,8 @@ def getUltimasResenias(idLugar):
         resenia_data = {
             'idlugar': resenia[0], 
             'resenia': resenia[1],
-            'usuario' :resenia[2]
+            'usuario' :resenia[2],
+            'imagen_usuario' :resenia[3]
         }
         reseniasObtenidas.append(resenia_data)
 
