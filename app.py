@@ -1026,8 +1026,9 @@ def agregarReseniaLugar():
     datos = request.get_json()
     idLugar = datos.get('idLugar')  
     opinion= datos.get('opinion')  
+    usuario = datos.get('idUsuario')
 
-    lugarService.guardarResenia(idLugar,opinion)
+    lugarService.guardarResenia(idLugar,opinion,usuario)
 
     reseniaAgregada = {
         'resenia': opinion
@@ -1035,12 +1036,10 @@ def agregarReseniaLugar():
 
     return jsonify(reseniaAgregada)
 
-@app.route('/ultimasReseniasRealizadas/', methods=['GET'])
-def getUltimasResenias():
+@app.route('/ultimasReseniasRealizadas/<string:idLugar>', methods=['GET'])
+def getUltimasResenias(idLugar):
     lugarService = LugarService(getEngine())
-
-    datos= request.get_json()
-    idLugar = datos.get('idLugar')
+    #idLugar = datos.get('idLugar')
     
     resenias = lugarService.getUltimasResenias(idLugar)
 
@@ -1048,8 +1047,9 @@ def getUltimasResenias():
         
     for resenia in resenias:
         resenia_data = {
-           'id_lugar': resenia[0], 
-            'resenia': resenia[1]
+            'idlugar': resenia[0], 
+            'resenia': resenia[1],
+            'usuario' :resenia[2]
         }
         reseniasObtenidas.append(resenia_data)
 
