@@ -868,56 +868,72 @@ def getAgenda(usuarioID,agendaID):
 
     return agendaJSON
 
+@app.route('/modificarAgendaDiaria/<int:idAgenda>', methods = ['POST'])
+def setAgendaDiaria(idAgenda):
+    with Session(getEngine()) as session:
+        agenda_service = AgendaService(getEngine())
+        data = request.get_json
+
+        hora_inicio = data.get('horaInicio')
+        hora_fin = data.get('horaFin')
+        actividad = data.get('actividad')
+        lugar = data.get('lugar')
+        otros_lugares = data.get('otrosLugares')
+
+        # Aquí puedes hacer las validaciones necesarias y luego actualizar la agenda
+        # Llamar a tu servicio para actualizar la agenda con los nuevos datos
+        updated_agenda = agenda_service.modificarAgendaDiaria(
+            idAgenda=idAgenda,
+            hora_inicio=hora_inicio,
+            hora_fin=hora_fin,
+            actividad=actividad,
+            lugar=lugar,
+            otros_lugares=otros_lugares
+        )
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Agenda actualizada correctamente',
+            'updated_agenda': updated_agenda
+        }), 200
+
+
 @app.route('/getAgendaDiaria/<int:idAgenda>', methods = ['GET'])
 def getAgendaDiaria(idAgenda):
     agendaService = AgendaService(getEngine())
     agendaDiaria = agendaService.obtenerAgendaDiaria(idAgenda)
 
-    print("agendaDiaria", agendaDiaria[1][2]) 
+    print("--- agendaDiaria --- ", agendaDiaria) 
 
     agenda = []
-    #for row in agendaDiaria:
-    print("1")
-    lugares = agendaService.obtenerLugaresDeActividades(agendaDiaria[1][7], agendaDiaria[1][3])
-    lugaresDeLaActividad = []
+    actividades_dict = {}
 
-    for lugar in lugares:
+    for row in agendaDiaria:
+        print("ROW COMPLETO: ",row)
+        id_actividad = row[3]
+        if id_actividad not in actividades_dict:
+            actividades_dict[id_actividad] = {
+                "id": row[0],
+                "horaInicio": row[1].strftime('%H:%M:%S'),
+                "horaFin": row[2].strftime('%H:%M:%S'),
+                "actividad": row[4],
+                "lugar": None,
+                "otrosLugares": []
+            }
+
         lugarAgenda = {
-            "id_actividad": lugar[0],
-            "id": lugar[1],
-            "nombre": lugar[2],
+            "id_actividad": row[3],
+            "id": row[5],
+            "nombre": row[6],
         }
+        actividades_dict[id_actividad]["otrosLugares"].append(lugarAgenda)
 
+    for id_actividad, actividad in actividades_dict.items():
+        if actividad["otrosLugares"]:
+            actividad["lugar"] = actividad["otrosLugares"][0]  # Asignar el primer lugar en la lista a "lugar"
+        agenda.append(actividad)
 
-
-        """ 
-            lugarAgenda: 
-                id
-                id_actividad
-                nombre
-
-
-            Actividades :
-                sddsad
-                sdadad
-                sdsadsdad
-                sdasd
-                LugarAgenda    
-            
-        """
-        
-        lugaresDeLaActividad.append(lugarAgenda)
-
-    agenda.append({
-        "id": agendaDiaria[1][0],
-        "horaInicio": agendaDiaria[1][1].strftime('%H:%M:%S'),
-        "horaFin": agendaDiaria[1][2].strftime('%H:%M:%S'),
-        "actividad": agendaDiaria[1][4],
-        "lugar": agendaDiaria[1][6],
-        "otrosLugares": lugaresDeLaActividad
-    }) 
-
-    print("AGENDA:",agenda)
+    print("&&&& AGENDA:",agenda)
     print(type(agenda))
     return jsonify(agenda)
 
