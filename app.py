@@ -330,11 +330,8 @@ def generar_y_mostrar_agenda(usuarioID):
                 session).getCiudad('ChIJ0eqih141Ar4RgkO0ECgNiR4')  # primer_resultado['place_id'])
             
             if ciudadRecibido:
-                print("entro")
                 destino = ciudadRecibido.id
-                print("AAAAAAAAAAAAAAAA ", destino)
             else:
-                print("no entro")
                 ciudad = {
                     'id': primer_resultado['place_id'],
                     'nombre': primer_resultado['name'],
@@ -346,8 +343,6 @@ def generar_y_mostrar_agenda(usuarioID):
                 lugarRecibido = LugarRepository(session).getCiudad(primer_resultado['place_id'])   
                 destino = lugarRecibido.id
 
-        #destino = 1
-        #destino = int(destino)
         fechaInicio = str(data.get('fechaDesde'))
         print("fechaDesde -->"+fechaInicio)
         fechaFin = str(data.get('fechaHasta'))
@@ -393,6 +388,7 @@ def generar_y_mostrar_agenda(usuarioID):
                 'actividades': []
             }
             for actividad_data in actividades:
+                print("---- ACTIVIDAD DATA ----", actividad_data)
                 actividad_json = {
                     'id': actividad_data['actividad'].id,
                     'actividad': actividad_data['actividad'].nombre,
