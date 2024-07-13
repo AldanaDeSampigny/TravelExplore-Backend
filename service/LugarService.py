@@ -249,3 +249,10 @@ class LugarService:
             
             resenias = lugarRepo.ultimasReseñas(lugarID)
         return resenias
+    
+    def obtenerValoracionUsuario(self,codigoLugar):
+        with Session(getEngine()) as session:
+            lugarRepo = LugarRepository(session)
+
+            valoracionUsuario = lugarRepo.getValoracionUsuario(codigoLugar)
+        return valoracionUsuario

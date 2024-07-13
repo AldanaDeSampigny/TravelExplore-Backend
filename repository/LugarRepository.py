@@ -97,3 +97,9 @@ class LugarRepository:
             )
 
         return obtenerResenias.all()
+    
+    def getValoracionUsuario(self, codigoLugar):
+        valoracionUsuario = self.db_session.query(Lugar.valoracion_usuario).\
+            filter(Lugar.codigo == codigoLugar).first()
+
+        return valoracionUsuario

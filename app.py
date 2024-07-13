@@ -1016,7 +1016,7 @@ def agregarValoracionUsuario():
 
     if idLugar is not None and valoracion is not None:
         lugarService.guardarValoracionUsuario(idLugar, valoracion)
-        return jsonify({"data": "se guardo la valoracion"}), 200
+        return jsonify({"idLugar": idLugar, "valoracion": valoracion}), 200
     else:
         return jsonify({"error": "datos incompletos"}), 400
 
@@ -1058,4 +1058,16 @@ def getUltimasResenias(idLugar):
 
     return jsonify(reseniasObtenidas)
 
-   
+
+@app.route('/obtenerOpinionUsuario/<string:idLugar>', methods=['GET'])
+def obtenerOpinionUsuario(idLugar):
+    lugarService = LugarService(getEngine())
+    #idLugar = datos.get('idLugar')
+    
+    usuarioValoracion = lugarService.obtenerValoracionUsuario(idLugar)
+
+    valoracion ={
+        'opinion' : usuarioValoracion[0]
+    }
+
+    return valoracion
