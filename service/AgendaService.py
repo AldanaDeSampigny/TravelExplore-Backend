@@ -94,6 +94,26 @@ class AgendaService:
             
             return agendaViajeNueva.id
 
+    def modificar_agenda_diaria(self, agendadiaria):
+        with Session(getEngine()) as session:
+            repository = AgendaRepository(session)
+
+            # Recuperar la actividad existente
+            agenda = repository.getActividadAgendaDiaria(agendadiaria['id'], agendadiaria['actividad']['id'])
+
+            if agenda:
+                # Actualizar los campos
+                agenda.horadesde = agendadiaria['horaInicio']
+                agenda.horahasta = agendadiaria['horaFin']
+                print("ID LUGAR: ", agendadiaria['lugar']['id_lugar'])
+                agenda.id_lugar = agendadiaria['lugar']['id_lugar']
+
+                print("AGENDA ACTUALIZADA: ", agenda)
+                session.add(agenda)
+                session.commit()
+            else:
+                print(f"No se encontró la actividad con ID {agendadiaria['id']} y actividad ID {agendadiaria['actividad']['id']}")
+
     def calcular_tiempo_traslado(self,origenM, destinoM, transporteM):
         if destinoM:
             tiempotraslado = obtenerDirecciones(

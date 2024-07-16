@@ -125,11 +125,12 @@ class AgendaRepository:
         join(Lugar, ActividadLugar.id_lugar == Lugar.id).\
         join(Ciudad, Lugar.id_ciudad == Ciudad.id).\
         filter(AgendaDiaria.id == id).all()
-        # ).join(Actividad, Actividad.id == ActividadAgenda.id_actividad).\
-        # join(ActividadAgenda, ActividadAgenda.id_agenda == AgendaDiaria.id).\
-        # join(ActividadLugar, ActividadLugar.id_actividad == Actividad.id) .\
-        # join(Lugar, ActividadLugar.id_lugar == Lugar.id).\
-        # join(Ciudad, Ciudad.id == Lugar.id_ciudad).\
-        # filter (AgendaDiaria.id == id)
 
         return agenda
+    
+    def getActividadAgendaDiaria(self, id_agendadiaria, id_actividad):
+        actividad_agenda = self.db_session.query(ActividadAgenda).\
+                filter(ActividadAgenda.id_agenda == id_agendadiaria).\
+                filter(ActividadAgenda.id_actividad == id_actividad).first()
+        
+        return actividad_agenda

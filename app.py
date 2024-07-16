@@ -872,29 +872,44 @@ def getAgenda(usuarioID,agendaID):
 def setAgendaDiaria(idAgenda):
     with Session(getEngine()) as session:
         agenda_service = AgendaService(getEngine())
-        data = request.get_json
+        data = request.get_json()
 
-        hora_inicio = data.get('horaInicio')
-        hora_fin = data.get('horaFin')
-        actividad = data.get('actividad')
-        lugar = data.get('lugar')
-        otros_lugares = data.get('otrosLugares')
+        print("AGENDA RECIBIDA ----> ", data)
 
-        # Aquí puedes hacer las validaciones necesarias y luego actualizar la agenda
-        # Llamar a tu servicio para actualizar la agenda con los nuevos datos
-        updated_agenda = agenda_service.modificarAgendaDiaria(
-            idAgenda=idAgenda,
-            hora_inicio=hora_inicio,
-            hora_fin=hora_fin,
-            actividad=actividad,
-            lugar=lugar,
-            otros_lugares=otros_lugares
-        )
+        for actividad in data:
+            lugar = actividad.get('lugar')
+            otros_lugares = actividad.get('otrosLugares')
+            actividadAgenda = actividad.get('actividad')
+
+            agendadiaria={
+                'id': actividad.get('id'),
+                'horaInicio': actividad.get('horaInicio'),
+                'horaFin': actividad.get('horaFin'),
+                'actividad': {
+                    'id': actividadAgenda.get('id'),
+                    'nombre': actividadAgenda.get('nombre')
+                    },
+                'lugar': {
+                    'id_lugar': lugar.get('id_lugar'),
+                    'id_actividad': lugar.get('id_actividad'),
+                    'nombre': lugar.get('nombre')
+                },
+                'otros_lugares': [
+                    {
+                        'id_lugar': otro_lugar.get('id_lugar'),
+                        'id_actividad': otro_lugar.get('id_actividad'),
+                        'nombre': otro_lugar.get('nombre')
+                    } for otro_lugar in otros_lugares
+                ]
+            }
+            print("AGENDA CON FORMATO ", agendadiaria)
+            agenda_service.modificar_agenda_diaria(agendadiaria)
+
 
         return jsonify({
             'status': 'success',
             'message': 'Agenda actualizada correctamente',
-            'updated_agenda': updated_agenda
+            'updated_agenda': agendadiaria
         }), 200
 
 
@@ -916,14 +931,15 @@ def getAgendaDiaria(idAgenda):
                 "id": row[0],
                 "horaInicio": row[1].strftime('%H:%M:%S'),
                 "horaFin": row[2].strftime('%H:%M:%S'),
-                "actividad": row[4],
+                "actividad":{'id': row[3],
+                            'nombre': row[4]},
                 "lugar": None,
                 "otrosLugares": []
             }
 
         lugarAgenda = {
             "id_actividad": row[3],
-            "id": row[5],
+            "id_lugar": row[5],
             "nombre": row[6],
         }
         actividades_dict[id_actividad]["otrosLugares"].append(lugarAgenda)
