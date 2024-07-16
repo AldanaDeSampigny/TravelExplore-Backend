@@ -98,7 +98,7 @@ def entrenar_IA():
     scheduler = BackgroundScheduler()
 
     #schedule_thread = threading.Thread(target=schedule.run_continuously)
-    scheduler.add_job(entrenarIA, 'cron',hour=4, minute=15)
+    scheduler.add_job(entrenarIA, 'cron',hour=00, minute=32)
     scheduler.start()
 
 entrenar_IA()
@@ -255,7 +255,7 @@ def actividadRecomendacion(usuarioID):
 
     recomendacionesActividad_json = []
     for actividad in recomendacionesIA:
-        if actividad.id_lugar is None:
+        if actividad is None:
             recomendacionesActividad_dict= {
                 'id': actividad.id,
                 'nombre_actividad': actividad.nombre,
@@ -1057,7 +1057,6 @@ def getUltimasResenias(idLugar):
     print("app resenias", reseniasObtenidas)
 
     return jsonify(reseniasObtenidas)
-
 
 @app.route('/obtenerOpinionUsuario/<string:idLugar>', methods=['GET'])
 def obtenerOpinionUsuario(idLugar):
