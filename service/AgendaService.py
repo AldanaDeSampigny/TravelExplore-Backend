@@ -409,3 +409,4 @@ class AgendaService:
                 fecha_actual += timedelta(days=1)
 
         return agenda
+

@@ -4,7 +4,9 @@ import dbm
 import threading
 import schedule
 import time
-import uuid 
+import uuid
+
+from .service.ActividadesService import ActividadesService 
 from .service.CategoriaService import CategoriaService
 
 from .Entrenamiento import entrenarIA
@@ -230,32 +232,33 @@ def lugarRecomendacion(usuarioID):
     recomendaciones = PruebaIA(getEngine())
     recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
     lugarService = LugarService(getEngine())
-
+    actividadService = ActividadesService(getEngine())
     recomendaciones_json = []
     for actividad in recomendacionesIA:
-        if(actividad.id_lugar != None):
-            lugar = lugarService.getLugarByID(actividad.id_lugar)
-            print("lugar", lugar)
-            recomendacion_dict = {
-                'id': lugar.id,
-                'nombre': lugar.nombre,
-                'tipo' : lugar.tipo,
-                'valoracion' :  lugar.valoracion
-            }
-            recomendaciones_json.append(recomendacion_dict)
+        print("ACTIVIDAD: ", actividad.id)
+        if(actividad.id != None):
+            lugar = actividadService.obtenerLugarActividad(actividad.id)
+            if lugar != None:
+                print("lugar", lugar)
+                recomendacion_dict = {
+                    'id': lugar.id,
+                    'nombre': lugar.nombre,
+                    'tipo' : lugar.tipo,
+                    'valoracion' :  lugar.valoracion
+                }
+                recomendaciones_json.append(recomendacion_dict)
 
     return jsonify(recomendaciones_json)
-
 
 @app.route('/recomendacionActividadesIA/<int:usuarioID>',methods=['GET'])
 def actividadRecomendacion(usuarioID):
     recomendaciones = PruebaIA(getEngine())
     recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
-    lugarService = LugarService(getEngine())
+
 
     recomendacionesActividad_json = []
     for actividad in recomendacionesIA:
-        if actividad is None:
+        if actividad is not None:
             recomendacionesActividad_dict= {
                 'id': actividad.id,
                 'nombre_actividad': actividad.nombre,
@@ -264,7 +267,7 @@ def actividadRecomendacion(usuarioID):
             }
             recomendacionesActividad_json.append(recomendacionesActividad_dict)
     
-    return jsonify(recomendacionesActividad_json)
+    return jsonify(recomendacionesActividad_json) 
 
 @app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
@@ -896,7 +899,6 @@ def setAgendaDiaria(idAgenda):
             'message': 'Agenda actualizada correctamente',
             'updated_agenda': updated_agenda
         }), 200
-
 
 @app.route('/getAgendaDiaria/<int:idAgenda>', methods = ['GET'])
 def getAgendaDiaria(idAgenda):

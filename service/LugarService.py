@@ -157,7 +157,6 @@ class LugarService:
                 session.add(nuevoCiudadCategoria)
                 session.commit()
 
-
     def guardarCiudad(self, ciudad):
         with Session(getEngine()) as session:
             repository = LugarRepository(session)
@@ -235,7 +234,6 @@ class LugarService:
             lugarRepository = LugarRepository(session)
             lugarConValoracion = lugarRepository.agregarValoracionUsuario(id, valoracion)
         return lugarConValoracion
-
 
     def guardarResenia(self,lugarID,resenia,idUsuario):
         with Session(getEngine()) as session:
