@@ -266,6 +266,7 @@ def actividadRecomendacion(usuarioID):
     
     return jsonify(recomendacionesActividad_json)
 
+    
 @app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
     lugarFavoritoService = LugarFavoritoService(getEngine())
