@@ -1,3 +1,6 @@
+from sqlalchemy import func
+from ..models.Actividad import Actividad
+from ..models.ActividadLugar import ActividadLugar
 from ..models.Usuario import Usuario
 from ..models.Horario import Horario
 from ..models.CiudadCategoria import CiudadCategoria
@@ -103,3 +106,15 @@ class LugarRepository:
             filter(Lugar.codigo == codigoLugar).first()
 
         return valoracionUsuario
+
+    def buscarLugaresRecomendacion(self, actividadID):
+        lugares = self.db_session.query(Lugar).\
+            join(ActividadLugar, ActividadLugar.id_lugar == Lugar.id).\
+            join(Actividad, Actividad.id == ActividadLugar.id_actividad).\
+            filter(Actividad.id == actividadID).\
+            group_by(Lugar.id).\
+            order_by(func.max(Lugar.valoracion)).all()
+        
+        return lugares
+    
+    

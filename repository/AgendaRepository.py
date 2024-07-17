@@ -67,6 +67,7 @@ class AgendaRepository:
             order_by(func.max(Lugar.valoracion)).all()
         
         return lugares
+        
 
     def buscarActividadRestaurant(self, usuarioID, ciudadID):
         subquery_cat_ids = self.db_session.query(Categoria.id).\
