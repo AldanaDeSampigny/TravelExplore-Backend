@@ -18,6 +18,7 @@ from .repository.LugarRepository import LugarRepository
 from .service.LugarService import LugarService
 
 from .repository.CiudadRepository import CiudadRepository
+from .repository.ActividadRepository import ActividadRepository
 from sqlalchemy.orm import Session
 
 import requests
@@ -912,6 +913,21 @@ def setAgendaDiaria(idAgenda):
             'updated_agenda': agendadiaria
         }), 200
 
+@app.route('/getTodoActividades', methods = ['GET'])
+def getAllActividades():
+    with Session(getEngine()) as session:
+        actividadQuery = ActividadRepository(session).getActividades()
+
+        actividades = []
+        
+        for actividad in actividadQuery:
+            actividad_data = {
+                'id': actividad.id,
+                'nombre': actividad.nombre
+            }
+            actividades.append(actividad_data)
+
+        return jsonify(actividades)
 
 @app.route('/getAgendaDiaria/<int:idAgenda>', methods = ['GET'])
 def getAgendaDiaria(idAgenda):

@@ -13,9 +13,7 @@ class ActividadRepository:
         self.db_session = db_session
 
     def getActividades(self):
-        actividades = self.db_session.query(Actividad).\
-            group_by(Actividad.id).\
-            order_by(func.min(Actividad.id)).all()
+        actividades = self.db_session.query(Actividad).all()
 
         return actividades
     
@@ -63,23 +61,3 @@ class ActividadRepository:
         filter(Ciudad.id == idCiudad).all()
 
         return lugares
-    """         
-        def getAgendaDiaria(self, id):
-        agenda = (self.db_session.query(
-            AgendaDiaria.id,
-            AgendaDiaria.horaInicio,
-            AgendaDiaria.horaFin,
-
-            Actividad.id,
-            Lugar.id,
-            Ciudad.id,
-            
-        ).join(ActividadAgenda, ActividadAgenda.id_agenda == AgendaDiaria.id).\
-        join(Actividad, ActividadLugar.id_actividad == Actividad.id) .\
-        join(Lugar, ActividadLugar.id_lugar == Lugar.id).\
-        join (Ciudad, Itinenario.id_ciudad == Ciudad.id).\
-        filter (Actividad.id == ActividadLugar.id_actividad).\
-        filter (Lugar.id == ActividadLugar.id_lugar).\
-        filter (Ciudad.id == Itinerario.id_ciudad).\
-        
-    ) """
