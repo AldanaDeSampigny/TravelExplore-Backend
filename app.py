@@ -118,7 +118,6 @@ def ejecutar_recomendaciones_auto(usuarioID):
         lugarRecomendacion(usuarioID)
         actividadRecomendacion(usuarioID) 
 
-
 @app.route('/registrarUsuario',methods=['POST'])
 def nuevoUsuario():
     with Session(getEngine()) as session:
@@ -270,7 +269,6 @@ def actividadRecomendacion(usuarioID):
     
     return jsonify(recomendacionesActividad_json) 
 
-    
 @app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
     lugarFavoritoService = LugarFavoritoService(getEngine())
@@ -952,7 +950,7 @@ def getAgendaDiaria(idAgenda):
                 "horaInicio": row[1].strftime('%H:%M:%S'),
                 "horaFin": row[2].strftime('%H:%M:%S'),
                 "actividad":{'id': row[3],
-                            'nombre': row[4]},
+                'nombre': row[4]},
                 "lugar": None,
                 "otrosLugares": []
             }
@@ -972,7 +970,6 @@ def getAgendaDiaria(idAgenda):
     print("&&&& AGENDA:",agenda)
     print(type(agenda))
     return jsonify(agenda)
-
 
 @app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
 def verAgendas(usuarioID):
@@ -1041,7 +1038,6 @@ def usuarioIniciado():
         }
 
         return usuarioToken
-    
 
 @app.route('/valoracionUsuario', methods=['POST'])
 def agregarValoracionUsuario():
@@ -1106,3 +1102,20 @@ def obtenerOpinionUsuario(idLugar):
     }
 
     return valoracion
+
+
+@app.route('/getLugaresPorActividad/<int:idActividad>/<int:idCiudad>', methods=['GET'])
+def getLugaresPorActividad(idActividad,idCiudad):
+    actividadService = ActividadesService(getEngine())
+    lugaresActividad = actividadService.getLugaresDeActividad(idActividad,idCiudad)
+
+    lugaresJSON = []
+    
+    for lugarActividad in lugaresActividad:
+        lugar = {
+            "nombre": lugarActividad[2],
+        }
+
+        lugaresJSON.append(lugar)
+
+    return jsonify(lugaresJSON)

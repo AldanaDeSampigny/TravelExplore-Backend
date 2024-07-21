@@ -28,7 +28,6 @@ class ActividadRepository:
             filter(Actividad.id == id).first()
         return actividad
     
-    
     def getActividadCategoria(self, categoriaID):
         actividad = self.db_session.query(Actividad.id).\
         join(Categoria, Categoria.id == ActividadCategoria.id_categorias).\
@@ -49,7 +48,20 @@ class ActividadRepository:
 
         return actividades
     
-    def getLugaresDeActividad(self, idCiudad, idActividad):
+    def getLugaresDeActividad(self,idActividad,idCiudad):
+        lugares = self.db_session.query(                                
+            Actividad.id,
+            Lugar.id,
+            Lugar.nombre,
+        ).join(ActividadLugar, Actividad.id == ActividadLugar.id_actividad).\
+        join(Lugar, ActividadLugar.id_lugar == Lugar.id).\
+        join(Ciudad, Lugar.id_ciudad == Ciudad.id).\
+        filter(Actividad.id == idActividad).\
+        filter(Ciudad.id == idCiudad)
+
+        return lugares
+    
+    """ def getLugaresDeActividad(self,idActividad):
         lugares = self.db_session.query(
             Actividad.id,
             Lugar.id,
@@ -58,6 +70,7 @@ class ActividadRepository:
         join(Actividad, Actividad.id == ActividadLugar.id_actividad).\
         join(Ciudad, Ciudad.id == Lugar.id_ciudad).\
         filter(Actividad.id == idActividad).\
-        filter(Ciudad.id == idCiudad).all()
+        .all()
 
-        return lugares
+        return lugares """
+

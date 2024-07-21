@@ -3,6 +3,8 @@ import re
 from turtle import update
 import json
 
+from ..repository.ActividadRepository import ActividadRepository
+
 from ..repository.AgendaRepository import AgendaRepository
 
 from ..models.Lugar import Lugar
@@ -20,9 +22,16 @@ class ActividadesService:
         with Session(getEngine()) as session:
             lugarRepo = LugarRepository(session)
             lugares = lugarRepo.buscarLugaresRecomendacion(idActividad)
-            print("lugares" ,lugares)
+            print("lugares de actividad",lugares)
             if lugares == []:
                 return None
             else:
                 return lugares[0]
 
+    def getLugaresDeActividad(self, idActividad,idCiudad):
+        with Session(getEngine()) as session:
+            print("actividad",idActividad, "ciudad", idCiudad)
+            actividadRepo = ActividadRepository(session)
+            print("lugares obtenidos", actividadRepo.getLugaresDeActividad(idActividad,idCiudad))
+            lugares = actividadRepo.getLugaresDeActividad(idActividad,idCiudad)
+        return lugares

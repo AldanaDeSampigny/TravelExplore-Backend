@@ -8,7 +8,7 @@ metadata_obj = db.MetaData()
 
 class Lugar(Base):
   __tablename__ = 'lugares'
-  id = Column(Integer, primary_key=false) 
+  id = Column(Integer, primary_key=True) 
   codigo = Column(String)
   nombre = Column(String)
   tipo = Column(String)
