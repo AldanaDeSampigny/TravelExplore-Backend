@@ -872,12 +872,10 @@ def getAgenda(usuarioID,agendaID):
     return agendaJSON
 
 @app.route('/modificarAgendaDiaria/<int:idAgenda>', methods = ['POST'])
-def setAgendaDiaria(idAgenda):
+def modificarAgendaDiaria(idAgenda):
     with Session(getEngine()) as session:
         agenda_service = AgendaService(getEngine())
         data = request.get_json()
-
-        print("AGENDA RECIBIDA ----> ", data)
 
         for actividad in data:
             lugar = actividad.get('lugar')
