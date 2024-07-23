@@ -1117,3 +1117,37 @@ def getLugaresPorActividad(idActividad,idCiudad):
         lugaresJSON.append(lugar)
 
     return jsonify(lugaresJSON)
+
+@app.route('/distanciaLugares', methods=['GET'])
+def distanciaLugares():
+    agendaService = AgendaService(getEngine())
+
+    lugares = [
+        {
+            "id" : 60,
+            "latitud" :-42.77602,
+            "longitud" :-65.0236511,
+            "valoracion": 4.2
+        },
+        {
+            "id" : 75,
+            "latitud": -42.7798331,
+            "longitud":-65.0189899,
+            "valoracion":4.2
+        },
+        {
+            "id" : 47,
+            "latitud":-42.770282,
+            "longitud":-65.0394896,
+            "valoracion": 4.5,
+        },
+        {
+            "id" : 99,
+            "latitud":-38.9597702,
+            "longitud":-68.0617828,
+            "valoracion":4.4
+        },
+    ]
+    resultado = agendaService.obtenerLugar(lugares)
+    print(resultado.id)
+    #return resultado

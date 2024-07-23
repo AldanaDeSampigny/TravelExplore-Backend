@@ -197,6 +197,31 @@ class AgendaService:
         distance = R * c
 
         return distance
+    
+    # Función para convertir grados a radianes
+    def to_rad(self, x):
+        return x * math.pi / 180
+
+    def distanciaEntreCoords(self, latLugar, longLugar, latEstadia, longEstadia):
+        R = 6371  # radio de la Tierra en km
+        dLat = self.to_rad(latLugar - latEstadia)
+        dLon = self.to_rad(longEstadia - longLugar)
+        lat1_rad = self.to_rad(latLugar)
+        lat2_rad = self.to_rad(latEstadia)
+
+        a = math.sin(dLat / 2) * math.sin(dLat / 2) + \
+            math.cos(lat1_rad) * math.cos(lat2_rad) * \
+            math.sin(dLon / 2) * math.sin(dLon / 2)
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        distance = R * c
+
+        return distance
+
+
+
+    # Calcular la distancia entre las coordenadas
+    # distance = calculate_distance(coord1[0], coord1[1], coord2[0], coord2[1])
+    # print(f"La distancia entre Nueva York y Los Ángeles es de {distance:.2f} km.")
 
     def calculoDeDistancias(self, usuarioID, destinoID, ultimo, anteultimo ,actividades):
         with Session(getEngine()) as session:
@@ -332,19 +357,6 @@ class AgendaService:
         with Session(getEngine()) as session:
             resultado = {'tiempoTraslado' : None, 'actividad' : None, 'hora_actual': hora_actual}
  
-            #!probablemente borrar
-            # if lugares:
-            #     horarios = self.lugarHorarios(lugares[0].id)
-
-            #     horarios_filtrados = list(
-            #         filter(lambda horario: horario['dia'] == self.dias_semana[fecha_actual.weekday()], horarios))
-
-            #     for horario in horarios_filtrados:
-            #         hora_inicio = datetime.strptime(horario['horaInicio'], "%H:%M:%S").time()
-            #         hora_fin = datetime.strptime(horario['horaFin'], "%H:%M:%S").time() 
-                    
-            #         if hora_inicio <= hora_actual < hora_fin:
-            #             print("inicio ", hora_inicio, " fin ", hora_fin)
             
             if actividad.horainicio <= hora_actual < actividad.horafin:
                 resultado['hora_actual'] = self.traslado(transporte, hora_actual, lugares, actividadIds, IDaux)
@@ -376,6 +388,28 @@ class AgendaService:
             horario_fin = datetime.strptime(horaFin, '%H:%M:%S').time()
         return hora_actual, horario_fin
 
+    def obtenerLugar(self, lugares):
+        with Session(getEngine()) as session:
+            matrizLugar = []
+            valoracion_minima = 0
+            distancia_maxima = 8000.0
+
+            for lugar in lugares:
+                calculo = self.distanciaEntreCoords(lugar['latitud'], lugar['longitud'],-42.785460,-65006771)
+                matrizLugar.append([lugar['id'], lugar['valoracion'], calculo])
+            
+            
+            lugar_optimo = None
+            for lugar in matrizLugar:
+                id_lugar, valoracion, distancia = lugar
+                if valoracion >= valoracion_minima and distancia <= distancia_maxima:
+                    valoracion_minima = valoracion
+                    distancia_maxima = distancia
+                    lugar_optimo = id_lugar
+
+            lugar_seleccionado = session.query(Lugar).get(lugar_optimo)
+            return lugar_seleccionado
+
     def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
@@ -406,6 +440,9 @@ class AgendaService:
                         actividad = session.query(Actividad).get(actividad_id)
 
                         lugares = agenda_repo.buscarLugares(actividad.id, destinoID)
+                        
+                        lugar = self.obtenerLugar(lugares)
+                        
 
                         horarios = self.calcular_horas_ocupado(fecha_actual, horariosOcupados, hora_actual, actividad)
 
