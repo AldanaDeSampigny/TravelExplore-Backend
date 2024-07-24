@@ -871,25 +871,26 @@ def getAgenda(usuarioID,agendaID):
 
     return agendaJSON
 
-@app.route('/modificarAgendaDiaria/<int:idAgenda>', methods = ['POST'])
+@app.route('/modificarAgendaDiaria/<int:idAgenda>', methods=['POST'])
 def modificarAgendaDiaria(idAgenda):
     with Session(getEngine()) as session:
         agenda_service = AgendaService(getEngine())
         data = request.get_json()
+        updated_agenda = []
 
         for actividad in data:
             lugar = actividad.get('lugar')
             otros_lugares = actividad.get('otrosLugares')
             actividadAgenda = actividad.get('actividad')
 
-            agendadiaria={
+            agendadiaria = {
                 'id': actividad.get('id'),
                 'horaInicio': actividad.get('horaInicio'),
                 'horaFin': actividad.get('horaFin'),
                 'actividad': {
                     'id': actividadAgenda.get('id'),
                     'nombre': actividadAgenda.get('nombre')
-                    },
+                },
                 'lugar': {
                     'id_lugar': lugar.get('id_lugar'),
                     'id_actividad': lugar.get('id_actividad'),
@@ -905,12 +906,12 @@ def modificarAgendaDiaria(idAgenda):
             }
             print("AGENDA CON FORMATO ", agendadiaria)
             agenda_service.modificar_agenda_diaria(agendadiaria)
-
+            updated_agenda.append(agendadiaria)
 
         return jsonify({
             'status': 'success',
             'message': 'Agenda actualizada correctamente',
-            'updated_agenda': agendadiaria
+            'updated_agenda': updated_agenda
         }), 200
 
 @app.route('/getTodoActividades', methods = ['GET'])
