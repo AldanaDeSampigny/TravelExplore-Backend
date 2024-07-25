@@ -60,7 +60,7 @@ from werkzeug.security import check_password_hash
 from .bd.conexion import getSession, getEngine, Base
 from flask_cors import CORS
 import difflib
-
+from geopy.geocoders import Nominatim
 from .models.ActividadesFavoritas import ActividadesFavoritas
 
 app = Flask(__name__)
@@ -310,10 +310,13 @@ def dislikeActividad(usuarioID):
 @app.route('/generar_agenda/<int:usuarioID>', methods=['POST'])
 def generar_y_mostrar_agenda(usuarioID):
     with Session(getEngine()) as session:
+        geolocator = Nominatim(user_agent="Travel_explore")
         agenda_service = AgendaService(getEngine())
         data = request.get_json()
 
         destino = data.get('destino')
+        direccionHospedaje = data.get("direccionHospedaje")
+        
     
         if destino is None or destino.get('nombre') == '':
             error_message = "Se debe ingresar el destino del viaje"
@@ -323,10 +326,10 @@ def generar_y_mostrar_agenda(usuarioID):
             print(response)
             return response
 
-        #gmaps = googlemaps.Client(key=llave)
+        gmaps = googlemaps.Client(key=llave)
 
-        # gmaps.places(query=destino.get('nombre')+' '+destino.get('pais'))
-        resultado = " results Puerto Madryn Argentina"
+        resultado = gmaps.places(query=destino.get('nombre')+' '+destino.get('pais'))
+        #resultado = " results Puerto Madryn Argentina"
         if 'results' in resultado:
             primer_resultado = None#resultado['results'][0]
             ciudadRecibido = LugarRepository(
@@ -334,6 +337,10 @@ def generar_y_mostrar_agenda(usuarioID):
             
             if ciudadRecibido:
                 destino = ciudadRecibido.id
+
+                direccion = direccionHospedaje + ", " +ciudadRecibido.nombre
+                print("direccion ", direccion)
+                ubicacion = geolocator.geocode(direccion)
             else:
                 ciudad = {
                     'id': primer_resultado['place_id'],
@@ -345,6 +352,12 @@ def generar_y_mostrar_agenda(usuarioID):
                 lugarService.guardarCiudad(ciudad)
                 lugarRecibido = LugarRepository(session).getCiudad(primer_resultado['place_id'])   
                 destino = lugarRecibido.id
+
+                direccion = direccionHospedaje + lugarRecibido.nombre
+                print("direccion ", direccion)
+                ubicacion = geolocator.geocode(direccion)
+
+
 
         fechaInicio = str(data.get('fechaDesde'))
         print("fechaDesde -->"+fechaInicio)
@@ -377,7 +390,7 @@ def generar_y_mostrar_agenda(usuarioID):
                 horaHasta = horario['horaHasta'] + ':00'
                 horariosOcupados[horarioOcupado['dia']].append((horaDesde, horaHasta))
 
-        agenda = agenda_service.generarAgendaDiaria(usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
+        agenda = agenda_service.generarAgendaDiaria(ubicacion, usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
 
         agenda_por_dia = defaultdict(list)
         for actividad_data in agenda:
@@ -1119,36 +1132,3 @@ def getLugaresPorActividad(idActividad,idCiudad):
 
     return jsonify(lugaresJSON)
 
-@app.route('/distanciaLugares', methods=['GET'])
-def distanciaLugares():
-    agendaService = AgendaService(getEngine())
-
-    lugares = [
-        {
-            "id" : 60,
-            "latitud" :-42.77602,
-            "longitud" :-65.0236511,
-            "valoracion": 4.2
-        },
-        {
-            "id" : 75,
-            "latitud": -42.7798331,
-            "longitud":-65.0189899,
-            "valoracion":4.2
-        },
-        {
-            "id" : 47,
-            "latitud":-42.770282,
-            "longitud":-65.0394896,
-            "valoracion": 4.5,
-        },
-        {
-            "id" : 99,
-            "latitud":-38.9597702,
-            "longitud":-68.0617828,
-            "valoracion":4.4
-        },
-    ]
-    resultado = agendaService.obtenerLugar(lugares)
-    print(resultado.id)
-    #return resultado

@@ -353,7 +353,7 @@ class AgendaService:
 
             return horas
 
-    def aceptar_actividad(self, actividad, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, hora_actual, hora_cierre_intervalo):
+    def aceptar_actividad(self, actividad, lugar, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, hora_actual, hora_cierre_intervalo):
         with Session(getEngine()) as session:
             resultado = {'tiempoTraslado' : None, 'actividad' : None, 'hora_actual': hora_actual}
  
@@ -371,7 +371,7 @@ class AgendaService:
                 #* antes era .nombre pero ncesita el id
                 #* nota por si hay futuros errores(creo que no muestra el nombre del lugar en el font
                 #* por que no lo esta mandando de aca, no se)
-                        'lugar': lugares[0].id if lugares else "null",
+                        'lugar': lugar.id,
                         'lugares': lugares
                     }
 
@@ -388,15 +388,15 @@ class AgendaService:
             horario_fin = datetime.strptime(horaFin, '%H:%M:%S').time()
         return hora_actual, horario_fin
 
-    def obtenerLugar(self, lugares):
+    def obtenerLugar(self, lugares, latitudHospedaje, longitudHospedaje):
         with Session(getEngine()) as session:
             matrizLugar = []
             valoracion_minima = 0
             distancia_maxima = 8000.0
 
             for lugar in lugares:
-                calculo = self.distanciaEntreCoords(lugar['latitud'], lugar['longitud'],-42.785460,-65006771)
-                matrizLugar.append([lugar['id'], lugar['valoracion'], calculo])
+                calculo = self.distanciaEntreCoords(lugar.latitud, lugar.longitud, latitudHospedaje, longitudHospedaje)
+                matrizLugar.append([lugar.id, lugar.valoracion, calculo])
             
             
             lugar_optimo = None
@@ -410,7 +410,7 @@ class AgendaService:
             lugar_seleccionado = session.query(Lugar).get(lugar_optimo)
             return lugar_seleccionado
 
-    def generarAgendaDiaria(self, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
+    def generarAgendaDiaria(self, ubicacion, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             agenda = []
@@ -441,12 +441,12 @@ class AgendaService:
 
                         lugares = agenda_repo.buscarLugares(actividad.id, destinoID)
                         
-                        lugar = self.obtenerLugar(lugares)
+                        lugar = self.obtenerLugar(lugares, ubicacion.latitude, ubicacion.longitude)
                         
 
                         horarios = self.calcular_horas_ocupado(fecha_actual, horariosOcupados, hora_actual, actividad)
 
-                        resultado = self.aceptar_actividad(actividad, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, horarios['hora_actual'], horarios['hora_cierre_intervalo'])
+                        resultado = self.aceptar_actividad(actividad, lugar, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, horarios['hora_actual'], horarios['hora_cierre_intervalo'])
                         
                         if resultado['actividad']:
                             hora_actual = resultado['hora_actual']['hora_actual']
