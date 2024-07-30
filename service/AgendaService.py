@@ -136,7 +136,6 @@ class AgendaService:
             print("agenda usuario ", agendaUsuario)
         return agendaUsuario;
         
-
     def obtenerAgendasUsuario(self,usuarioID):
         with Session(getEngine()) as session:
             agenda = UsuarioRepository(session)
@@ -284,32 +283,17 @@ class AgendaService:
 
             return horarios
 
-    #!en revisicion
-    # def recomendaciones_IA(self, usuarioID, actividadIds):
-    #     recomendadas = self.getActividadesRecomendadas(usuarioID)
-    #     listaInicial = [actividadIds[0][0]]
-    #     for _ in range(len(actividadIds)):
-    #         cerca = self.calculoDeDistancias(1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
-    #         listaInicial.append(cerca)
-    #     return listaInicial
-        # recomendadas = []
-        # recomendadas = self.getActividadesRecomendadas(usuarioID)
-        # for recomendacion in recomendadas:
-        #     print("reco ", recomendacion.id)
-        #     recomendacion_id = (recomendacion.id,) if not isinstance(
-        #         recomendacion.id, tuple) else recomendacion.id
+    def recomendaciones_IA(self, usuarioID):
+        recomendaciones = []
+        recomendadas = []
+        recomendadas = self.getActividadesRecomendadas(usuarioID)
+        for recomendacion in recomendadas:
+            print("reco ", recomendacion.id)
+            aux = (recomendacion.id,) 
+            recomendaciones.append(aux)
 
-        #     listaInicial = []
-        #     listaInicial.append(actividadIds[0][0])
-        #     cerca = self.calculoDeDistancias(
-        #         1, 1, actividadIds[0][0], actividadIds[0][0], actividadIds)
-        #     listaInicial.append(cerca)
-        #     for _ in range(0, len(actividadIds)):
-        #         cerca = self.calculoDeDistancias(
-        #             1, 1, listaInicial[-1], listaInicial[-2], actividadIds)
-        #         listaInicial.append(cerca)
-
-        #     return listaInicial
+        print("lista",recomendaciones)
+        return recomendaciones
         
     def calcular_horas_ocupado(self, fecha_actual, horariosOcupados, hora_actual, actividad):
         horarios = {
@@ -331,7 +315,7 @@ class AgendaService:
 
         return horarios
     
-    def traslado(self, transporte, hora_actual, lugares, actividadIds, IDaux):
+    def traslado(self, transporte, hora_actual, lugar, actividadIds, IDaux):
         with Session(getEngine()) as session:
             horas = {"hora_actual": None, "tiempoTraslado": None}
             siguiente_actividad_id = actividadIds[IDaux + 1][0] if IDaux + 1 < len(actividadIds) else None
@@ -344,11 +328,12 @@ class AgendaService:
                 ).first()
         
             #?siguiente_lugar es llamado abajo pero esta comentado MOMENTANEAMENTE
-            if lugares[0]:
+            if lugar:
                 horas['tiempoTraslado'] = timedelta(minutes=5)#self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
             
             if horas['tiempoTraslado']:
                 hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
+                print("traslado horainiciodatetime ", hora_inicio_datetime)
                 horas['hora_actual'] = (hora_inicio_datetime + horas['tiempoTraslado']).time()
 
             return horas
@@ -359,7 +344,7 @@ class AgendaService:
  
             
             if actividad.horainicio <= hora_actual < actividad.horafin:
-                resultado['hora_actual'] = self.traslado(transporte, hora_actual, lugares, actividadIds, IDaux)
+                resultado['hora_actual'] = self.traslado(transporte, hora_actual, lugar, actividadIds, IDaux)
 
                 if actividad.id not in gustos_agregados:
                     resultado['actividad'] = {
@@ -371,11 +356,14 @@ class AgendaService:
                 #* antes era .nombre pero ncesita el id
                 #* nota por si hay futuros errores(creo que no muestra el nombre del lugar en el font
                 #* por que no lo esta mandando de aca, no se)
-                        'lugar': lugar.id,
-                        'lugares': lugares
+                    
+                        'lugar': lugar.id if lugar else None,
+                        'lugares': lugares if lugares else []
                     }
 
+
                     print("Actividad aceptada: ", resultado['actividad']['id'])
+                    print("hora actual: ", resultado['hora_actual']['hora_actual'])
 
             return resultado
         
@@ -419,23 +407,21 @@ class AgendaService:
             fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
-            
-            #parte de la IA
-            #llamar aca
 
-            #actividadIds = listaInicial.copy()
-            #actividadIds = this.recomendacionesID.copy()
+            print("actividad",actividadIds)
+            actividadIds.extend(self.recomendaciones_IA(usuarioID)) 
             
             while fecha_actual <= fecha_hasta:
                 print("--- Fecha ---", fecha_actual)
                 hora_actual, horario_fin = self.obtener_horarios_dia(fecha_actual, horariosElegidos, horaInicio, horaFin)
-
+                print("hora actual 1", hora_actual)
                 actividadIds_set = set(np.array(actividadIds).flatten())
 
                 if gustos_agregados == actividadIds_set:
                     gustos_agregados.clear()
 
                 while hora_actual < horario_fin:
+                    print("segundo whilewhile hora actual", hora_actual)
                     for IDaux, actividad_id in enumerate(actividadIds):
                         actividad = session.query(Actividad).get(actividad_id)
 
@@ -451,7 +437,7 @@ class AgendaService:
                         if resultado['actividad']:
                             hora_actual = resultado['hora_actual']['hora_actual']
                             print("1)hora actual: ", hora_actual)
-                            
+
                             agenda.append(resultado['actividad'])
                             gustos_agregados.add(resultado['actividad']['id'])
                             

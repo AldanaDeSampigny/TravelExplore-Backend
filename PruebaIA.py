@@ -147,15 +147,12 @@ class PruebaIA:
 
             # Crear el tensor de entrada con las preferencias del usuario
             new_tensor = tf.convert_to_tensor(new, dtype=tf.float32)
-            #new_tensor = tf.expand_dims(new_tensor, axis=0)
-            actividadesInfo_tensor = tf.convert_to_tensor(actividadesInfo, dtype=tf.float32)
 
             index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
             index.index_from_dataset(tf.data.Dataset.zip((activities_dataset.batch(100), activities_dataset.batch(100).map(model.activity_model)))) 
 
             _, top_recommendations = index(np.array([new_tensor], dtype=np.int32))
-            #solo el top 3 FUNCIONAAA
-            #top_3_recommendations = top_recommendations[0, :5]
+            
             top_3_recommendations = top_recommendations[0, :5].numpy()
             print(f"Las mejores recomendaciones para el usuario: {top_3_recommendations}") 
             actividadReco = []  # Lista para almacenar las actividades relacionadas con las categorías
