@@ -330,7 +330,9 @@ class AgendaService:
             #?siguiente_lugar es llamado abajo pero esta comentado MOMENTANEAMENTE
             if lugar:
                 horas['tiempoTraslado'] = timedelta(minutes=5)#self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
-            
+            else:
+                horas['tiempoTraslado'] = timedelta(minutes = 5)
+                
             if horas['tiempoTraslado']:
                 hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
                 print("traslado horainiciodatetime ", hora_inicio_datetime)
