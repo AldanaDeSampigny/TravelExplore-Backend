@@ -216,12 +216,12 @@ def getActividadesFavoritas(usuarioID):
         actividadesJson.append(actividad)
     return jsonify(actividadesJson)
     
-@app.route('/eliminarActividadesAgenda/<int:actividadID>/<int:AgendaViajeID>',methods=['DELETE'])
-def EliminarActividad(actividadID, AgendaViajeID):
+@app.route('/eliminarActividadesAgenda/<int:actividadID>/<int:idAgendaDiaria>',methods=['DELETE'])
+def EliminarActividad(actividadID, idAgendaDiaria):
     if request.method == 'DELETE':
         agenda_service = AgendaService(getEngine())
 
-        agenda_service.eliminarActividadAgeenda(actividadID,AgendaViajeID)
+        agenda_service.eliminarActividadAgeenda(actividadID,idAgendaDiaria)
 
         return 'actividades de agenda: elimino?'
     else:
