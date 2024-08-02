@@ -830,8 +830,10 @@ def getAgenda(usuarioID,agendaID):
     agendaService = AgendaService(getEngine())
     agendaUsuario = agendaService.getAgenda(usuarioID,agendaID)  # Supongo que obtienes los resultados de tu función
 
+    print("agenda"agendaUsuario)
     # Crear un diccionario para almacenar los datos en el formato deseado
     agendaRecibida = {}
+    agendaJSON = list()
 
     for row in agendaUsuario:
         idAgendaDiaria = row[0],
@@ -882,7 +884,7 @@ def getAgenda(usuarioID,agendaID):
         #Convertir el diccionario en una lista de valores y devolverlo
         agendaJSON = list(agendaRecibida.values())
 
-    return agendaJSON
+    return jsonify(agendaJSON)
 
 @app.route('/modificarAgendaDiaria/<int:idAgenda>', methods=['POST'])
 def modificarAgendaDiaria(idAgenda):
