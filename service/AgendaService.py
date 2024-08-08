@@ -356,10 +356,6 @@ class AgendaService:
                         'hora_inicio': resultado['hora_actual']['hora_actual'],
                         'hora_fin': hora_cierre_intervalo,
                         'actividad': actividad,
-                #* antes era .nombre pero ncesita el id
-                #* nota por si hay futuros errores(creo que no muestra el nombre del lugar en el font
-                #* por que no lo esta mandando de aca, no se)
-                    
                         'lugar': lugar.id if lugar else None,
                         'lugares': lugares if lugares else []
                     }

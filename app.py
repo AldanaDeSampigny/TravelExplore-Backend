@@ -830,7 +830,7 @@ def getAgenda(usuarioID,agendaID):
     agendaService = AgendaService(getEngine())
     agendaUsuario = agendaService.getAgenda(usuarioID,agendaID)  # Supongo que obtienes los resultados de tu función
 
-    print("agenda"agendaUsuario)
+    print("agenda", agendaUsuario)
     # Crear un diccionario para almacenar los datos en el formato deseado
     agendaRecibida = {}
     agendaJSON = list()

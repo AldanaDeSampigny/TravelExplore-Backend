@@ -22,7 +22,6 @@ class ActividadesService:
         with Session(getEngine()) as session:
             lugarRepo = LugarRepository(session)
             lugares = lugarRepo.buscarLugaresRecomendacion(idActividad)
-            print("lugares de actividad",lugares)
             if lugares == []:
                 return None
             else:
@@ -32,6 +31,5 @@ class ActividadesService:
         with Session(getEngine()) as session:
             print("actividad",idActividad, "ciudad", idCiudad)
             actividadRepo = ActividadRepository(session)
-            print("lugares obtenidos", actividadRepo.getLugaresDeActividad(idActividad,idCiudad))
             lugares = actividadRepo.getLugaresDeActividad(idActividad,idCiudad)
         return lugares
