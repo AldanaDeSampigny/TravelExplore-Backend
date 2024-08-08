@@ -1112,7 +1112,7 @@ def obtenerOpinionUsuario(idLugar):
     usuarioValoracion = lugarService.obtenerValoracionUsuario(idLugar)
 
     valoracion ={
-        'opinion' : usuarioValoracion[0]
+        'opinion' : usuarioValoracion.valoracion_usuario
     }
 
     return valoracion
