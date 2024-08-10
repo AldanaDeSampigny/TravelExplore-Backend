@@ -126,6 +126,9 @@ def nuevoUsuario():
         
         nombreUsuario = usuarioService.getUsuarioNombre(nuevoUsuario.get('nombre'))
         print("nombre usuario", nombreUsuario)
+
+        
+        
         if(nombreUsuario != None):
             error_message = "El usuario ya existe"
             responseNombre = jsonify({"error":error_message})
@@ -133,25 +136,32 @@ def nuevoUsuario():
             responseNombre.headers['Content-Type'] = 'application/json'
             return responseNombre
         else:
-            if(nuevoUsuario.get('confirmarContrasena') != nuevoUsuario.get('contrasenia')):
-                error_message = "Las contraseñas no coniciden"
-                response = jsonify({"error":error_message})
-                response.status_code = 400
-                response.headers['Content-Type'] = 'application/json'
-                return response
+            if(nuevoUsuario.get('nombre') == ""):
+                error_message = "El nombre de usuario no puede ser vacio"
+                responseNombreVacio = jsonify({"error":error_message})
+                responseNombreVacio.status_code = 402
+                responseNombreVacio.headers['Content-Type'] = 'application/json'
+                return responseNombreVacio
             else:
-                usuarioRegistrado = usuarioService.agregarUsuario(nuevoUsuario.get('nombre'),nuevoUsuario.get('email'),nuevoUsuario.get('contrasenia')) 
-                print("id usuario registrado", usuarioRegistrado)
+                if(nuevoUsuario.get('confirmarContrasena') != nuevoUsuario.get('contrasenia')):
+                    error_message = "Las contraseñas no coniciden"
+                    response = jsonify({"error":error_message})
+                    response.status_code = 400
+                    response.headers['Content-Type'] = 'application/json'
+                    return response
+                else:
+                    usuarioRegistrado = usuarioService.agregarUsuario(nuevoUsuario.get('nombre'),nuevoUsuario.get('email'),nuevoUsuario.get('contrasenia')) 
+                    print("id usuario registrado", usuarioRegistrado)
 
-                usuario = usuarioService.getUsuarioID(usuarioRegistrado)
+                    usuario = usuarioService.getUsuarioID(usuarioRegistrado)
 
-                nuevoUsuarioJson = {
-                    "id" : usuario.id,
-                    "nombre": usuario.nombre,
-                    "contrasenia": usuario.contrasenia,
-                    "gmail": usuario.gmail,
-                    "imagen": usuario.imagen
-                }
+                    nuevoUsuarioJson = {
+                        "id" : usuario.id,
+                        "nombre": usuario.nombre,
+                        "contrasenia": usuario.contrasenia,
+                        "gmail": usuario.gmail,
+                        "imagen": usuario.imagen
+                    }
 
             return  nuevoUsuarioJson
     
