@@ -226,12 +226,12 @@ def getActividadesFavoritas(usuarioID):
         actividadesJson.append(actividad)
     return jsonify(actividadesJson)
     
-@app.route('/eliminarActividadesAgenda/<int:actividadID>/<int:idAgendaDiaria>',methods=['DELETE'])
-def EliminarActividad(actividadID, idAgendaDiaria):
+@app.route('/eliminarActividadesAgenda/<int:actividadID>/<int:AgendaViajeID>',methods=['DELETE'])
+def EliminarActividad(actividadID, AgendaViajeID):
     if request.method == 'DELETE':
         agenda_service = AgendaService(getEngine())
 
-        agenda_service.eliminarActividadAgeenda(actividadID,idAgendaDiaria)
+        agenda_service.eliminarActividadAgeenda(actividadID,AgendaViajeID)
 
         return 'actividades de agenda: elimino?'
     else:
@@ -857,6 +857,7 @@ def getAgenda(usuarioID,agendaID):
             "duracion" : row[8].strftime("%H:%M:%S") if row[8] else None,
             "id_lugar" : row[9],
             "id_viaje": row[6],
+
             #"nombre_lugar" : row[11],
             "lugar": {
                 "id": row[9],  # Ajusta según tus necesidades
