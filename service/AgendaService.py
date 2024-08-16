@@ -133,7 +133,6 @@ class AgendaService:
 
             agendaUsuario = agenda.getAgendaUsuario(usuarioID,agendaID)
 
-            print("agenda usuario ", agendaUsuario)
         return agendaUsuario;
         
     def obtenerAgendasUsuario(self,usuarioID):

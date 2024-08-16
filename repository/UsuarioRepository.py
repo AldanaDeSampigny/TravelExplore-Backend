@@ -72,7 +72,8 @@ class UsuarioRepository:
             .join(Usuario, Usuario.id == Viaje.id_usuario)
             .filter(Usuario.id == usuarioID)
             .filter(AgendaDiaria.id_agenda_viaje == idAgenda)
-            .order_by(ActividadAgenda.horadesde)
+            .order_by(AgendaDiaria.dia,ActividadAgenda.horadesde)
+            
         )
         return agenda
     #query para mstrar una agenda del usuario
