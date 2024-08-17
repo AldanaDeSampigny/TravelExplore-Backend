@@ -216,6 +216,8 @@ class LugarService:
             'insurance_agency': self.guardarLugar,
             'lodging': self.guardarLugar,
             'bar': self.guardarLugar,
+            'movie_theater': self.guardarLugar,
+            'bakery': self.guardarLugar,
             'night_club': self.guardarLugar,
             'spa': self.guardarLugar,
             'beauty_salon': self.guardarLugar,
