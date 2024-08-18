@@ -109,8 +109,8 @@ class AgendaRepository:
     def getAgendaDiaria(self, id):
         agenda = self.db_session.query(
             AgendaDiaria.id,
-            AgendaDiaria.horaInicio,
-            AgendaDiaria.horaFin,
+            ActividadAgenda.horadesde,
+            ActividadAgenda.horahasta,
 
             Actividad.id,
             Actividad.nombre,
@@ -124,8 +124,9 @@ class AgendaRepository:
         join(Actividad, ActividadAgenda.id_actividad == Actividad.id).\
         join(ActividadLugar, Actividad.id == ActividadLugar.id_actividad).\
         join(Lugar, ActividadLugar.id_lugar == Lugar.id).\
-        join(Ciudad, Lugar.id_ciudad == Ciudad.id).\
-        filter(AgendaDiaria.id == id).all()
+        outerjoin(Ciudad, Lugar.id_ciudad == Ciudad.id).\
+        filter(AgendaDiaria.id == id).\
+            order_by(ActividadAgenda.horadesde).all()
 
         return agenda
     
@@ -133,5 +134,5 @@ class AgendaRepository:
         actividad_agenda = self.db_session.query(ActividadAgenda).\
                 filter(ActividadAgenda.id_agenda == id_agendadiaria).\
                 filter(ActividadAgenda.id_actividad == id_actividad).first()
-        
+         
         return actividad_agenda
