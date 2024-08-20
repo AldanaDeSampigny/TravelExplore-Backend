@@ -167,11 +167,11 @@ class AgendaService:
 
             return lugaresDeActividad
 
-    def obtenerAgendaDiaria(self, idAgenda):
+    def obtenerAgendaDiaria(self, idAgenda, idCiudad):
         with Session(getEngine()) as session:
             agendaRepository = AgendaRepository(session)
 
-            actividadesAgenda = agendaRepository.getAgendaDiaria(idAgenda)
+            actividadesAgenda = agendaRepository.getAgendaDiaria(idAgenda, idCiudad)
 
             return actividadesAgenda
 
@@ -311,6 +311,8 @@ class AgendaService:
         horarios['hora_cierre_intervalo'] = horarios['hora_actual'].replace(
             hour=(hora_actual.hour + (minutos_duracion // 60)) % 24, 
             minute=(hora_actual.minute + minutos_duracion % 60) % 60)
+        
+        horarios['hora_actual'] = horarios['hora_cierre_intervalo']
 
         return horarios
     

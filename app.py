@@ -847,7 +847,8 @@ def getAgenda(usuarioID,agendaID):
 
     for row in agendaUsuario:
         idAgendaDiaria = row[0],
-        dia = row[1].strftime("%d-%m-%Y") if row[1] else None
+        dia = row[1].strftime("%d-%m-%Y") if row[1] else None,
+        id_ciudad = row[11]
         actividad = {
             "id" :row[2],
             "nombre_actividad": row[3],
@@ -861,9 +862,9 @@ def getAgenda(usuarioID,agendaID):
             #"nombre_lugar" : row[11],
             "lugar": {
                 "id": row[9],  # Ajusta según tus necesidades
-                "nombre": row[11],  # Ajusta según tus necesidades
-                "latitud": row[12],  # Ajusta según tus necesidades
-                "longitud": row[13]
+                "nombre": row[12],  # Ajusta según tus necesidades
+                "latitud": row[13],  # Ajusta según tus necesidades
+                "longitud": row[14]
             }
         }
 
@@ -889,6 +890,7 @@ def getAgenda(usuarioID,agendaID):
             agendaRecibida[dia] = {
                 "idAgendaDiaria" : idAgendaDiaria,
                 "dia": dia,
+                "id_ciudad": id_ciudad,
                 "actividadesSugeridas": [gustoActividad]
             }
 
@@ -956,10 +958,10 @@ def getAllActividades():
 
         return jsonify(actividades)
 
-@app.route('/getAgendaDiaria/<int:idAgenda>', methods = ['GET'])
-def getAgendaDiaria(idAgenda):
+@app.route('/getAgendaDiaria/<int:idAgenda>/<int:idCiudad>', methods = ['GET'])
+def getAgendaDiaria(idAgenda, idCiudad):
     agendaService = AgendaService(getEngine())
-    agendaDiaria = agendaService.obtenerAgendaDiaria(idAgenda)
+    agendaDiaria = agendaService.obtenerAgendaDiaria(idAgenda, idCiudad)
 
     print("--- agendaDiaria --- ", agendaDiaria) 
 
@@ -1009,7 +1011,7 @@ def verAgendas(usuarioID):
             "fechaDesde": str(agendaUsuario[0]),
             "fechaHasta": str(agendaUsuario[1]),
             "idAgendaViaje" :str(agendaUsuario[3])
-        }
+        } 
         agendaJSON.append(agenda)
 
     return jsonify(agendaJSON)

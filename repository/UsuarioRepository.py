@@ -56,6 +56,7 @@ class UsuarioRepository:
                 Actividad.duracion,
                 ActividadAgenda.id_lugar,
                 Ciudad.nombre,
+                Ciudad.id,
                 
                 Lugar.nombre,
                 Lugar.latitud,
@@ -103,6 +104,7 @@ class UsuarioRepository:
         agendas = (self.db_session.query(
                 Itinerario.fechaDesde,
                 Itinerario.fechaHasta,
+
                 Ciudad.nombre,
                 AgendaDiaria.id_agenda_viaje
             

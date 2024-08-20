@@ -106,7 +106,7 @@ class AgendaRepository:
         
         return agendasDiarias
 
-    def getAgendaDiaria(self, id):
+    def getAgendaDiaria(self, id, idCiudad):
         agenda = self.db_session.query(
             AgendaDiaria.id,
             ActividadAgenda.horadesde,
@@ -126,6 +126,7 @@ class AgendaRepository:
         join(Lugar, ActividadLugar.id_lugar == Lugar.id).\
         outerjoin(Ciudad, Lugar.id_ciudad == Ciudad.id).\
         filter(AgendaDiaria.id == id).\
+        filter(Ciudad.id == idCiudad).\
             order_by(ActividadAgenda.horadesde).all()
 
         return agenda
