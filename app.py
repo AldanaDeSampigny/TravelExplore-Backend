@@ -101,7 +101,7 @@ def entrenar_IA():
     scheduler = BackgroundScheduler()
 
     #schedule_thread = threading.Thread(target=schedule.run_continuously)
-    scheduler.add_job(entrenarIA, 'cron',hour=18, minute=33)
+    scheduler.add_job(entrenarIA, 'cron',hour=12, minute=50)
     scheduler.start()
 
 entrenar_IA()
