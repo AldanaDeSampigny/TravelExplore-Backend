@@ -1141,6 +1141,7 @@ def getLugaresPorActividad(idActividad,idCiudad):
     for lugarActividad in lugaresActividad:
         lugar = {
             "nombre": lugarActividad[2],
+            "id_lugar" : lugarActividad[1]
         }
 
         lugaresJSON.append(lugar)

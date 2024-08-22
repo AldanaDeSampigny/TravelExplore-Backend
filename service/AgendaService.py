@@ -94,25 +94,35 @@ class AgendaService:
             
             return agendaViajeNueva.id
 
+
     def modificar_agenda_diaria(self, agendadiaria):
         with Session(getEngine()) as session:
             repository = AgendaRepository(session)
 
             # Recuperar la actividad existente
-            agenda = repository.getActividadAgendaDiaria(agendadiaria['id'], agendadiaria['actividad']['id'])
+            actividadAgenda = repository.getActividadAgendaDiaria(agendadiaria['id'], agendadiaria['actividad']['id'])
 
-            if agenda:
-                # Actualizar los campos
-                agenda.horadesde = agendadiaria['horaInicio']
-                agenda.horahasta = agendadiaria['horaFin']
+            if actividadAgenda:
+            # Actualizar los campos
+
+                actividadAgenda.horadesde = agendadiaria['horaInicio']
+                actividadAgenda.horahasta = agendadiaria['horaFin']
                 print("ID LUGAR: ", agendadiaria['lugar']['id_lugar'])
-                agenda.id_lugar = agendadiaria['lugar']['id_lugar']
+                actividadAgenda.id_lugar = agendadiaria['lugar']['id_lugar']                
 
-                print("AGENDA ACTUALIZADA: ", agenda)
-                session.add(agenda)
+                print("AGENDA ACTUALIZADA: ", actividadAgenda)
+                session.add(actividadAgenda)
                 session.commit()
             else:
-                print(f"No se encontró la actividad con ID {agendadiaria['id']} y actividad ID {agendadiaria['actividad']['id']}")
+                actividadAgendaNueva = ActividadAgenda()
+                actividadAgendaNueva.id_agenda = agendadiaria['id']
+                actividadAgendaNueva.id_actividad = agendadiaria['actividad']['id']
+                actividadAgendaNueva.horadesde = agendadiaria['horaInicio']
+                actividadAgendaNueva.horahasta = agendadiaria['horaFin']
+                actividadAgendaNueva.id_lugar = agendadiaria['lugar']['id_lugar']
+
+                session.add(actividadAgendaNueva)
+                session.commit()
 
     def calcular_tiempo_traslado(self,origenM, destinoM, transporteM):
         if destinoM:
