@@ -45,10 +45,9 @@ class CategoriaRepository:
         return palabrasProhibidas
 
     def getCategoriasUsuarioConNombre(self, usuarioID):
-        id = int(usuarioID)
         categorias = self.db_session.query(Categoria.id,Categoria.nombre).\
             join(UsuarioCategoria, Categoria.id == UsuarioCategoria.id_categorias).\
-            filter(UsuarioCategoria.id_usuario == id)
+            filter(UsuarioCategoria.id_usuario == usuarioID)
         result = categorias.all()
         
         return result
