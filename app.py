@@ -1148,3 +1148,19 @@ def getLugaresPorActividad(idActividad,idCiudad):
 
     return jsonify(lugaresJSON)
 
+@app.route('/categoriasUsuario/<idUsuario>', methods= ['GET'])
+def getCategoriasUsuario(idUsuario):
+    categoriaService = CategoriaService(getEngine())
+    categoriasObtenidas = []
+
+    categorias = categoriaService.getCategoriasUsuarioConNombre(idUsuario)
+
+    for categoriaActual in categorias:
+        categoria = {
+            "id":categoriaActual[0],
+            "nombre": categoriaActual[1]
+        }
+        categoriasObtenidas.append(categoria)
+
+    return jsonify(categoriasObtenidas)
+

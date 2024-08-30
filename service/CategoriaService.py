@@ -47,3 +47,11 @@ class CategoriaService:
                     session.commit()
                 else:
                     raise ValueError(f"La categoria '{nombre}' no puede ingresarse")
+                
+    def getCategoriasUsuarioConNombre(self,idUsuario):
+        with Session(getEngine()) as session:
+            categoriaRepository = CategoriaRepository(session)
+
+            categoriasUsuario = categoriaRepository.getCategoriasUsuarioConNombre(idUsuario)
+
+        return categoriasUsuario
