@@ -542,8 +542,8 @@ def placesRoutes():
     
     return jsonify(lugares) """
 
-@app.route('/lugares/cercanos', methods=['GET'])
-def lugaresCercanos():
+@app.route('/lugares/cercanos/<int:idUsuario>', methods=['GET'])
+def lugaresCercanos(idUsuario):
     latitud = float(request.args.get('latitud'))
     longitud = float(request.args.get('longitud'))
     tipo = request.args.get('type')
@@ -604,9 +604,9 @@ def lugaresCercanos():
             'website': place.get('website', None)
         }
         
+        lugarFavorito = LugarFavoritoService(getEngine()).getLugarFavorito(idUsuario,lugar['id'])
 
-        lugarFavorito = LugarFavoritoService(getEngine()).getLugarFavorito(1,lugar['id'])
-
+        print("lugar favorito", lugarFavorito)
         if(lugarFavorito != None):
             likeLugarFavorito = lugarFavorito.like
         else:
@@ -618,7 +618,6 @@ def lugaresCercanos():
         }
 
         lugares.append(lugarGusto)
-
     return jsonify(lugares)
 
 @app.route('/lugarGustos/<int:usuarioId>', methods=['GET'])
