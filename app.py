@@ -542,8 +542,8 @@ def placesRoutes():
     
     return jsonify(lugares) """
 
-@app.route('/lugares/cercanos/<int:idUsuario>', methods=['GET'])
-def lugaresCercanos(idUsuario):
+@app.route('/lugares/cercanos/<int:idUsuario>/<string:kilometros>', methods=['GET'])
+def lugaresCercanos(idUsuario,kilometros):
     latitud = float(request.args.get('latitud'))
     longitud = float(request.args.get('longitud'))
     tipo = request.args.get('type')
@@ -551,10 +551,14 @@ def lugaresCercanos(idUsuario):
     gmaps = googlemaps.Client(key=llave)
 
     localizacion = (latitud, longitud)
-    radio = 45000  # Radio en metros (45 km)
+   
+    if (kilometros is not None):
+        radio = int(f"{kilometros}00")
+        #le agrega al numero  dos 0 al final  
+        print("radio kilometros:" , radio)
+        # Realiza la búsqueda de lugares cercanos
+        places = gmaps.places_nearby(location=localizacion, type=tipo, radius=radio)
 
-    # Realiza la búsqueda de lugares cercanos
-    places = gmaps.places_nearby(location=localizacion, type=tipo, radius=radio)
 
     # Filtra los primeros 5 resultados si hay más disponibles
     lugares_cercanos = places['results'][:5]
