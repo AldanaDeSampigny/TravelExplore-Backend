@@ -325,7 +325,7 @@ def generar_y_mostrar_agenda(usuarioID):
         data = request.get_json()
 
         destino = data.get('destino')
-        direccionHospedaje = data.get("direccionHospedaje")
+        direccionHospedaje = data.get('direccionHospedaje')
         
     
         if destino is None or destino.get('nombre') == '':
