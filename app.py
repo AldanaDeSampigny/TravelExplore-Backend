@@ -352,7 +352,7 @@ def generar_y_mostrar_agenda(usuarioID):
         data = request.get_json()
 
         destino = data.get('destino')
-        direccionHospedaje = data.get("direccionHospedaje")
+        direccionHospedaje = data.get('direccionHospedaje')
         
     
         if destino is None or destino.get('nombre') == '':
@@ -569,8 +569,8 @@ def placesRoutes():
     
     return jsonify(lugares) """
 
-@app.route('/lugares/cercanos', methods=['GET'])
-def lugaresCercanos():
+@app.route('/lugares/cercanos/<int:idUsuario>/<string:kilometros>', methods=['GET'])
+def lugaresCercanos(idUsuario,kilometros):
     latitud = float(request.args.get('latitud'))
     longitud = float(request.args.get('longitud'))
     tipo = request.args.get('type')
@@ -578,10 +578,14 @@ def lugaresCercanos():
     gmaps = googlemaps.Client(key=llave)
 
     localizacion = (latitud, longitud)
-    radio = 45000  # Radio en metros (45 km)
+   
+    if (kilometros is not None):
+        radio = int(f"{kilometros}00")
+        #le agrega al numero  dos 0 al final  
+        print("radio kilometros:" , radio)
+        # Realiza la búsqueda de lugares cercanos
+        places = gmaps.places_nearby(location=localizacion, type=tipo, radius=radio)
 
-    # Realiza la búsqueda de lugares cercanos
-    places = gmaps.places_nearby(location=localizacion, type=tipo, radius=radio)
 
     # Filtra los primeros 5 resultados si hay más disponibles
     lugares_cercanos = places['results'][:5]
@@ -631,9 +635,9 @@ def lugaresCercanos():
             'website': place.get('website', None)
         }
         
+        lugarFavorito = LugarFavoritoService(getEngine()).getLugarFavorito(idUsuario,lugar['id'])
 
-        lugarFavorito = LugarFavoritoService(getEngine()).getLugarFavorito(1,lugar['id'])
-
+        print("lugar favorito", lugarFavorito)
         if(lugarFavorito != None):
             likeLugarFavorito = lugarFavorito.like
         else:
@@ -645,7 +649,6 @@ def lugaresCercanos():
         }
 
         lugares.append(lugarGusto)
-
     return jsonify(lugares)
 
 @app.route('/lugarGustos/<int:usuarioId>', methods=['GET'])

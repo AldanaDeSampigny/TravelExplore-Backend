@@ -23,7 +23,7 @@ class LugarFavoritoService:
     def agregarGusto(self,idUsuario,lugar):
         with Session(getEngine()) as session:
             gusto = FavoritoRepository(session)
-            codigoLugar = lugar.get('id')
+            codigoLugar = lugar.get('codigo')
             
             lugarRepository = LugarRepository(session)
 
