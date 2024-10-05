@@ -9,6 +9,7 @@ import numpy as np
 from sqlalchemy import Row
 
 from ..PruebaIA import PruebaIA
+from ..generadorRecomendaciones import GeneradorRecomendaciones
 
 from ..models.Lugar import Lugar
 
@@ -35,7 +36,8 @@ class AgendaService:
     dias_semana = ["Monday", "Tuesday", "Wednesday",
                     "Thursday", "Friday", "Saturday", "Sunday"]
     
-    def __init__(self, db_session):
+    def __init__(self, modelo_recomendacion, db_session):
+        self.modelo_recomendacion = modelo_recomendacion
         self.db_session = db_session
 
     def saveAgenda(self, idUsuario, idCiudad, fechaDesde, fechaHasta, horaInicio, horaFin, agenda):
@@ -269,9 +271,8 @@ class AgendaService:
 
     def getActividadesRecomendadas(self, usuarioID):
         with Session(getEngine()) as session:
-            recomendaciones = PruebaIA(session)
-            print("recomendaciones", recomendaciones.cargadoDeIA(usuarioID))
-            recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
+            recomendaciones = GeneradorRecomendaciones(self.modelo_recomendacion, session)
+            recomendacionesIA = recomendaciones.generar_recomendaciones(usuarioID)
 
             
             return recomendacionesIA
@@ -305,26 +306,25 @@ class AgendaService:
         return recomendaciones
         
     def calcular_horas_ocupado(self, fecha_actual, horariosOcupados, hora_actual, actividad):
-        horarios = {
-            "hora_cierre_intervalo" : None,
-            "hora_actual": hora_actual}
 
         if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
             for horario_ocupado in horariosOcupados[fecha_actual.date().strftime('%Y-%m-%d')]:
                 horaInicioOcupado = datetime.strptime(horario_ocupado[0], '%H:%M:%S').time()
                 horaFinOcupado = datetime.strptime(horario_ocupado[1], '%H:%M:%S').time()
                 if horaInicioOcupado <= hora_actual < horaFinOcupado:
-                    horarios['hora_actual'] = horaFinOcupado
+                    hora_actual = horaFinOcupado
                     break
 
-        minutos_duracion = actividad.duracion.hour * 60 + actividad.duracion.minute
-        horarios['hora_cierre_intervalo'] = horarios['hora_actual'].replace(
-            hour=(hora_actual.hour + (minutos_duracion // 60)) % 24, 
-            minute=(hora_actual.minute + minutos_duracion % 60) % 60)
-        
-        horarios['hora_actual'] = horarios['hora_cierre_intervalo']
+        # Calcular la duración en minutos directamente
+        duracion_timedelta = timedelta(hours=actividad.duracion.hour, minutes=actividad.duracion.minute)
 
-        return horarios
+        # Convertir 'hora_actual' a 'datetime', sumar la duración, y extraer la nueva hora
+        nueva_hora = (datetime.combine(fecha_actual, hora_actual) + duracion_timedelta).time()
+
+        return {
+                "hora_actual": nueva_hora,
+                "hora_cierre_intervalo": nueva_hora
+                }
     
     def traslado(self, transporte, hora_actual, lugar, actividadIds, IDaux):
         with Session(getEngine()) as session:

@@ -9,15 +9,11 @@ from .repository.CategoriaRepository import CategoriaRepository
 from .bd.conexion import getSession, getEngine
 from sqlalchemy.orm import Session
 
-
-# engine = getEngine()
-# deDatos = getSession()
-
 class PruebaIA:
     def __init__(self, db_session):
         self.db_session = db_session
 
-    def cargadoDeIA(self, usuarioID):
+    def cargadoDeIA(self):
         with Session(getEngine()) as session:
             usuarios = []
             categorias = []
@@ -132,46 +128,6 @@ class PruebaIA:
             }
             _ = model(dummy_input)
 
-            model.load_weights('modeloConH5.h5')#'modeloConH5.h5')
+            model.load_weights('modeloConH5.h5')
 
-            # Continuar con las predicciones utilizando el modelo cargado
-            categoriasDelUsuario = CRepo.getCategoriaUsuario(usuarioID)
-            new = np.zeros(num_categorias, dtype=int)
-            usuarioCategoria = []
-            for i in range(1, num_categorias):
-                for categoria in enumerate(categoriasDelUsuario):
-                    if i == categoria[1][0]:
-                        new[i] = 1
-                    else:
-                        new[i] = 0
-
-            # Crear el tensor de entrada con las preferencias del usuario
-            new_tensor = tf.convert_to_tensor(new, dtype=tf.float32)
-
-            index = tfrs.layers.factorized_top_k.BruteForce(model.user_model)
-            index.index_from_dataset(tf.data.Dataset.zip((activities_dataset.batch(100), activities_dataset.batch(100).map(model.activity_model)))) 
-
-            _, top_recommendations = index(np.array([new_tensor], dtype=np.int32))
-            
-            top_3_recommendations = top_recommendations[0, :5].numpy()
-            print(f"Las mejores recomendaciones para el usuario: {top_3_recommendations}") 
-            actividadReco = []  # Lista para almacenar las actividades relacionadas con las categorías
-
-            for filaRecomendacion in top_3_recommendations:
-                indicesCate = []  # Lista para almacenar los índices de las categorías relevantes para cada fila
-
-                for columnaRecomendacion in range(0, len(filaRecomendacion)):
-                    if filaRecomendacion[columnaRecomendacion] == 1.0:
-                        indicesCate.append(columnaRecomendacion)
-
-                # Busca actividades a partir de las categorías
-                actividades = aRepo.getActividadCategorias(indicesCate) # Ejecuta la consulta y obtén todos los resultados
-
-                actividadReco.extend(actividades)  # Agrega las actividades relacionadas a la lista actividadRec
-
-            #Ahora actividadReco contiene todas las atividades relacionadas con las categorías
-
-        return actividadReco
-
-
-
+        return model

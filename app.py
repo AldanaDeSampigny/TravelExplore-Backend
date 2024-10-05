@@ -1,9 +1,4 @@
 from collections import defaultdict
-from datetime import datetime, timedelta
-import dbm
-import threading
-import schedule
-import time
 import uuid
 
 from .service.ActividadesService import ActividadesService 
@@ -13,6 +8,7 @@ from .Entrenamiento import entrenarIA
 from .service.UsuarioService import UsuarioService
 
 from .PruebaIA import PruebaIA
+from .generadorRecomendaciones import GeneradorRecomendaciones
 from .service.ActividadFavoritaService import ActividadFavoritaService
 from .service.LugarFavoritoService import LugarFavoritoService
 from .repository.AgendaRepository import AgendaRepository
@@ -91,6 +87,14 @@ nuevaPalabrasProhibidas = PalabrasProhibidas()
 nuevaResenia = Reseña()
 
 llave = 'AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
+modelo_recomendacion = None
+
+print("Cargando modelo...")
+ia = PruebaIA(DeDatos)
+modelo_recomendacion = ia.cargadoDeIA()
+print(f"Tipo de modelo_recomendacion: {type(modelo_recomendacion)}")
+print(modelo_recomendacion.summary())
+AgendaService(modelo_recomendacion, DeDatos)
 
 @app.route('/', methods=['GET'])
 def clean_publications():
@@ -101,13 +105,36 @@ def entrenar_IA():
     scheduler = BackgroundScheduler()
 
     #schedule_thread = threading.Thread(target=schedule.run_continuously)
-    scheduler.add_job(entrenarIA, 'cron',hour=12, minute=50)
+    scheduler.add_job(entrenarIA, 'cron',hour=23, minute=18)
     scheduler.start()
 
 entrenar_IA()
 
 if __name__ == '__main__':
     app.run(host="if012atur.fi.mdn.unp.edu.ar", debug=True, port=28001)
+
+
+
+@app.route('/recomendar/<int:usuarioID>', methods=['GET'])
+def recomendar(usuarioID):
+    if not modelo_recomendacion:
+        return jsonify({"error": "Modelo no cargado"}), 500
+    
+    with Session(getEngine()) as db_session:
+        generador = GeneradorRecomendaciones(modelo_recomendacion, db_session)
+        recomendaciones = generador.generar_recomendaciones(usuarioID)
+    
+    # Convertir cada recomendación a un diccionario directamente en esta parte
+    recomendaciones_serializables = [
+        {
+            'id': actividad.id,
+            'nombre': actividad.nombre,
+            # Agrega otros atributos necesarios de `Actividad`
+        } 
+        for actividad in recomendaciones
+    ]
+    
+    return jsonify(recomendaciones_serializables)
 
 def serialize_timedelta(td):
     return str(td)
@@ -169,7 +196,7 @@ def nuevoUsuario():
 def mostrarDistancia(usuarioID, destinoID):
     with Session(getEngine()) as session:
         agenda_repo = AgendaRepository(session)
-        agenda_service = AgendaService(getEngine())
+        agenda_service = AgendaService(modelo_recomendacion, getEngine())
         actividadIds = agenda_repo.buscarActividad(1, 1)
 
         print(actividadIds)
@@ -229,7 +256,7 @@ def getActividadesFavoritas(usuarioID):
 @app.route('/eliminarActividadesAgenda/<int:actividadID>/<int:AgendaViajeID>',methods=['DELETE'])
 def EliminarActividad(actividadID, AgendaViajeID):
     if request.method == 'DELETE':
-        agenda_service = AgendaService(getEngine())
+        agenda_service = AgendaService(modelo_recomendacion, getEngine())
 
         agenda_service.eliminarActividadAgeenda(actividadID,AgendaViajeID)
 
@@ -321,7 +348,7 @@ def dislikeActividad(usuarioID):
 def generar_y_mostrar_agenda(usuarioID):
     with Session(getEngine()) as session:
         geolocator = Nominatim(user_agent="Travel_explore")
-        agenda_service = AgendaService(getEngine())
+        agenda_service = AgendaService(modelo_recomendacion, getEngine())
         data = request.get_json()
 
         destino = data.get('destino')
@@ -837,7 +864,7 @@ def editarUsuario():
 def getAgenda(usuarioID,agendaID):
     # Leer el json recibido
     #agenda = request.get_json()
-    agendaService = AgendaService(getEngine())
+    agendaService = AgendaService(modelo_recomendacion, getEngine())
     agendaUsuario = agendaService.getAgenda(usuarioID,agendaID)  # Supongo que obtienes los resultados de tu función
 
     print("agenda", agendaUsuario)
@@ -902,7 +929,7 @@ def getAgenda(usuarioID,agendaID):
 @app.route('/modificarAgendaDiaria/<int:idAgenda>', methods=['POST'])
 def modificarAgendaDiaria(idAgenda):
     with Session(getEngine()) as session:
-        agenda_service = AgendaService(getEngine())
+        agenda_service = AgendaService(modelo_recomendacion, getEngine())
         data = request.get_json()
         updated_agenda = []
 
@@ -960,7 +987,7 @@ def getAllActividades():
 
 @app.route('/getAgendaDiaria/<int:idAgenda>/<int:idCiudad>', methods = ['GET'])
 def getAgendaDiaria(idAgenda, idCiudad):
-    agendaService = AgendaService(getEngine())
+    agendaService = AgendaService(modelo_recomendacion, getEngine())
     agendaDiaria = agendaService.obtenerAgendaDiaria(idAgenda, idCiudad)
 
     print("--- agendaDiaria --- ", agendaDiaria) 
@@ -1000,7 +1027,7 @@ def getAgendaDiaria(idAgenda, idCiudad):
 
 @app.route('/agendas/<int:usuarioID>' ,methods = ['GET'])
 def verAgendas(usuarioID):
-    agendaService = AgendaService(getEngine())
+    agendaService = AgendaService(modelo_recomendacion, getEngine())
     agendasUsuario = agendaService.obtenerAgendasUsuarioConDestino(usuarioID)
 
     agendaJSON = []
