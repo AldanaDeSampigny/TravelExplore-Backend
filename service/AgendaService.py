@@ -305,30 +305,19 @@ class AgendaService:
         print("lista",recomendaciones)
         return recomendaciones
         
-    def calcular_horas_ocupado(self, fecha_actual, horariosOcupados, hora_actual, actividad):
+    def calcular_horas_ocupado(self, fecha_actual, horariosOcupados, hora_actual):
 
-        if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
-            for horario_ocupado in horariosOcupados[fecha_actual.date().strftime('%Y-%m-%d')]:
-                horaInicioOcupado = datetime.strptime(horario_ocupado[0], '%H:%M:%S').time()
-                horaFinOcupado = datetime.strptime(horario_ocupado[1], '%H:%M:%S').time()
-                if horaInicioOcupado <= hora_actual < horaFinOcupado:
-                    hora_actual = horaFinOcupado
-                    break
+        for horario_ocupado in horariosOcupados[fecha_actual.date().strftime('%Y-%m-%d')]:
+            horaInicioOcupado = datetime.strptime(horario_ocupado[0], '%H:%M:%S').time()
+            horaFinOcupado = datetime.strptime(horario_ocupado[1], '%H:%M:%S').time()
+            if horaInicioOcupado <= hora_actual < horaFinOcupado:
+                hora_actual = horaFinOcupado
+                break
 
-        # Calcular la duración en minutos directamente
-        duracion_timedelta = timedelta(hours=actividad.duracion.hour, minutes=actividad.duracion.minute)
-
-        # Convertir 'hora_actual' a 'datetime', sumar la duración, y extraer la nueva hora
-        nueva_hora = (datetime.combine(fecha_actual, hora_actual) + duracion_timedelta).time()
-
-        return {
-                "hora_actual": nueva_hora,
-                "hora_cierre_intervalo": nueva_hora
-                }
+        return hora_actual
     
     def traslado(self, transporte, hora_actual, lugar, actividadIds, IDaux):
         with Session(getEngine()) as session:
-            horas = {"hora_actual": None, "tiempoTraslado": None}
             siguiente_actividad_id = actividadIds[IDaux + 1][0] if IDaux + 1 < len(actividadIds) else None
 
             siguiente_lugar = None
@@ -340,39 +329,44 @@ class AgendaService:
         
             #?siguiente_lugar es llamado abajo pero esta comentado MOMENTANEAMENTE
             if lugar:
-                horas['tiempoTraslado'] = timedelta(minutes=5)#self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
+                tiempoTraslado = timedelta(minutes=5)#self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
             else:
-                horas['tiempoTraslado'] = timedelta(minutes = 5)
+                tiempoTraslado = timedelta(minutes = 5)
                 
-            if horas['tiempoTraslado']:
+            if tiempoTraslado:
                 hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
                 print("traslado horainiciodatetime ", hora_inicio_datetime)
-                horas['hora_actual'] = (hora_inicio_datetime + horas['tiempoTraslado']).time()
+                hora_actual = (hora_inicio_datetime + tiempoTraslado).time()
 
-            return horas
+            return hora_actual
 
-    def aceptar_actividad(self, actividad, lugar, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, hora_actual, hora_cierre_intervalo):
+    def aceptar_actividad(self, actividad, lugar, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, hora_actual):
         with Session(getEngine()) as session:
-            resultado = {'tiempoTraslado' : None, 'actividad' : None, 'hora_actual': hora_actual}
+            resultado = {'hora_cierre_intervalo' : None, 'actividad' : None}
  
+            hora_actual_dt = datetime.combine(fecha_actual, hora_actual)
             
             if actividad.horainicio <= hora_actual < actividad.horafin:
-                resultado['hora_actual'] = self.traslado(transporte, hora_actual, lugar, actividadIds, IDaux)
+                print("duracion act, ", actividad.duracion)
+                duracion_timedelta = timedelta(hours=actividad.duracion.hour, minutes=actividad.duracion.minute)
+                print("duracion delta, ", duracion_timedelta)
+                intervalo = hora_actual_dt + duracion_timedelta
+                print("intervalo, ", intervalo, " con time, ", intervalo.time())
+                resultado['hora_cierre_intervalo'] = self.traslado(transporte, intervalo.time(), lugar, actividadIds, IDaux)
 
                 if actividad.id not in gustos_agregados:
                     resultado['actividad'] = {
                         'id': actividad.id,
                         'dia': fecha_actual,
-                        'hora_inicio': resultado['hora_actual']['hora_actual'],
-                        'hora_fin': hora_cierre_intervalo,
+                        'hora_inicio': hora_actual,
+                        'hora_fin': resultado['hora_cierre_intervalo'],
                         'actividad': actividad,
                         'lugar': lugar.id if lugar else None,
                         'lugares': lugares if lugares else []
                     }
 
-
-                    print("Actividad aceptada: ", resultado['actividad']['id'])
-                    print("hora actual: ", resultado['hora_actual']['hora_actual'])
+                    print("hora actual: ", hora_actual)
+                    print("hora intervalo: ", resultado['hora_cierre_intervalo'])
 
             return resultado
         
@@ -417,13 +411,11 @@ class AgendaService:
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
 
-            print("actividad",actividadIds)
             actividadIds.extend(self.recomendaciones_IA(usuarioID)) 
             
             while fecha_actual <= fecha_hasta:
                 print("--- Fecha ---", fecha_actual)
                 hora_actual, horario_fin = self.obtener_horarios_dia(fecha_actual, horariosElegidos, horaInicio, horaFin)
-                print("hora actual 1", hora_actual)
                 actividadIds_set = set(np.array(actividadIds).flatten())
 
                 if gustos_agregados == actividadIds_set:
@@ -437,14 +429,14 @@ class AgendaService:
                         lugares = agenda_repo.buscarLugares(actividad.id, destinoID)
                         
                         lugar = self.obtenerLugar(lugares, ubicacion.latitude, ubicacion.longitude)
-                        
 
-                        horarios = self.calcular_horas_ocupado(fecha_actual, horariosOcupados, hora_actual, actividad)
+                        if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
+                            hora_actual = self.calcular_horas_ocupado(fecha_actual, horariosOcupados, hora_actual)
 
-                        resultado = self.aceptar_actividad(actividad, lugar, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, horarios['hora_actual'], horarios['hora_cierre_intervalo'])
+                        resultado = self.aceptar_actividad(actividad, lugar, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, hora_actual)
                         
                         if resultado['actividad']:
-                            hora_actual = resultado['hora_actual']['hora_actual']
+                            hora_actual = resultado['hora_cierre_intervalo']
                             print("1)hora actual: ", hora_actual)
 
                             agenda.append(resultado['actividad'])
@@ -453,12 +445,15 @@ class AgendaService:
                     if datetime.strptime('00:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('04:00:00', '%H:%M:%S').time():
                         break
 
-                    hora_inicio_datetime = datetime.combine(datetime.now().date(), horarios['hora_cierre_intervalo'])
-                    if resultado['tiempoTraslado']:
-                        hora_inicio_datetime += resultado['tiempoTraslado']
+                    if resultado['hora_cierre_intervalo']:
+                        hora_inicio_datetime = datetime.combine(datetime.now().date(), resultado['hora_cierre_intervalo'])
+                    else:
+                        hora_inicio_datetime = datetime.combine(datetime.now().date(), hora_actual)
+                        hora_inicio_datetime += timedelta(minutes=60)
+
                     hora_actual = hora_inicio_datetime.time() 
                 
                 fecha_actual += timedelta(days=1)
-
+ 
         return agenda
 
