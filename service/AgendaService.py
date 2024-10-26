@@ -40,7 +40,7 @@ class AgendaService:
         self.modelo_recomendacion = modelo_recomendacion
         self.db_session = db_session
 
-    def saveAgenda(self, idUsuario, idCiudad, fechaDesde, fechaHasta, horaInicio, horaFin, agenda):
+    def saveAgenda(self, idUsuario, idCiudad, fechaDesde, fechaHasta, horaInicio, horaFin, agenda,transporte):
         with Session(getEngine()) as session:
     
             nuevoViaje = Viaje()
@@ -74,6 +74,7 @@ class AgendaService:
                     nuevaAgendaDiaria.dia = fecha.strftime("%Y-%m-%d")
                     nuevaAgendaDiaria.itinerario_id = nuevoItinerario.id
                     nuevaAgendaDiaria.id_agenda_viaje = agendaViajeNueva.id
+                    nuevaAgendaDiaria.transporte_ciudad = transporte
                     fecha += timedelta(days=1)
 
                     session.add(nuevaAgendaDiaria)

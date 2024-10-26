@@ -5,7 +5,6 @@ from ..bd.conexion import getEngine, Base
 import sqlalchemy as db
 from sqlalchemy.orm import relationship
 
-#base = declarative_base()
 metadata_obj = db.MetaData()
 
 class AgendaDiaria(Base):
@@ -16,6 +15,7 @@ class AgendaDiaria(Base):
    dia = Column(Date)
    itinerario_id = Column(db.ForeignKey("itinerarios.id"))
    id_agenda_viaje = Column(db.ForeignKey("agendas_viajes.id"))
+   transporte_ciudad = Column(String)
 
    metadata_obj.create_all(getEngine())
 

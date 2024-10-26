@@ -62,6 +62,8 @@ class UsuarioRepository:
                 Lugar.latitud,
                 Lugar.longitud,
 
+                AgendaDiaria.transporte_ciudad
+
             )
             .join(AgendaDiaria, AgendaDiaria.id == ActividadAgenda.id_agenda)
             .join(Actividad, Actividad.id == ActividadAgenda.id_actividad)

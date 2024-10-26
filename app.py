@@ -433,6 +433,7 @@ def generar_y_mostrar_agenda(usuarioID):
         for actividad_data in agenda:
             dia = actividad_data['dia']
             agenda_por_dia[dia].append(actividad_data)
+            
 
         agendaJSON = []
         for dia, actividades in sorted(agenda_por_dia.items()):
@@ -452,9 +453,10 @@ def generar_y_mostrar_agenda(usuarioID):
                 dia_json['actividades'].append(actividad_json)
 
             agendaJSON.append(dia_json)
-
-        agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agendaJSON)
-        print(agendaJSON)
+            print("agenda json",agendaJSON)
+            print("transporte ", transporte)
+        agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agendaJSON,transporte)
+        print("agenda cread",agendaJSON)
         return jsonify(agendaNueva)
 
 @app.route('/ciudades', methods=['GET'])
@@ -888,7 +890,7 @@ def getAgenda(usuarioID,agendaID):
             "duracion" : row[8].strftime("%H:%M:%S") if row[8] else None,
             "id_lugar" : row[9],
             "id_viaje": row[6],
-
+            "tranporte"  : row[15],
             #"nombre_lugar" : row[11],
             "lugar": {
                 "id": row[9],  # Ajusta según tus necesidades
