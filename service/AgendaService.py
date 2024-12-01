@@ -4,6 +4,9 @@ import json
 
 from ..repository.ActividadRepository import ActividadRepository
 from ..repository.LugarRepository import LugarRepository
+from ..repository.UsuarioRepository import UsuarioRepository
+from ..repository.FavoritoRepository import FavoritoRepository
+from ..repository.AgendaRepository import AgendaRepository
 
 import numpy as np
 from sqlalchemy import Row
@@ -13,7 +16,6 @@ from ..generadorRecomendaciones import GeneradorRecomendaciones
 
 from ..models.Lugar import Lugar
 
-from ..repository.UsuarioRepository import UsuarioRepository
 from ast import literal_eval
 from ..models.AgendaViaje import AgendaViaje
 
@@ -26,7 +28,6 @@ from ..models.ActividadLugar import ActividadLugar
 from ..models.Viaje import Viaje
 from ..models.Itinerario import Itinerario
 from ..models.AgendaDiaria import AgendaDiaria
-from ..repository.AgendaRepository import AgendaRepository
 from ..bd.conexion import getEngine
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -400,6 +401,7 @@ class AgendaService:
                     lugar_optimo = id_lugar
 
             lugar_seleccionado = session.query(Lugar).get(lugar_optimo)
+
             return lugar_seleccionado
 
     def generarAgendaDiaria(self, ubicacion, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
@@ -427,7 +429,7 @@ class AgendaService:
                     for IDaux, actividad_id in enumerate(actividadIds):
                         actividad = session.query(Actividad).get(actividad_id)
 
-                        lugares = agenda_repo.buscarLugares(actividad.id, destinoID)
+                        lugares = agenda_repo.buscarLugares(actividad.id, destinoID, usuarioID)
                         
                         lugar = self.obtenerLugar(lugares, ubicacion.latitude, ubicacion.longitude)
 

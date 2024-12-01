@@ -9,10 +9,8 @@ from ..models.Categoria import Categoria
 from ..models.UsuarioCategoria import UsuarioCategoria
 from ..models.Lugar import Lugar
 from ..models.Ciudad import Ciudad
+from ..models.LugaresFavoritos import LugaresFavoritos
 
-from sqlalchemy.orm import Session
-
-from sqlalchemy.orm import sessionmaker
 from ..models.Usuario import Usuario
 from sqlalchemy import func
 
@@ -57,12 +55,14 @@ class AgendaRepository:
 
         return result
 
-    def buscarLugares(self, actividadID, destinoID):
+    def buscarLugares(self, actividadID, destinoID, usuarioID):
         lugares = self.db_session.query(Lugar).\
             join(ActividadLugar, ActividadLugar.id_lugar == Lugar.id).\
             join(Actividad, Actividad.id == ActividadLugar.id_actividad).\
+            outerjoin(LugaresFavoritos, LugaresFavoritos.lugar_id == Lugar.id).\
             filter(Lugar.id_ciudad == destinoID).\
             filter(Actividad.id == actividadID).\
+            filter((LugaresFavoritos.like != 0) | (LugaresFavoritos.like.is_(None))).\
             group_by(Lugar.id).\
             order_by(func.max(Lugar.valoracion)).all()
         

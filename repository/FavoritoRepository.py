@@ -96,34 +96,3 @@ class FavoritoRepository:
 
         return actividades
     
-
-    """ def actividadesFavoritasUsuario(self, usuarioID):
-        lugaresFavoritosUsuario = self.db_session.query(
-            Actividad.nombre,
-            Ciudad.nombre,
-            Usuario.nombre,
-            LugaresFavoritos.like,
-            ).\
-        join(Lugar, LugaresFavoritos.lugar_id == Lugar.id).\
-        join(Usuario, LugaresFavoritos.usuario_id == Usuario.id).\
-        join(Ciudad,Lugar.id_ciudad == Ciudad.id).\
-        filter(Usuario.id == usuarioID).\
-        filter(LugaresFavoritos.like == 1).all()
-
-        return lugaresFavoritosUsuario """
-    
-
-"""         self.db_session.execute(\
-            update(LugaresFavoritos).\
-            where(LugaresFavoritos.usuario_id == usuarioId and LugaresFavoritos.lugar_id == idLugar).\
-            values(like = nuevoLike)\
-        ) """
-
-
-        
-"""             session.exec"""  """(UserModel).\
-filter
-LugaresFavoritos.usuario_id == idUsuario and LugaresFavoritos.lugar_id == idLugar).\
-update({LugaresFavoritos.username: 'john_deo'}) """""" session.execute(update(LugaresFavoritos).
-where(LugaresFavoritos.usuario_id == idUsuario and LugaresFavoritos.lugar_id == idLugar).
-values(like = False)) """
