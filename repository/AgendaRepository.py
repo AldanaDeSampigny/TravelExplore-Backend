@@ -117,7 +117,8 @@ class AgendaRepository:
             Lugar.id,
             Lugar.nombre,
 
-            Ciudad.id
+            Ciudad.id,
+            AgendaDiaria.transporte_ciudad
             
         ).select_from(AgendaDiaria).\
         join(ActividadAgenda, AgendaDiaria.id == ActividadAgenda.id_agenda).\

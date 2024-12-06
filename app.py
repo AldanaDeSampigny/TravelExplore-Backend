@@ -882,7 +882,7 @@ def getAgenda(usuarioID,agendaID):
         dia = row[1].strftime("%d-%m-%Y") if row[1] else None,
         id_ciudad = row[11]
         actividad = {
-            "id" :row[2],
+            "id" :row[2],          
             "nombre_actividad": row[3],
             "horadesde":row[4].strftime("%H:%M:%S") if row[4] else None,
             "horahasta": row[5].strftime("%H:%M:%S") if row[5] else None,
@@ -963,6 +963,8 @@ def modificarAgendaDiaria(idAgenda):
                         'nombre': otro_lugar.get('nombre')
                     } for otro_lugar in otros_lugares
                 ]
+
+                #
             }
             print("AGENDA CON FORMATO ", agendadiaria)
             agenda_service.modificar_agenda_diaria(agendadiaria)
@@ -1011,7 +1013,8 @@ def getAgendaDiaria(idAgenda, idCiudad):
                 "actividad":{'id': row[3],
                 'nombre': row[4]},
                 "lugar": None,
-                "otrosLugares": []
+                "otrosLugares": [],
+                "transporte_ciudad": row[8]
             }
 
         lugarAgenda = {
