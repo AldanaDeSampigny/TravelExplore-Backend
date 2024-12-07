@@ -53,7 +53,7 @@ class AgendaRepository:
 
         result = query.all()  # Ejecutar la consulta
 
-        return result
+        return [row[0] for row in result]
 
     def buscarLugares(self, actividadID, destinoID, usuarioID):
         lugares = self.db_session.query(Lugar).\
