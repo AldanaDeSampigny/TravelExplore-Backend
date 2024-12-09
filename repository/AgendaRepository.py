@@ -118,7 +118,7 @@ class AgendaRepository:
             Lugar.nombre,
 
             Ciudad.id,
-            AgendaDiaria.transporte_ciudad
+            AgendaDiaria.transporte_ciudad,
             
         ).select_from(AgendaDiaria).\
         join(ActividadAgenda, AgendaDiaria.id == ActividadAgenda.id_agenda).\
@@ -138,3 +138,11 @@ class AgendaRepository:
                 filter(ActividadAgenda.id_actividad == id_actividad).first()
          
         return actividad_agenda
+    
+    def getAgendaJSON(self,idAgendaDiaria):
+        agenda = self.db_session.query(
+            AgendaDiaria).join(Itinerario,AgendaDiaria.itinerario_id == Itinerario.id).\
+        join(AgendaViaje,AgendaDiaria.id_agenda_viaje== AgendaViaje.id).\
+        filter(AgendaDiaria.id == idAgendaDiaria)
+
+        return agenda.first()

@@ -97,22 +97,29 @@ class AgendaService:
                 raise e
             
             return agendaViajeNueva.id
-
-
+        
     def modificar_agenda_diaria(self, agendadiaria):
         with Session(getEngine()) as session:
             repository = AgendaRepository(session)
 
+            agendaDiaria = repository.getAgendaJSON(agendadiaria['id'])
+            print("transporte_agenda",agendaDiaria.transporte_ciudad)
+            print("transporte modificado",agendadiaria['transporte_ciudad'])
+            agendaDiaria.transporte_ciudad = agendadiaria['transporte_ciudad']
+
+            session.add(agendaDiaria)
+            session.commit()
             # Recuperar la actividad existente
             actividadAgenda = repository.getActividadAgendaDiaria(agendadiaria['id'], agendadiaria['actividad']['id'])
 
             if actividadAgenda:
             # Actualizar los campos
-
+               
                 actividadAgenda.horadesde = agendadiaria['horaInicio']
                 actividadAgenda.horahasta = agendadiaria['horaFin']
                 print("ID LUGAR: ", agendadiaria['lugar']['id_lugar'])
-                actividadAgenda.id_lugar = agendadiaria['lugar']['id_lugar']                
+                actividadAgenda.id_lugar = agendadiaria['lugar']['id_lugar']     
+                #actividadAgenda.transporte_ciudad = agendadiaria['transporte_ciudad']           
 
                 print("AGENDA ACTUALIZADA: ", actividadAgenda)
                 session.add(actividadAgenda)
@@ -124,7 +131,7 @@ class AgendaService:
                 actividadAgendaNueva.horadesde = agendadiaria['horaInicio']
                 actividadAgendaNueva.horahasta = agendadiaria['horaFin']
                 actividadAgendaNueva.id_lugar = agendadiaria['lugar']['id_lugar']
-
+                
                 session.add(actividadAgendaNueva)
                 session.commit()
 

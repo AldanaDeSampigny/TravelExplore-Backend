@@ -937,6 +937,8 @@ def modificarAgendaDiaria(idAgenda):
         agenda_service = AgendaService(modelo_recomendacion, getEngine())
         data = request.get_json()
         updated_agenda = []
+        obtenerAgenda = getAgendaDiaria(idAgenda,1)
+        print("agrenda Diaria", obtenerAgenda)
 
         for actividad in data:
             lugar = actividad.get('lugar')
@@ -962,9 +964,8 @@ def modificarAgendaDiaria(idAgenda):
                         'id_actividad': otro_lugar.get('id_actividad'),
                         'nombre': otro_lugar.get('nombre')
                     } for otro_lugar in otros_lugares
-                ]
-
-                #
+                ],
+                'transporte_ciudad': actividad.get('transporte_ciudad')
             }
             print("AGENDA CON FORMATO ", agendadiaria)
             agenda_service.modificar_agenda_diaria(agendadiaria)
