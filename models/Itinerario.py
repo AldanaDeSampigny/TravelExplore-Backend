@@ -13,7 +13,8 @@ class Itinerario(Base):
   fechaHasta = Column(Date)
   id_viaje = Column(db.ForeignKey("viajes.id"))
   id_ciudad = Column(db.ForeignKey("ciudades.id"))
-  
+  hospedaje = Column(String)
+
   metadata_obj.create_all(getEngine())
 
   def to_dict(self):
@@ -22,5 +23,6 @@ class Itinerario(Base):
       "fechaDesde": self.fechaDesde,
       "fechaHasta": self.fechaHasta,
       "id_viaje": self.id_viaje,
-      "id_ciudad": self.id_ciudad
+      "id_ciudad": self.id_ciudad,
+      "hospedaje" :self.hospedaje
     }
