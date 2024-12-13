@@ -377,7 +377,7 @@ def generar_y_mostrar_agenda(usuarioID):
 
                 direccion = direccionHospedaje + ", " +ciudadRecibido.nombre
                 print("direccion ", direccion)
-                ubicacion = geolocator.geocode(direccion)
+
             else:
                 ciudad = {
                     'id': primer_resultado['place_id'],
@@ -391,10 +391,10 @@ def generar_y_mostrar_agenda(usuarioID):
                 destino = lugarRecibido.id
 
                 direccion = direccionHospedaje + lugarRecibido.nombre
-                print("direccion ", direccion)
-                ubicacion = geolocator.geocode(direccion)
 
-
+            ubicacion = geolocator.geocode(query=direccion, exactly_one=True)
+        
+            print("geolocator --> lat:", ubicacion.latitude, ", long:",ubicacion.longitude)
 
         fechaInicio = str(data.get('fechaDesde'))
         print("fechaDesde -->"+fechaInicio)
@@ -871,7 +871,7 @@ def getAgenda(usuarioID,agendaID):
     #agenda = request.get_json()
     agendaService = AgendaService(modelo_recomendacion, getEngine())
     agendaUsuario = agendaService.getAgenda(usuarioID,agendaID)  # Supongo que obtienes los resultados de tu función
-
+    geolocator = Nominatim(user_agent="Travel_explore")
     print("agenda", agendaUsuario)
     # Crear un diccionario para almacenar los datos en el formato deseado
     agendaRecibida = {}
@@ -881,7 +881,8 @@ def getAgenda(usuarioID,agendaID):
         idAgendaDiaria = row[0],
         dia = row[1].strftime("%d-%m-%Y") if row[1] else None,
         id_ciudad = row[11],
-        hospedaje = row[16]
+        nombre_ciudad = row[10],
+        hospedaje = row[16],
         actividad = {
             "id" :row[2],          
             "nombre_actividad": row[3],
@@ -900,6 +901,18 @@ def getAgenda(usuarioID,agendaID):
                 "longitud": row[14]
             }
         }
+         # Asegúrate de extraer correctamente los valores de las tuplas
+        nombre_ciudad_str = nombre_ciudad[0] if isinstance(nombre_ciudad, tuple) else nombre_ciudad
+        hospedaje_str = hospedaje[0] if isinstance(hospedaje, tuple) else hospedaje
+
+        # Concatenar hospedaje y nombre de ciudad
+        direccion = f"{hospedaje_str},{nombre_ciudad_str}"
+
+        print("direccion",direccion)
+        #!seguir viendo el tema del formato ahora esta asi (direccion,)
+        #!acceder a la tupla 
+        #! hay que logra que quede "Villarino 1385,Puerto Madryn"
+        ubicacion = geolocator.geocode(query=direccion, exactly_one=True)
 
         actividadFavorita = ActividadFavoritaService(getEngine()).getActividadFavorita(usuarioID,row[2])
 
@@ -924,7 +937,11 @@ def getAgenda(usuarioID,agendaID):
                 "idAgendaDiaria" : idAgendaDiaria,
                 "dia": dia,
                 "id_ciudad": id_ciudad,
-                "hospedaje" :hospedaje,
+                "hospedaje" :{
+                    "nombre" : hospedaje,
+                    "latitud": ubicacion.latitude,
+                    "longitud": ubicacion.longitude,
+                },
                 "actividadesSugeridas": [gustoActividad]
             }
 

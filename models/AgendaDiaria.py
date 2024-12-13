@@ -24,5 +24,5 @@ class AgendaDiaria(Base):
          "id": self.id,
          "horaInicio": self.horaInicio,
          "horaFin": self.horaFin,
-         "dia": self.dia,
+         "dia": self.dia
       }
