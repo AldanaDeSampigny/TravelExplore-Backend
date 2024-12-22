@@ -1,10 +1,12 @@
 from ..bd.conexion import getEngine
 from sqlalchemy.orm import Session
 
+from ..models.UsuarioCategoria import UsuarioCategoria
 from ..repository.LugarRepository import LugarRepository
 from ..models.LugaresFavoritos import LugaresFavoritos
 from ..repository.UsuarioRepository import UsuarioRepository
 from ..repository.FavoritoRepository import FavoritoRepository
+from ..repository.CategoriaRepository import CategoriaRepository
 from ..service.LugarService import LugarService
 from ..models.Lugar import Lugar
 
@@ -22,8 +24,10 @@ class LugarFavoritoService:
 
     def agregarGusto(self,idUsuario,lugar):
         with Session(getEngine()) as session:
+            categoria = CategoriaRepository(session)
             gusto = FavoritoRepository(session)
             codigoLugar = lugar.get('codigo')
+            lugarID = lugar.get('id')
             
             lugarRepository = LugarRepository(session)
 
@@ -65,6 +69,18 @@ class LugarFavoritoService:
             if gustoObtenido != None and gustoObtenido.like == 1:
                 print("llego al -1")
                 gusto.updateLike(idUsuario, idLugar, -1)
+
+            categorias = categoria.getCategoriaLugar(lugarID)
+
+            for cate in categorias:
+                nuevaCategoria = UsuarioCategoria()
+                nuevaCategoria.id_categorias = cate
+                nuevaCategoria.id_usuario = idUsuario
+
+                session.add(nuevaCategoria)
+                session.commit()
+
+            
     
     def quitarGusto(self,idUsuario,lugar):
         with Session(getEngine()) as session:

@@ -21,9 +21,6 @@ class Lugar(Base):
   id_ciudad = Column(db.ForeignKey("ciudades.id"))
   valoracion_usuario = Column(Integer)
 
-  #categorias = relationship('Categoria', secondary='lugares_categorias', back_populates='lugares')
-
-
   metadata_obj.create_all(getEngine())
 
   def to_dict(self):

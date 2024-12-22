@@ -1,5 +1,6 @@
 from ..models.PalabrasProhibidas import PalabrasProhibidas
 from ..models.ActividadCategoria import ActividadCategoria
+from ..models.LugarCategoria import LugarCategoria
 from ..models.Categoria import Categoria
 from ..models.UsuarioCategoria import UsuarioCategoria
 from ..models.Usuario import Usuario
@@ -16,10 +17,9 @@ class CategoriaRepository:
         return categoria
 
     def getCategoriaUsuario(self, usuarioID):
-        id = int(usuarioID)
         categorias = self.db_session.query(Categoria.id).\
             join(UsuarioCategoria, Categoria.id == UsuarioCategoria.id_categorias).\
-            filter(UsuarioCategoria.id_usuario == id)
+            filter(UsuarioCategoria.id_usuario == usuarioID)
 
         result = categorias.all()
         return result
@@ -30,6 +30,15 @@ class CategoriaRepository:
             filter(ActividadCategoria.id_actividad == actividadID)
         
         result = [row[0] for row in catActividad.all()]  # Extrae los identificadores
+    
+        return result
+    
+    def getCategoriaLugar(self, lugarID):
+        catLugar = self.db_session.query(Categoria.id).\
+            join(LugarCategoria, Categoria.id == LugarCategoria.id_categoria).\
+            filter(LugarCategoria.id_lugar == lugarID)
+        
+        result = [row[0] for row in catLugar.all()]  # Extrae los identificadores
     
         return result
 

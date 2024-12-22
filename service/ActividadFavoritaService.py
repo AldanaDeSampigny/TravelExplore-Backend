@@ -1,9 +1,9 @@
 from ..models.ActividadesFavoritas import ActividadesFavoritas
+from ..models.UsuarioCategoria import UsuarioCategoria
 from ..repository.ActividadRepository import ActividadRepository
+from ..repository.CategoriaRepository import CategoriaRepository
 from ..bd.conexion import getEngine
 from sqlalchemy.orm import Session
-
-from ..repository.UsuarioRepository import UsuarioRepository
 from ..repository.FavoritoRepository import FavoritoRepository
 
 class ActividadFavoritaService:
@@ -21,6 +21,7 @@ class ActividadFavoritaService:
     def agregarGustoActividad(self,idUsuario,actividad):
         with Session(getEngine()) as session:
             gusto = FavoritoRepository(session)
+            categoria = CategoriaRepository(session)
 
             idActividad = actividad.get('id')
             
@@ -44,26 +45,21 @@ class ActividadFavoritaService:
 
                     session.add(nuevoMeGusta)
                     session.commit()
-                    
-                """ else: """ #no existe en lugar
-                """   lugarService = LugarService(session)
-
-                    lugarService.guardarLugar(lugar)
-
-                    lugarRecibido = lugarRepository.getLugar(lugar.get('id'))   
-                    print("lugar no existe ",lugarRecibido)                 
-
-                    nuevo = LugaresFavoritos()
-                    nuevo.usuario_id = idUsuario
-                    nuevo.lugar_id = lugarRecibido.id
-                    nuevo.like = 1
-
-                    session.add(nuevo)
-                    session.commit() """
             
             if gustoObtenido != None and gustoObtenido.like == 1:
                 print("llego al -1")
                 gusto.updateLikeActividad(idUsuario, id, -1)
+
+            categorias = categoria.getCategoriaActividad(idActividad)
+
+            for cate in categorias:
+                nuevaCategoria = UsuarioCategoria()
+                nuevaCategoria.id_categorias = cate
+                nuevaCategoria.id_usuario = idUsuario
+
+                session.add(nuevaCategoria)
+                session.commit()
+
     
 
     def quitarGustoActividad(self,idUsuario,actividad):
