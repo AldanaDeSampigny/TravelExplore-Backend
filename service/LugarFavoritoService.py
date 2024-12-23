@@ -27,7 +27,6 @@ class LugarFavoritoService:
             categoria = CategoriaRepository(session)
             gusto = FavoritoRepository(session)
             codigoLugar = lugar.get('codigo')
-            lugarID = lugar.get('id')
             
             lugarRepository = LugarRepository(session)
 
@@ -70,7 +69,9 @@ class LugarFavoritoService:
                 print("llego al -1")
                 gusto.updateLike(idUsuario, idLugar, -1)
 
-            categorias = categoria.getCategoriaLugar(lugarID)
+            lugarRecibido = lugarRepository.getLugar(lugar.get('id'))
+
+            categorias = categoria.getCategoriaLugar(lugarRecibido.id)
 
             for cate in categorias:
                 nuevaCategoria = UsuarioCategoria()
