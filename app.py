@@ -266,45 +266,61 @@ def EliminarActividad(actividadID, AgendaViajeID):
 
 @app.route('/recomendacionLugaresIA/<int:usuarioID>',methods=['GET'])
 def lugarRecomendacion(usuarioID):
-    recomendaciones = PruebaIA(getEngine())
-    recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
+    
+    
+    """recomendaciones_serializables = [
+        {
+            'id': actividad.id,
+            'nombre_actividad': actividad.nombre,
+            'valoracion' : actividad.valoracion,
+            'duracion' : actividad.duracion.strftime("%H:%M:%S")
+            # Agrega otros atributos necesarios de `Actividad`
+        } 
+        for actividad in recomendaciones
+    ]
+    
+    return jsonify(recomendaciones_serializables) """
+
+    with Session(getEngine()) as db_session:
+        generador = GeneradorRecomendaciones(modelo_recomendacion, db_session)
+        recomendaciones = generador.generar_recomendaciones(usuarioID) or []
+
     lugarService = LugarService(getEngine())
     actividadService = ActividadesService(getEngine())
-    recomendaciones_json = []
-    for actividad in recomendacionesIA:
-        print("ACTIVIDAD: ", actividad.id)
-        if(actividad.id != None):
-            lugar = actividadService.obtenerLugarActividad(actividad.id)
-            if lugar != None:
-                print("lugar", lugar)
-                recomendacion_dict = {
-                    'id': lugar.id,
-                    'nombre': lugar.nombre,
-                    'tipo' : lugar.tipo,
-                    'valoracion' :  lugar.valoracion
-                }
-                recomendaciones_json.append(recomendacion_dict)
+
+    # Generar la lista de recomendaciones JSON
+    recomendaciones_json = [
+        {
+            'id': lugar.codigo,
+            'nombre': lugar.nombre,
+            'tipo': lugar.tipo,
+            'valoracion': lugar.valoracion
+        }
+        for actividad in recomendaciones
+        if actividad.id is not None and (lugar := actividadService.obtenerLugarActividad(actividad.id)) is not None
+    ]
 
     return jsonify(recomendaciones_json)
 
 @app.route('/recomendacionActividadesIA/<int:usuarioID>',methods=['GET'])
 def actividadRecomendacion(usuarioID):
-    recomendaciones = PruebaIA(getEngine())
-    recomendacionesIA = recomendaciones.cargadoDeIA(usuarioID)
-
-
-    recomendacionesActividad_json = []
-    for actividad in recomendacionesIA:
-        if actividad is not None:
-            recomendacionesActividad_dict= {
-                'id': actividad.id,
-                'nombre_actividad': actividad.nombre,
-                'valoracion' : actividad.valoracion,
-                'duracion' : actividad.duracion.strftime("%H:%M:%S")
-            }
-            recomendacionesActividad_json.append(recomendacionesActividad_dict)
+    with Session(getEngine()) as db_session:
+        generador = GeneradorRecomendaciones(modelo_recomendacion, db_session)
+        recomendaciones = generador.generar_recomendaciones(usuarioID)
     
-    return jsonify(recomendacionesActividad_json) 
+    recomendaciones_serializables = [
+        {
+            'id': actividad.id,
+            'nombre_actividad': actividad.nombre,
+            'valoracion' : actividad.valoracion,
+            'duracion' : actividad.duracion.strftime("%H:%M:%S")
+            # Agrega otros atributos necesarios de `Actividad`
+        } 
+        for actividad in recomendaciones
+    ]
+    
+    return jsonify(recomendaciones_serializables)
+
 
 @app.route('/like/<int:usuarioID>',methods=['POST'])
 def like(usuarioID):
