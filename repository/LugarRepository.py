@@ -116,5 +116,12 @@ class LugarRepository:
             order_by(func.max(Lugar.valoracion)).all()
         
         return lugares
+
+    def getLugaresByCiudadID(self, ciudadID):
+        lugares = self.db_session.query(Lugar).\
+            join(Ciudad, Ciudad.id == Lugar.id_ciudad).\
+            filter(Ciudad.id == ciudadID).all()
+        
+        return lugares
     
     

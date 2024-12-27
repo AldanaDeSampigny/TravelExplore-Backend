@@ -475,6 +475,24 @@ def obtenerCiudades():
 
         return jsonify(ciudades)
     
+@app.route('/lugares/por/ciudades/<int:idCiudad>', methods=['GET'])
+def lugaresByCiudades(idCiudad):
+    with Session(getEngine()) as session:
+        lugarRepo = LugarRepository(session)
+
+        opciones = lugarRepo.getLugaresByCiudadID(idCiudad)
+
+        lugares = []
+        for lugar in opciones:
+            lugar_data = {
+                'id': lugar.id,
+                'nombre': lugar.nombre
+            }
+            lugares.append(lugar_data)
+
+    return jsonify(lugares)
+
+    
 @app.route('/lugares', methods=['GET'])
 def lugares():
     with Session(getEngine()) as session:
