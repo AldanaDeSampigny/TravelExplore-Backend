@@ -107,7 +107,7 @@ class LugarService:
     def guardarCategoria(self, lugar, categoriaNombre):
         with Session(getEngine()) as session:
             repository = CategoriaRepository(session)
-            categoria = repository.getCategoriaNombre(categoriaNombre)
+            categoria = repository.getCategoriaIngles(categoriaNombre)
 
             if categoria:
                 nuevoLugarCategoria = LugarCategoria()
@@ -133,7 +133,7 @@ class LugarService:
     def guardarCategoriaCiudad(self, ciudad, categoriaNombre):
         with Session(getEngine()) as session:
             repository = CategoriaRepository(session)
-            categoria = repository.getCategoriaNombre(categoriaNombre)
+            categoria = repository.getCategoriaIngles(categoriaNombre)
 
             if categoria:
                 nuevoCiudadCategoria = CiudadCategoria()

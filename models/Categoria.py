@@ -12,6 +12,7 @@ class Categoria(Base):
     id = Column(Integer, primary_key=True)
     codigo = Column(String)
     nombre = Column(String)
+    ingles = Column(String)
 
     metadata_obj.create_all(getEngine())
 
@@ -20,4 +21,5 @@ class Categoria(Base):
         "id": self.id,
         "nombre": self.nombre,
         "codigo": self.codigo,
+        "ingles": self.ingles
       }

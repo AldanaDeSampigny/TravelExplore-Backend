@@ -15,6 +15,12 @@ class CategoriaRepository:
             filter(Categoria.nombre == nombreCategoria).first()
         
         return categoria
+    
+    def getCategoriaIngles(self, inglesCategoria):
+        categoria = self.db_session.query(Categoria).\
+            filter(Categoria.ingles == inglesCategoria).first()
+        
+        return categoria
 
     def getCategoriaUsuario(self, usuarioID):
         categorias = self.db_session.query(Categoria.id).\
