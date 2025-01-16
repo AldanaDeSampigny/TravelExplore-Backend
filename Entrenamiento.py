@@ -102,25 +102,17 @@ def entrenarIA():
         train_dataset = interactions_dataset.take(train_size)
         test_dataset = interactions_dataset.skip(train_size)
 
-        # Define el modelo de usuario (reemplaza con tu lógica)
         user_model = tf.keras.Sequential([
-            # Input con la misma forma que las preferencias de usuarios
             tf.keras.layers.Input(shape=(num_categorias,)),
             tf.keras.layers.Dense(32, activation='relu'),
-            # Agrega más capas si es necesario
         ])
-        # Define el modelo de actividad
         activity_model = tf.keras.Sequential([
-            # Representación de la categoría
             tf.keras.layers.Input(shape=(num_categorias,)),
-            # Embeddings de categoría
             tf.keras.layers.Embedding(input_dim=num_categorias, output_dim=256),
-            tf.keras.layers.Flatten(),  # Aplanar los embeddings
+            tf.keras.layers.Flatten(), 
             tf.keras.layers.Dense(256, activation='relu'),
-            # Agregar más capas si es necesario
-            tf.keras.layers.Dense(32)  # Capa de salida para la métrica
+            tf.keras.layers.Dense(32) 
         ])
-        # Define la entrada para el usuario y la actividad
         user_input = tf.keras.layers.Input(shape=(num_categorias,), name='input_')
 
         activity_input = tf.keras.layers.Input(
@@ -146,10 +138,7 @@ def entrenarIA():
                 return self.task(user_embeddings, activity_embeddings)
 
             def get_config(self):
-                #Devuelve un diccionario con la configuración del modelo
-                #Puedes personalizar esto según tu modelo
                 config = super(MyModel, self).get_config()
-                #Agrega cualquier configuración específica de tu modelo al diccionario
                 return config 
 
         model = MyModel(user_model, activity_model, task)

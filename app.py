@@ -61,7 +61,6 @@ from .models.ActividadesFavoritas import ActividadesFavoritas
 
 app = Flask(__name__)
 CORS(app)
-DeDatos = getSession()
 engine = getEngine()
 Base.metadata.create_all(engine)
 
@@ -90,11 +89,15 @@ llave = 'AIzaSyCNGyJScqlZHlbDtoivhNaK77wvy4AlSLk'
 modelo_recomendacion = None
 
 print("Cargando modelo...")
-ia = PruebaIA(DeDatos)
+ia = PruebaIA(getSession())
 modelo_recomendacion = ia.cargadoDeIA()
+
 print(f"Tipo de modelo_recomendacion: {type(modelo_recomendacion)}")
 print(modelo_recomendacion.summary())
-AgendaService(modelo_recomendacion, DeDatos)
+
+AgendaService(modelo_recomendacion, getSession())
+
+generadorRecomendaciones = GeneradorRecomendaciones(modelo_recomendacion)
 
 @app.route('/', methods=['GET'])
 def clean_publications():
@@ -112,8 +115,6 @@ entrenar_IA()
 
 if __name__ == '__main__':
     app.run(host="if012atur.fi.mdn.unp.edu.ar", debug=True, port=28001)
-
-
 
 @app.route('/recomendar/<int:usuarioID>', methods=['GET'])
 def recomendar(usuarioID):
@@ -266,29 +267,9 @@ def EliminarActividad(actividadID, AgendaViajeID):
 
 @app.route('/recomendacionLugaresIA/<int:usuarioID>',methods=['GET'])
 def lugarRecomendacion(usuarioID):
-    
-    
-    """recomendaciones_serializables = [
-        {
-            'id': actividad.id,
-            'nombre_actividad': actividad.nombre,
-            'valoracion' : actividad.valoracion,
-            'duracion' : actividad.duracion.strftime("%H:%M:%S")
-            # Agrega otros atributos necesarios de `Actividad`
-        } 
-        for actividad in recomendaciones
-    ]
-    
-    return jsonify(recomendaciones_serializables) """
+    recomendaciones = generadorRecomendaciones.generar_recomendaciones(usuarioID) or []
 
-    with Session(getEngine()) as db_session:
-        generador = GeneradorRecomendaciones(modelo_recomendacion, db_session)
-        recomendaciones = generador.generar_recomendaciones(usuarioID) or []
-
-    lugarService = LugarService(getEngine())
     actividadService = ActividadesService(getEngine())
-
-    # Generar la lista de recomendaciones JSON
     recomendaciones_json = [
         {
             'id': lugar.codigo,
@@ -304,9 +285,7 @@ def lugarRecomendacion(usuarioID):
 
 @app.route('/recomendacionActividadesIA/<int:usuarioID>',methods=['GET'])
 def actividadRecomendacion(usuarioID):
-    with Session(getEngine()) as db_session:
-        generador = GeneradorRecomendaciones(modelo_recomendacion, db_session)
-        recomendaciones = generador.generar_recomendaciones(usuarioID)
+    recomendaciones = generadorRecomendaciones.generar_recomendaciones(usuarioID)
     
     recomendaciones_serializables = [
         {
@@ -314,7 +293,6 @@ def actividadRecomendacion(usuarioID):
             'nombre_actividad': actividad.nombre,
             'valoracion' : actividad.valoracion,
             'duracion' : actividad.duracion.strftime("%H:%M:%S")
-            # Agrega otros atributos necesarios de `Actividad`
         } 
         for actividad in recomendaciones
     ]
