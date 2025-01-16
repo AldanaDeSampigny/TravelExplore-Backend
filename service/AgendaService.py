@@ -281,7 +281,7 @@ class AgendaService:
 
     def getActividadesRecomendadas(self, usuarioID):
         with Session(getEngine()) as session:
-            recomendaciones = GeneradorRecomendaciones(self.modelo_recomendacion, session)
+            recomendaciones = GeneradorRecomendaciones(self.modelo_recomendacion)
             recomendacionesIA = recomendaciones.generar_recomendaciones(usuarioID)
 
             
