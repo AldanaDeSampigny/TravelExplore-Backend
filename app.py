@@ -1037,16 +1037,20 @@ def getAgendaDiaria(idAgenda, idCiudad):
     for row in agendaDiaria:
         print("ROW COMPLETO: ",row)
         id_actividad = row[3]
+        print("ciudad", row[9])
         if id_actividad not in actividades_dict:
             actividades_dict[id_actividad] = {
                 "id": row[0],
                 "horaInicio": row[1].strftime('%H:%M:%S'),
                 "horaFin": row[2].strftime('%H:%M:%S'),
-                "actividad":{'id': row[3],
-                'nombre': row[4]},
+                "actividad":{
+                    'id': row[3],
+                    'nombre': row[4]
+                },
                 "lugar": None,
                 "otrosLugares": [],
-                "transporte_ciudad": row[8]
+                "transporte_ciudad": row[8],
+                "nombreCiudad" : row[9]
             }
 
         lugarAgenda = {

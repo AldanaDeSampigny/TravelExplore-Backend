@@ -27,6 +27,9 @@ class GeneradorRecomendaciones:
             self.num_categorias = len(categorias) + 1 
             self.num_actividades = len(actividades)  
 
+            #!Metodo nuevo para separar todo esta parte de codigo 
+            #!def armadoDeInfoActividades(actividades)
+            
             for acti in actividades:
                 categorias_actividades[acti.id].append(self.categoriaRepository.getCategoriaActividad(acti.id))
 
