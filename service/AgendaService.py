@@ -237,26 +237,16 @@ class AgendaService:
 
         return distance
 
-
-
-    # Calcular la distancia entre las coordenadas
-    # distance = calculate_distance(coord1[0], coord1[1], coord2[0], coord2[1])
-    # print(f"La distancia entre Nueva York y Los Ángeles es de {distance:.2f} km.")
-
     def calculoDeDistancias(self, usuarioID, destinoID, ultimo, anteultimo ,actividades):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             distancias = []
             ultimoLugar = agenda_repo.buscarLugar(ultimo)
-            #anteultimo = agenda_repo.buscarLugar(anteultimo[0])
 
             actividades = agenda_repo.buscarActividad(usuarioID, destinoID)
 
             for uno in range(len(actividades)):
                 if ultimo != actividades[uno].id and anteultimo != actividades[uno].id:
-                    # print("uno ",uno)
-                    # print("ultimo ", ultimo)
-                    # print("anteultimo ", anteultimo)
                     lugar2 = agenda_repo.buscarLugar(actividades[uno].id)
                     distancia = self.haversine_distance(
                         ultimoLugar.latitud, ultimoLugar.longitud, lugar2.latitud, lugar2.longitud)
@@ -325,28 +315,23 @@ class AgendaService:
         return hora_actual
     
     def traslado(self, transporte, hora_actual, lugar, actividadIds, IDaux):
-        with Session(getEngine()) as session:
-            siguiente_actividad_id = actividadIds[IDaux + 1] if IDaux + 1 < len(actividadIds) else None
+        tiempoTraslado = self.calcularTiempoTraslado(transporte)
+            
+        if tiempoTraslado:
+            hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
+            print("traslado horainiciodatetime ", hora_inicio_datetime)
+            hora_actual = (hora_inicio_datetime + tiempoTraslado).time()
 
-            siguiente_lugar = None
-            if siguiente_actividad_id:
-                siguiente_lugar = session.query(Lugar).join(
-                    ActividadLugar, ActividadLugar.id_lugar == Lugar.id
-                ).filter(ActividadLugar.id_actividad == siguiente_actividad_id
-                ).first()
+        return hora_actual
         
-            #?siguiente_lugar es llamado abajo pero esta comentado MOMENTANEAMENTE
-            if lugar:
-                tiempoTraslado = timedelta(minutes=5)#self.calcularTiempoTraslado(lugares[0], siguiente_lugar, transporte)
-            else:
-                tiempoTraslado = timedelta(minutes = 5)
-                
-            if tiempoTraslado:
-                hora_inicio_datetime = datetime.combine(datetime.today(), hora_actual)
-                print("traslado horainiciodatetime ", hora_inicio_datetime)
-                hora_actual = (hora_inicio_datetime + tiempoTraslado).time()
-
-            return hora_actual
+    def calcularTiempoTraslado(self, transporte):
+        tiempos_por_transporte = {
+            "driving": timedelta(minutes=8),
+            "walking": timedelta(minutes=17),
+            "bicycling": timedelta(minutes=13),
+            "transit": timedelta(minutes=14),
+        }
+        return tiempos_por_transporte.get(transporte, timedelta(minutes=5))  # Default si no se encuentra
 
     def aceptar_actividad(self, actividad, lugar, lugares, actividadIds, fecha_actual, IDaux, transporte, gustos_agregados, hora_actual):
         with Session(getEngine()) as session:
@@ -363,7 +348,7 @@ class AgendaService:
                     'id': actividad.id,
                     'dia': fecha_actual,
                     'hora_inicio': hora_actual,
-                    'hora_fin': resultado['hora_cierre_intervalo'],
+                    'hora_fin': intervalo,
                     'actividad': actividad,
                     'lugar': lugar.id if lugar else None,
                     'lugares': lugares if lugares else []
