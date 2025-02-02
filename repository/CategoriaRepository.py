@@ -39,6 +39,13 @@ class CategoriaRepository:
     
         return result
     
+    def getUsuarioYCategoria(self, idUsuario, categoria):
+        relacion = self.db_session.query(UsuarioCategoria.id_categorias).\
+            filter(UsuarioCategoria.id_categorias == categoria).\
+            filter(UsuarioCategoria.id_usuario == idUsuario).first()
+        
+        return relacion
+    
     def getCategoriaLugar(self, lugarID):
         catLugar = self.db_session.query(Categoria.id).\
             join(LugarCategoria, Categoria.id == LugarCategoria.id_categoria).\

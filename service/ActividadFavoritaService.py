@@ -52,14 +52,18 @@ class ActividadFavoritaService:
 
             categorias = categoriaRepository.getCategoriaActividad(idActividad)
 
-            """ for categoria in categorias:
-                nuevaCategoria = UsuarioCategoria()
-                nuevaCategoria.id_categorias = categoria
-                nuevaCategoria.id_usuario = idUsuario
+            for categoria in categorias:
+                existe = categoriaRepository.getUsuarioYCategoria(idUsuario, categoria)
+                print("relacion: ", existe) 
+                if existe == None :
+                    nuevaCategoria = UsuarioCategoria()
+                    nuevaCategoria.id_categorias = categoria
+                    nuevaCategoria.id_usuario = idUsuario
 
-                session.add(nuevaCategoria)
-                session.commit()
- """
+                    session.add(nuevaCategoria)
+                    session.commit()
+                else: 
+                    print("existe la relacion entre: ",idUsuario, ", ", categoria)
     
 
     def quitarGustoActividad(self,idUsuario,actividad):
