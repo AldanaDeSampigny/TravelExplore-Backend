@@ -316,7 +316,7 @@ def likeActividad(usuarioID):
 
     actividadFavoritaService.agregarGustoActividad(usuarioID,actividad)    
 
-    return '{ "data": "Gusto Actividad Actualizado" }'
+    return '{ }'
 
 @app.route('/dislike/<int:usuarioID>',methods=['POST'])
 def dislike(usuarioID):

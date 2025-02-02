@@ -20,19 +20,23 @@ class ActividadFavoritaService:
 
     def agregarGustoActividad(self,idUsuario,actividad):
         with Session(getEngine()) as session:
-            gusto = FavoritoRepository(session)
-            categoria = CategoriaRepository(session)
+            favoritoRepository = FavoritoRepository(session)
+            categoriaRepository = CategoriaRepository(session)
 
             idActividad = actividad.get('id')
             
             actividadRepository = ActividadRepository(session)
 
-            gustoObtenido = gusto.getActividadUsuario(idUsuario,idActividad)
+            gustoObtenido = favoritoRepository.getActividadUsuario(idUsuario,idActividad)
 
             if gustoObtenido != None:   #existe en lugares favoritos
                 id = gustoObtenido[0]
                 
-                gusto.updateLikeActividad(idUsuario, id, 1)
+                if gustoObtenido.like == 1:
+                    print("llego al -1")
+                    favoritoRepository.updateLikeActividad(idUsuario, id, -1)
+                else:
+                    favoritoRepository.updateLikeActividad(idUsuario, id, 1)
             else: #no existe en lugares
                 actividadObtenida = actividadRepository.getActividad(idActividad)
 
@@ -45,21 +49,17 @@ class ActividadFavoritaService:
 
                     session.add(nuevoMeGusta)
                     session.commit()
-            
-            if gustoObtenido != None and gustoObtenido.like == 1:
-                print("llego al -1")
-                gusto.updateLikeActividad(idUsuario, id, -1)
 
-            categorias = categoria.getCategoriaActividad(idActividad)
+            categorias = categoriaRepository.getCategoriaActividad(idActividad)
 
-            for cate in categorias:
+            """ for categoria in categorias:
                 nuevaCategoria = UsuarioCategoria()
-                nuevaCategoria.id_categorias = cate
+                nuevaCategoria.id_categorias = categoria
                 nuevaCategoria.id_usuario = idUsuario
 
                 session.add(nuevaCategoria)
                 session.commit()
-
+ """
     
 
     def quitarGustoActividad(self,idUsuario,actividad):
@@ -74,6 +74,8 @@ class ActividadFavoritaService:
             print("gusto obtenido actividad -->", gustoObtenido)
             if gustoObtenido != None:   #existe en lugares favoritos
                 id = gustoObtenido[0]
+                print("actividad NO existe ", gustoObtenido)
+
                 
                 gusto.updateLikeActividad(idUsuario, id, 0)
             else: #no existe en lugares
