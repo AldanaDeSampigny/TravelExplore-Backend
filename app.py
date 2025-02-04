@@ -1052,6 +1052,7 @@ def getAgendaDiaria(idAgenda, idCiudad):
                 "transporte_ciudad": row[8],
                 "nombreCiudad" : row[9]
             }
+        idLugarSeleccionado = row[10] 
 
         lugarAgenda = {
             "id_actividad": row[3],
@@ -1059,10 +1060,10 @@ def getAgendaDiaria(idAgenda, idCiudad):
             "nombre": row[6],
         }
         actividades_dict[id_actividad]["otrosLugares"].append(lugarAgenda)
-
+        if lugarAgenda["id_lugar"] == idLugarSeleccionado:
+            actividades_dict[id_actividad]["lugar"] = lugarAgenda
+    
     for id_actividad, actividad in actividades_dict.items():
-        if actividad["otrosLugares"]:
-            actividad["lugar"] = actividad["otrosLugares"][0]  # Asignar el primer lugar en la lista a "lugar"
         agenda.append(actividad)
 
     print("&&&& AGENDA:",agenda)

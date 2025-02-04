@@ -120,6 +120,8 @@ class AgendaRepository:
             Ciudad.id,
             AgendaDiaria.transporte_ciudad,
             Ciudad.nombre,
+
+            ActividadAgenda.id_lugar
             
         ).select_from(AgendaDiaria).\
         join(ActividadAgenda, AgendaDiaria.id == ActividadAgenda.id_agenda).\
