@@ -326,7 +326,7 @@ def dislike(usuarioID):
     
     lugarFavoritoService.quitarGusto(usuarioID,lugar)    
 
-    return '{ "data": "Gusto Actualizado" }'
+    return lugar
 
 @app.route('/dislikeActividad/<int:usuarioID>',methods=['POST'])
 def dislikeActividad(usuarioID):
@@ -600,9 +600,7 @@ def lugaresCercanos(idUsuario,kilometros):
         # Realiza la búsqueda de lugares cercanos
         places = gmaps.places_nearby(location=localizacion, type=tipo, radius=radio)
 
-
-    # Filtra los primeros 5 resultados si hay más disponibles
-    lugares_cercanos = places['results'][:5]
+    lugares_cercanos = places['results'][:10]
 
     ciudad = places.get('address_components', [])
     provincia = None
@@ -662,8 +660,11 @@ def lugaresCercanos(idUsuario,kilometros):
             'like':  likeLugarFavorito
         }
 
-        lugares.append(lugarGusto)
-    return jsonify(lugares)
+        if(lugarGusto['lugar']['tipo'] != "locality" and lugarGusto['lugar']['tipo'] != "city"):
+            lugares.append(lugarGusto)
+            print(jsonify(lugarGusto))
+        
+    return jsonify(lugares[:5])
 
 @app.route('/lugarGustos/<int:usuarioId>', methods=['GET'])
 def favoritos(usuarioId):

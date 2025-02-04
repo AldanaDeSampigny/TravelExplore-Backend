@@ -24,9 +24,10 @@ class LugarFavoritoService:
 
     def agregarGusto(self,idUsuario,lugar):
         with Session(getEngine()) as session:
-            categoria = CategoriaRepository(session)
             gusto = FavoritoRepository(session)
-            codigoLugar = lugar.get('codigo')
+
+            codigoLugar = lugar.get('id')
+            print("codigo", codigoLugar)
             
             lugarRepository = LugarRepository(session)
 
@@ -34,8 +35,13 @@ class LugarFavoritoService:
 
             if gustoObtenido != None:   #existe en lugares favoritos
                 idLugar = gustoObtenido[0]
-                
-                gusto.updateLike(idUsuario, idLugar, 1)
+                print("lugar obtenido", idLugar)
+                if gustoObtenido.like == 1:
+                    print("llego al -1")
+                    gusto.updateLike(idUsuario, idLugar, -1)
+                else:
+                    gusto.updateLike(idUsuario, idLugar, 1)
+
             else: #no existe en lugares
                 lugarObtenido = lugarRepository.getLugar(codigoLugar)
 
@@ -52,34 +58,31 @@ class LugarFavoritoService:
                 else: #no existe en lugar
                     lugarService = LugarService(session)
 
-                    lugarService.guardarLugar(lugar)
+                    lugarRecibido = lugarService.guardarLugar(lugar)
+                    
+                    #lugarRecibido = lugarRepository.getLugar(codigoLugar)   
+                    print("lugar no existe ",str(lugarRecibido))                 
 
-                    lugarRecibido = lugarRepository.getLugar(lugar.get('id'))   
-                    print("lugar no existe ",lugarRecibido)                 
+                    if(lugarRecibido != None):
+                        nuevo = LugaresFavoritos()
+                        nuevo.usuario_id = idUsuario
+                        nuevo.lugar_id = lugarRecibido.id
+                        nuevo.like = 1
 
-                    nuevo = LugaresFavoritos()
-                    nuevo.usuario_id = idUsuario
-                    nuevo.lugar_id = lugarRecibido.id
-                    nuevo.like = 1
+                        session.add(nuevo)
+                        session.commit()
 
-                    session.add(nuevo)
-                    session.commit()
-            
-            if gustoObtenido != None and gustoObtenido.like == 1:
-                print("llego al -1")
-                gusto.updateLike(idUsuario, idLugar, -1)
-
-            lugarRecibido = lugarRepository.getLugar(lugar.get('id'))
-
-            categorias = categoria.getCategoriaLugar(lugarRecibido.id)
-
+            """  lugarRecibido = lugarRepository.getLugar(lugar.get('id'))
+            print("lugar recibido final",lugarRecibido) """
+            #categorias = categoria.getCategoriaLugar(lugarRecibido.id)
+            """ 
             for cate in categorias:
                 nuevaCategoria = UsuarioCategoria()
                 nuevaCategoria.id_categorias = cate
                 nuevaCategoria.id_usuario = idUsuario
 
                 session.add(nuevaCategoria)
-                session.commit()
+                session.commit() """
 
             
     
@@ -113,7 +116,7 @@ class LugarFavoritoService:
 
                     lugarService.guardarLugar(lugar)
 
-                    lugarRecibido = lugarRepository.getLugar(lugar.get('id'))   
+                    lugarRecibido = lugarRepository.getLugar(codigoLugar)   
                     print("lugar",lugarRecibido)                 
 
                     nuevo = LugaresFavoritos()

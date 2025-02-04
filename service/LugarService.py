@@ -101,8 +101,8 @@ class LugarService:
                                     session.commit()
                                 else:
                                     print("No se encontró un formato de hora válido en:", rangoTiempo)
-                        
-            print("se guardo")
+
+            return nuevoLugar
 
     def guardarCategoria(self, lugar, categoriaNombre):
         with Session(getEngine()) as session:
