@@ -125,6 +125,13 @@ class AgendaService:
                 print("AGENDA ACTUALIZADA: ", actividadAgenda)
                 session.add(actividadAgenda)
                 session.commit()
+
+                actividadLugar = ActividadLugar()
+                actividadLugar.id_actividad = agendadiaria['actividad']['id']
+                actividadLugar.id_lugar = agendadiaria['lugar']['id_lugar']
+
+                session.merge(actividadLugar)  # Inserta si no existe, actualiza si ya está
+                session.commit()
             else:
                 actividadAgendaNueva = ActividadAgenda()
                 actividadAgendaNueva.id_agenda = agendadiaria['id']
@@ -134,6 +141,13 @@ class AgendaService:
                 actividadAgendaNueva.id_lugar = agendadiaria['lugar']['id_lugar']
                 
                 session.add(actividadAgendaNueva)
+                session.commit()
+
+                actividadLugar = ActividadLugar()
+                actividadLugar.id_actividad = agendadiaria['actividad']['id']
+                actividadLugar.id_lugar = agendadiaria['lugar']['id_lugar']
+
+                session.merge(actividadLugar)  # Inserta si no existe, actualiza si ya está
                 session.commit()
 
     def calcular_tiempo_traslado(self,origenM, destinoM, transporteM):
