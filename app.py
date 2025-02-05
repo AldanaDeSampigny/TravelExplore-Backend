@@ -307,7 +307,7 @@ def like(usuarioID):
 
     lugarFavoritoService.agregarGusto(usuarioID,lugar)    
 
-    return '{ "data": "Gusto Actualizado" }'
+    return {'Like Actualizado'}
 
 @app.route('/likeActividad/<int:usuarioID>',methods=['POST'])
 def likeActividad(usuarioID):
@@ -326,7 +326,7 @@ def dislike(usuarioID):
     
     lugarFavoritoService.quitarGusto(usuarioID,lugar)    
 
-    return lugar
+    return {'Dislike Actualizado'}
 
 @app.route('/dislikeActividad/<int:usuarioID>',methods=['POST'])
 def dislikeActividad(usuarioID):
@@ -728,17 +728,17 @@ def favoritos(usuarioId):
 
                 lugarFavorito = LugarFavoritoService(getEngine()).getLugarFavorito(usuarioId,lugar['id'])
 
-                if(lugarFavorito != None):
-                    likeLugarFavorito = lugarFavorito.like
-                else:
-                    likeLugarFavorito = -1
+            if(lugarFavorito != None):
+                likeLugarFavorito = lugarFavorito.like
+            else:
+                likeLugarFavorito = -1
 
-                lugarGusto = {
-                    'lugar': lugar,
-                    'like':  likeLugarFavorito
-                }
+            lugarGusto = {
+                'lugar': lugar,
+                'like':  likeLugarFavorito
+            }
 
-                lugares.append(lugarGusto)
+            lugares.append(lugarGusto)
 
     if not lugares:
         # Si no se encontraron lugares, crea un mensaje JSON personalizado
@@ -922,9 +922,7 @@ def getAgenda(usuarioID,agendaID):
         direccion = f"{hospedaje_str},{nombre_ciudad_str}"
 
         print("direccion",direccion)
-        #!seguir viendo el tema del formato ahora esta asi (direccion,)
-        #!acceder a la tupla 
-        #! hay que logra que quede "Villarino 1385,Puerto Madryn"
+
         ubicacion = geolocator.geocode(query=direccion, exactly_one=True)
 
         actividadFavorita = ActividadFavoritaService(getEngine()).getActividadFavorita(usuarioID,row[2])
