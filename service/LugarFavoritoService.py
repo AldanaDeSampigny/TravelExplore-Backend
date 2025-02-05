@@ -114,18 +114,18 @@ class LugarFavoritoService:
                 else:
                     lugarService = LugarService(session)
 
-                    lugarService.guardarLugar(lugar)
-
-                    lugarRecibido = lugarRepository.getLugar(codigoLugar)   
+                    lugarRecibido = lugarService.guardarLugar(lugar)
+                   
+                    #lugarRecibido = lugarRepository.getLugar(codigoLugar)   
                     print("lugar",lugarRecibido)                 
+                    if(lugarRecibido != None):
+                        nuevo = LugaresFavoritos()
+                        nuevo.usuario_id = idUsuario
+                        nuevo.lugar_id = lugarRecibido.id
+                        nuevo.like = 0
 
-                    nuevo = LugaresFavoritos()
-                    nuevo.usuario_id = idUsuario
-                    nuevo.lugar_id = lugarRecibido.id
-                    nuevo.like = 0
-
-                    session.add(nuevo)
-                    session.commit()
+                        session.add(nuevo)
+                        session.commit()
         
             if gustoObtenido != None and gustoObtenido.like == 0:
                 gusto.updateLike(idUsuario, idLugar, -1)
