@@ -13,6 +13,7 @@ from ..models.LugaresFavoritos import LugaresFavoritos
 
 from ..models.Usuario import Usuario
 from sqlalchemy import func
+from sqlalchemy import or_
 
 class AgendaRepository:
     def __init__(self, db_session): #esto seria un constructor
@@ -120,6 +121,8 @@ class AgendaRepository:
             Ciudad.id,
             AgendaDiaria.transporte_ciudad,
             Ciudad.nombre,
+
+            ActividadAgenda.id_lugar
             
         ).select_from(AgendaDiaria).\
         join(ActividadAgenda, AgendaDiaria.id == ActividadAgenda.id_agenda).\
@@ -127,9 +130,15 @@ class AgendaRepository:
         join(ActividadLugar, Actividad.id == ActividadLugar.id_actividad).\
         join(Lugar, ActividadLugar.id_lugar == Lugar.id).\
         outerjoin(Ciudad, Lugar.id_ciudad == Ciudad.id).\
-        filter(AgendaDiaria.id == id).\
-        filter(Ciudad.id == idCiudad).\
-            order_by(ActividadAgenda.horadesde).all()
+        outerjoin(LugaresFavoritos, LugaresFavoritos.lugar_id == Lugar.id).\
+        filter( 
+            AgendaDiaria.id == id,
+            Ciudad.id == idCiudad,
+            or_(
+                LugaresFavoritos.lugar_id == None,  # Si el lugar no está en LugaresFavorito
+                LugaresFavoritos.like != 0   # O si el lugar tiene un `like` distinto de 0
+            )
+        ).order_by(ActividadAgenda.horadesde).all()
 
         return agenda
     

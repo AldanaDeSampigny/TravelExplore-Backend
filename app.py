@@ -307,7 +307,7 @@ def like(usuarioID):
 
     lugarFavoritoService.agregarGusto(usuarioID,lugar)    
 
-    return '{ "data": "Gusto Actualizado" }'
+    return {'Like Actualizado'}
 
 @app.route('/likeActividad/<int:usuarioID>',methods=['POST'])
 def likeActividad(usuarioID):
@@ -326,7 +326,7 @@ def dislike(usuarioID):
     
     lugarFavoritoService.quitarGusto(usuarioID,lugar)    
 
-    return '{ "data": "Gusto Actualizado" }'
+    return {'Dislike Actualizado'}
 
 @app.route('/dislikeActividad/<int:usuarioID>',methods=['POST'])
 def dislikeActividad(usuarioID):
@@ -600,9 +600,7 @@ def lugaresCercanos(idUsuario,kilometros):
         # Realiza la búsqueda de lugares cercanos
         places = gmaps.places_nearby(location=localizacion, type=tipo, radius=radio)
 
-
-    # Filtra los primeros 5 resultados si hay más disponibles
-    lugares_cercanos = places['results'][:5]
+    lugares_cercanos = places['results'][:10]
 
     ciudad = places.get('address_components', [])
     provincia = None
@@ -662,8 +660,11 @@ def lugaresCercanos(idUsuario,kilometros):
             'like':  likeLugarFavorito
         }
 
-        lugares.append(lugarGusto)
-    return jsonify(lugares)
+        if(lugarGusto['lugar']['tipo'] != "locality" and lugarGusto['lugar']['tipo'] != "city"):
+            lugares.append(lugarGusto)
+            print(jsonify(lugarGusto))
+        
+    return jsonify(lugares[:5])
 
 @app.route('/lugarGustos/<int:usuarioId>', methods=['GET'])
 def favoritos(usuarioId):
@@ -727,17 +728,17 @@ def favoritos(usuarioId):
 
                 lugarFavorito = LugarFavoritoService(getEngine()).getLugarFavorito(usuarioId,lugar['id'])
 
-                if(lugarFavorito != None):
-                    likeLugarFavorito = lugarFavorito.like
-                else:
-                    likeLugarFavorito = -1
+            if(lugarFavorito != None):
+                likeLugarFavorito = lugarFavorito.like
+            else:
+                likeLugarFavorito = -1
 
-                lugarGusto = {
-                    'lugar': lugar,
-                    'like':  likeLugarFavorito
-                }
+            lugarGusto = {
+                'lugar': lugar,
+                'like':  likeLugarFavorito
+            }
 
-                lugares.append(lugarGusto)
+            lugares.append(lugarGusto)
 
     if not lugares:
         # Si no se encontraron lugares, crea un mensaje JSON personalizado
@@ -921,9 +922,7 @@ def getAgenda(usuarioID,agendaID):
         direccion = f"{hospedaje_str},{nombre_ciudad_str}"
 
         print("direccion",direccion)
-        #!seguir viendo el tema del formato ahora esta asi (direccion,)
-        #!acceder a la tupla 
-        #! hay que logra que quede "Villarino 1385,Puerto Madryn"
+
         ubicacion = geolocator.geocode(query=direccion, exactly_one=True)
 
         actividadFavorita = ActividadFavoritaService(getEngine()).getActividadFavorita(usuarioID,row[2])
@@ -1052,6 +1051,7 @@ def getAgendaDiaria(idAgenda, idCiudad):
                 "transporte_ciudad": row[8],
                 "nombreCiudad" : row[9]
             }
+        idLugarSeleccionado = row[10] 
 
         lugarAgenda = {
             "id_actividad": row[3],
@@ -1059,10 +1059,10 @@ def getAgendaDiaria(idAgenda, idCiudad):
             "nombre": row[6],
         }
         actividades_dict[id_actividad]["otrosLugares"].append(lugarAgenda)
-
+        if lugarAgenda["id_lugar"] == idLugarSeleccionado:
+            actividades_dict[id_actividad]["lugar"] = lugarAgenda
+    
     for id_actividad, actividad in actividades_dict.items():
-        if actividad["otrosLugares"]:
-            actividad["lugar"] = actividad["otrosLugares"][0]  # Asignar el primer lugar en la lista a "lugar"
         agenda.append(actividad)
 
     print("&&&& AGENDA:",agenda)
