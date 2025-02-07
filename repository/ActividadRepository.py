@@ -1,4 +1,5 @@
 from ..models.ActividadLugar import ActividadLugar
+from ..models.ActividadesFavoritas import ActividadesFavoritas
 from ..models.ActividadCategoria import ActividadCategoria
 from ..models.Actividad import Actividad
 from ..models.Categoria import Categoria
@@ -61,16 +62,16 @@ class ActividadRepository:
 
         return lugares
     
-    """ def getLugaresDeActividad(self,idActividad):
-        lugares = self.db_session.query(
-            Actividad.id,
-            Lugar.id,
-            Lugar.nombre,
-        ).join(ActividadLugar, ActividadLugar.id_lugar == Lugar.id).\
-        join(Actividad, Actividad.id == ActividadLugar.id_actividad).\
-        join(Ciudad, Ciudad.id == Lugar.id_ciudad).\
-        filter(Actividad.id == idActividad).\
-        .all()
-
-        return lugares """
-
+    def getActividadesOdiadas(self, usuarioID):
+        actividades = self.db_session.query(ActividadesFavoritas.actividad_id).\
+            filter(ActividadesFavoritas.usuario_id == usuarioID).\
+            filter(ActividadesFavoritas.like == 0).all()
+        
+        return [row[0] for row in actividades]
+    
+    def getActividadesFavoritas(self, usuarioID):
+        actividades = self.db_session.query(ActividadesFavoritas.actividad_id).\
+            filter(ActividadesFavoritas.usuario_id == usuarioID).\
+            filter(ActividadesFavoritas.like == 1).all()
+        
+        return [row[0] for row in actividades]

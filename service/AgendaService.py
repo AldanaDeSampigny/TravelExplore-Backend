@@ -408,15 +408,20 @@ class AgendaService:
     def generarAgendaDiaria(self, ubicacion, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
+            actividadRepo = ActividadRepository(session)
             agenda = []
             gustos_agregados = set()
 
             fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
+            actividadIds.extend(actividadRepo.getActividadesFavoritas(usuarioID))
 
             actividadIds.extend(self.recomendaciones_IA(usuarioID)) 
             actividadIds = [a[0] if isinstance(a, (tuple, list)) else a for a in actividadIds]
+
+            malasActividades = actividadRepo.getActividadesOdiadas(usuarioID)
+            actividadIds = [act for act in actividadIds if act not in malasActividades]
             print("Actividad IDs procesados:", actividadIds)
 
             while fecha_actual <= fecha_hasta:
@@ -435,13 +440,13 @@ class AgendaService:
                     lugar = None
                     for actividad_id in actividadIds:
                         actividad = actividades.get(actividad_id)
+                        print("actividad actual: ",actividad_id," - ",actividad.nombre)
+                        lugares = agenda_repo.buscarLugares(actividad.id, destinoID, usuarioID)
 
-                        if not actividad or not (actividad.horainicio <= hora_actual < actividad.horafin):
+                        if not (actividad.horainicio <= hora_actual < actividad.horafin) or not lugares:
                             continue
 
-                        lugares = agenda_repo.buscarLugares(actividad.id, destinoID, usuarioID)
-                        if lugares:
-                            lugar = self.obtenerLugar(lugares, ubicacion.latitude, ubicacion.longitude)
+                        lugar = self.obtenerLugar(lugares, ubicacion.latitude, ubicacion.longitude)
 
                         if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
                             hora_actual = self.calcular_horas_ocupado(fecha_actual, horariosOcupados, hora_actual)
