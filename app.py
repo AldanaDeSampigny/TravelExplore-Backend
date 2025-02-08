@@ -396,17 +396,6 @@ def generar_y_mostrar_agenda(usuarioID):
         horaInicio = data.get('horarioGeneral')['horaDesde'] + ':00'
         horaFin = data.get('horarioGeneral')['horaHasta'] + ':00'
         transporte = data.get('transporte')
-
-        # try:
-        #     AgendaValidaciones(getEngine()).validacionFecha(fechaInicio, fechaFin)
-        #     AgendaValidaciones(getEngine()).validacionHora(horaInicio, horaFin)
-        #     validacionTransporte(-42.767470, -65.036549, transporte)
-        # except ValueError as e:
-        #     error_message = str(e)
-        #     response = jsonify({"error":error_message})
-        #     response.status_code = 400
-        #     response.headers['Content-Type'] = 'application/json'  # Establece el tipo de contenido como JSON
-        #     return response
         
         horariosEspecificos = {}
         for horarioEspecifico in data.get('horariosEspecificos'):
