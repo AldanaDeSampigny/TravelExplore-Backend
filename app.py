@@ -1126,7 +1126,7 @@ def usuarioIniciado():
 
         return usuarioToken
 
-@app.route('/valoracionUsuario', methods=['POST'])
+""" @app.route('/valoracionUsuario', methods=['POST'])
 def agregarValoracionUsuario():
     lugarService = LugarService(getEngine())
     datosLugar = request.get_json()
@@ -1137,7 +1137,7 @@ def agregarValoracionUsuario():
         lugarService.guardarValoracionUsuario(idLugar, valoracion)
         return jsonify({"idLugar": idLugar, "valoracion": valoracion}), 200
     else:
-        return jsonify({"error": "datos incompletos"}), 400
+        return jsonify({"error": "datos incompletos"}), 400 """
 
 @app.route('/agregarResenia', methods=['POST'])
 def agregarReseniaLugar():
