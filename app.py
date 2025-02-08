@@ -307,7 +307,7 @@ def like(usuarioID):
 
     lugarFavoritoService.agregarGusto(usuarioID,lugar)    
 
-    return {'Like Actualizado'}
+    return '{"data": " Lugar Actualizado" }'
 
 @app.route('/likeActividad/<int:usuarioID>',methods=['POST'])
 def likeActividad(usuarioID):
@@ -326,7 +326,7 @@ def dislike(usuarioID):
     
     lugarFavoritoService.quitarGusto(usuarioID,lugar)    
 
-    return {'Dislike Actualizado'}
+    return '{"data": "Gusto  Lugar Actualizado" }'
 
 @app.route('/dislikeActividad/<int:usuarioID>',methods=['POST'])
 def dislikeActividad(usuarioID):
