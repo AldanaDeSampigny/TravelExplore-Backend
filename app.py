@@ -58,6 +58,7 @@ from flask_cors import CORS
 import difflib
 from geopy.geocoders import Nominatim
 from .models.ActividadesFavoritas import ActividadesFavoritas
+from collections import defaultdict
 
 app = Flask(__name__)
 CORS(app)
@@ -347,31 +348,20 @@ def generar_y_mostrar_agenda(usuarioID):
 
         destino = data.get('destino')
         direccionHospedaje = data.get('direccionHospedaje')
-        
-    
+
         if destino is None or destino.get('nombre') == '':
-            error_message = "Se debe ingresar el destino del viaje"
-            response = jsonify({"error":error_message})
-            response.status_code = 400
-            response.headers['Content-Type'] = 'application/json'
-            print(response)
-            return response
+            return jsonify({"error": "Se debe ingresar el destino del viaje"}), 400
 
         gmaps = googlemaps.Client(key=llave)
+        resultado = gmaps.places(query=destino.get('nombre') + ' ' + destino.get('pais'))
 
-        resultado = gmaps.places(query=destino.get('nombre')+' '+destino.get('pais'))
-        #resultado = " results Puerto Madryn Argentina"
         if 'results' in resultado:
-            primer_resultado = None#resultado['results'][0]
-            ciudadRecibido = LugarRepository(
-                session).getCiudad('ChIJ0eqih141Ar4RgkO0ECgNiR4')  # primer_resultado['place_id'])
+            primer_resultado = resultado['results'][0] if resultado['results'] else None
+            ciudadRecibido = LugarRepository(session).getCiudad(primer_resultado['place_id']) if primer_resultado else None
             
             if ciudadRecibido:
                 destino = ciudadRecibido.id
-
-                direccion = direccionHospedaje + ", " +ciudadRecibido.nombre
-                print("direccion ", direccion)
-
+                direccion = f"{direccionHospedaje}, {ciudadRecibido.nombre}"
             else:
                 ciudad = {
                     'id': primer_resultado['place_id'],
@@ -383,40 +373,43 @@ def generar_y_mostrar_agenda(usuarioID):
                 lugarService.guardarCiudad(ciudad)
                 lugarRecibido = LugarRepository(session).getCiudad(primer_resultado['place_id'])   
                 destino = lugarRecibido.id
-
-                direccion = direccionHospedaje + lugarRecibido.nombre
+                direccion = f"{direccionHospedaje}, {lugarRecibido.nombre}"
 
             ubicacion = geolocator.geocode(query=direccion, exactly_one=True)
-        
-            print("geolocator --> lat:", ubicacion.latitude, ", long:",ubicacion.longitude)
 
         fechaInicio = str(data.get('fechaDesde'))
-        print("fechaDesde -->"+fechaInicio)
         fechaFin = str(data.get('fechaHasta'))
         horaInicio = data.get('horarioGeneral')['horaDesde'] + ':00'
         horaFin = data.get('horarioGeneral')['horaHasta'] + ':00'
         transporte = data.get('transporte')
-        
-        horariosEspecificos = {}
-        for horarioEspecifico in data.get('horariosEspecificos'):
-            horariosEspecificos[horarioEspecifico['dia']] = \
-                (horarioEspecifico['horaDesde']+':00',horarioEspecifico['horaHasta']+':00')
 
-        horariosOcupados = {}
-        for horarioOcupado in data.get('horariosOcupados'):
-            horariosOcupados[horarioOcupado['dia']] = []
+        horariosEspecificos = {
+            h['dia']: (h['horaDesde'] + ':00', h['horaHasta'] + ':00')
+            for h in data.get('horariosEspecificos', [])
+        }
+
+        horariosOcupados = defaultdict(list)
+        for horarioOcupado in data.get('horariosOcupados', []):
             for horario in horarioOcupado['horarios']:
-                horaDesde = horario['horaDesde'] + ':00'
-                horaHasta = horario['horaHasta'] + ':00'
-                horariosOcupados[horarioOcupado['dia']].append((horaDesde, horaHasta))
+                horariosOcupados[horarioOcupado['dia']].append(
+                    (horario['horaDesde'] + ':00', horario['horaHasta'] + ':00')
+                )
 
-        agenda = agenda_service.generarAgendaDiaria(ubicacion, usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
+        agenda = agenda_service.generarAgendaDiaria(
+            ubicacion, usuarioID, destino, horariosEspecificos, horariosOcupados, 
+            fechaInicio, fechaFin, horaInicio, horaFin, transporte
+        )
 
         agenda_por_dia = defaultdict(list)
+        lugares_por_dia = defaultdict(set)  # Almacenar lugares únicos por día
+
         for actividad_data in agenda:
             dia = actividad_data['dia']
-            agenda_por_dia[dia].append(actividad_data)
-            
+            lugar = actividad_data['lugar']
+
+            if lugar not in lugares_por_dia[dia]:  # Verifica si el lugar ya fue agregado
+                agenda_por_dia[dia].append(actividad_data)
+                lugares_por_dia[dia].add(lugar)
 
         agendaJSON = []
         for dia, actividades in sorted(agenda_por_dia.items()):
@@ -425,7 +418,6 @@ def generar_y_mostrar_agenda(usuarioID):
                 'actividades': []
             }
             for actividad_data in actividades:
-                print("---- ACTIVIDAD DATA ----", actividad_data)
                 actividad_json = {
                     'id': actividad_data['actividad'].id,
                     'actividad': actividad_data['actividad'].nombre,
@@ -436,9 +428,10 @@ def generar_y_mostrar_agenda(usuarioID):
                 dia_json['actividades'].append(actividad_json)
 
             agendaJSON.append(dia_json)
-            print("agenda json",agendaJSON)
-            print("transporte ", transporte)
-        agendaNueva = agenda_service.saveAgenda(usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin,agendaJSON,transporte, direccionHospedaje)
+
+        agendaNueva = agenda_service.saveAgenda(
+            usuarioID, destino, fechaInicio, fechaFin, horaInicio, horaFin, agendaJSON, transporte, direccionHospedaje
+        )
         print("agenda cread",agendaJSON)
         return jsonify(agendaNueva)
 
