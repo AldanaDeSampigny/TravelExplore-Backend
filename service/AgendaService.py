@@ -410,7 +410,7 @@ class AgendaService:
             actividadRepo = ActividadRepository(session)
 
             if comidas['desayuno'] and copia['desayuno']:
-                if datetime.strptime('07:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('10:00:00', '%H:%M:%S').time():
+                if datetime.strptime('06:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('11:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getDesayuno()
                     copia['desayuno'] = False
                     return actividades[0]
@@ -464,6 +464,9 @@ class AgendaService:
 
                 copia = comidas.copy()
 
+                print("copia: ",copia)
+                print("original", comidas)
+
                 while hora_actual < horario_fin:
                     print("segundo whilewhile hora actual", hora_actual)
                     resultado = None    
@@ -471,10 +474,9 @@ class AgendaService:
                     for actividad_id in actividadIds:
 
                         if any(comidas.values()):
-                            print("hola")
-                            #actividad = actividades.get(actividad_id)
                             actividad = self.insertarComida(comidas, hora_actual, copia)
-                        else:
+                            
+                        if actividad == None:
                             actividad = actividades.get(actividad_id)
     
                         print("actividad actual: ", actividad)

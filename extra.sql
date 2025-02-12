@@ -31,5 +31,11 @@
         }
       ]
     }
-  ]
+  ],
+  "comidas": {
+    "desayuno": true,
+    "almuerzo": false,
+    "merienda": true,
+    "cena": false
+  }
 }

@@ -346,6 +346,8 @@ def generar_y_mostrar_agenda(usuarioID):
         agenda_service = AgendaService(modelo_recomendacion, getEngine())
         data = request.get_json()
 
+        print(data)
+
         destino = data.get('destino')
         direccionHospedaje = data.get('direccionHospedaje')
 
