@@ -404,8 +404,36 @@ class AgendaService:
             lugar_seleccionado = session.query(Lugar).get(lugar_optimo)
 
             return lugar_seleccionado
+        
+    def insertarComida(self, comidas, hora_actual, copia):
+        with Session(getEngine()) as session:
+            actividadRepo = ActividadRepository(session)
 
-    def generarAgendaDiaria(self, ubicacion, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte):
+            if comidas['desayuno'] and copia['desayuno']:
+                if datetime.strptime('07:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('10:00:00', '%H:%M:%S').time():
+                    actividades = actividadRepo.getDesayuno()
+                    copia['desayuno'] = False
+                    return actividades[0]
+
+            if comidas['almuerzo'] and copia['almuerzo']:
+                if datetime.strptime('12:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('14:00:00', '%H:%M:%S').time():
+                    actividades = actividadRepo.getAlmuerzo()
+                    copia['almuerzo'] = False
+                    return actividades[0]
+
+            if comidas['merienda'] and copia['merienda']:
+                if datetime.strptime('17:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('19:00:00', '%H:%M:%S').time():
+                    actividades = actividadRepo.getMerienda()
+                    copia['merienda'] = False
+                    return actividades[0]
+
+            if comidas['cena'] and copia['cena']:
+                if datetime.strptime('20:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('22:00:00', '%H:%M:%S').time():
+                    actividades = actividadRepo.getCena()
+                    copia['cena'] = False
+                    return actividades[0]
+
+    def generarAgendaDiaria(self, ubicacion, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte, comidas):
         with Session(getEngine()) as session:
             agenda_repo = AgendaRepository(session)
             actividadRepo = ActividadRepository(session)
@@ -434,13 +462,22 @@ class AgendaService:
                 if gustos_agregados == actividadIds_set:
                     gustos_agregados.clear()
 
+                copia = comidas.copy()
+
                 while hora_actual < horario_fin:
                     print("segundo whilewhile hora actual", hora_actual)
                     resultado = None    
                     lugar = None
                     for actividad_id in actividadIds:
-                        actividad = actividades.get(actividad_id)
-                        print("actividad actual: ",actividad_id," - ",actividad.nombre)
+
+                        if any(comidas.values()):
+                            print("hola")
+                            #actividad = actividades.get(actividad_id)
+                            actividad = self.insertarComida(comidas, hora_actual, copia)
+                        else:
+                            actividad = actividades.get(actividad_id)
+    
+                        print("actividad actual: ", actividad)
                         lugares = agenda_repo.buscarLugares(actividad.id, destinoID, usuarioID)
 
                         if not (actividad.horainicio <= hora_actual < actividad.horafin) or not lugares:

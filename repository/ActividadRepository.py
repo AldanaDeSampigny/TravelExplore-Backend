@@ -75,3 +75,31 @@ class ActividadRepository:
             filter(ActividadesFavoritas.like == 1).all()
         
         return [row[0] for row in actividades]
+
+    def getDesayuno(self):
+        desayuno = self.db_session.query(Actividad).\
+            join(ActividadCategoria.id_actividad == Actividad.id).\
+            filter(ActividadCategoria.id_categoria == 89).all()
+        
+        return desayuno
+    
+    def getAlmuerzo(self):
+        almuerzo = self.db_session.query(Actividad).\
+            join(ActividadCategoria.id_actividad == Actividad.id).\
+            filter(ActividadCategoria.id_categoria == 55).all()
+        
+        return almuerzo
+    
+    def getMerienda(self):
+        merienda = self.db_session.query(Actividad).\
+            join(ActividadCategoria.id_actividad == Actividad.id).\
+            filter(ActividadCategoria.id_categoria == 90).all()
+        
+        return merienda
+    
+    def getCena(self):
+        cena = self.db_session.query(Actividad).\
+            join(ActividadCategoria.id_actividad == Actividad.id).\
+            filter(ActividadCategoria.id_categoria == 136).all()
+        
+        return cena

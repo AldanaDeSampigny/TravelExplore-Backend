@@ -410,7 +410,9 @@ def generar_y_mostrar_agenda(usuarioID):
                 horaHasta = horario['horaHasta'] + ':00'
                 horariosOcupados[horarioOcupado['dia']].append((horaDesde, horaHasta))
 
-        agenda = agenda_service.generarAgendaDiaria(ubicacion, usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte)
+        comidas = data.get('comidas')
+
+        agenda = agenda_service.generarAgendaDiaria(ubicacion, usuarioID, destino, horariosEspecificos, horariosOcupados, fechaInicio, fechaFin, horaInicio,horaFin, transporte, comidas)
 
         agenda_por_dia = defaultdict(list)
         for actividad_data in agenda:
