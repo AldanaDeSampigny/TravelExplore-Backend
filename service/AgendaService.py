@@ -448,6 +448,7 @@ class AgendaService:
             actividadRepo = ActividadRepository(session)
             agenda = []
             gustos_agregados = set()
+            comida = False
 
             fecha_actual = datetime.strptime(fechaDesde, '%Y-%m-%d')
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
@@ -468,13 +469,14 @@ class AgendaService:
                 actividades = {a.id: a for a in session.query(Actividad).filter(Actividad.id.in_(actividadIds)).all()}
                 actividadIds_set = set(actividadIds)
 
-                if gustos_agregados == actividadIds_set:
-                    gustos_agregados.clear()
-
                 copia = comidas.copy()
 
                 print("copia: ",copia)
                 print("original", comidas)
+
+                if actividadIds_set == gustos_agregados:
+                    print("limpiando")
+                    gustos_agregados.clear()
 
                 while hora_actual < horario_fin:
                     print("segundo whilewhile hora actual", hora_actual)
@@ -484,8 +486,10 @@ class AgendaService:
 
                         if any(comidas.values()):
                             actividad = self.insertarComida(comidas, hora_actual, copia)
+                            comida = True
                             
                         if actividad == None:
+                            comida = False
                             actividad = actividades.get(actividad_id)
     
                         print("actividad actual: ", actividad.id)
@@ -502,13 +506,22 @@ class AgendaService:
                             hora_actual = self.calcular_horas_ocupado(fecha_actual, horariosOcupados, hora_actual)
 
                         resultado = self.aceptar_actividad(actividad, lugar, lugares, actividadIds, fecha_actual, actividad_id, transporte, gustos_agregados, hora_actual)
-                        
+
                         if resultado['actividad']:
                             hora_actual = resultado['hora_cierre_intervalo']
                             print("1)hora actual: ", hora_actual)
 
                             agenda.append(resultado['actividad'])
-                            gustos_agregados.add(resultado['actividad']['id'])
+                            print("Estado actual de comida antes del if:", comida)
+                            if not comida:
+                                gustos_agregados.add(resultado['actividad']['id'])
+                                print("gustos ", gustos_agregados)
+
+                            comida = False
+                            
+                            if actividadIds_set == gustos_agregados:
+                                print("limpiando")
+                                gustos_agregados.clear()
                             break
                     
                     hora_actual = resultado['hora_cierre_intervalo'] if resultado else (datetime.combine(datetime.now().date(), hora_actual) + timedelta(minutes=60)).time()
