@@ -389,6 +389,7 @@ class AgendaService:
             distancia_maxima = 8000.0
 
             for lugar in lugares:
+                print("verificando el lugar: ", lugar.id)
                 calculo = self.distanciaEntreCoords(lugar.latitud, lugar.longitud, latitudHospedaje, longitudHospedaje)
                 matrizLugar.append([lugar.id, lugar.valoracion, calculo])
             
@@ -412,26 +413,34 @@ class AgendaService:
             if comidas['desayuno'] and copia['desayuno']:
                 if datetime.strptime('06:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('11:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getDesayuno()
-                    copia['desayuno'] = False
-                    return actividades[0]
+                    print("actividades: ",actividades)
+                    if actividades:
+                        print("se agrega: ",actividades[0])
+                        copia['desayuno'] = False
+                        return actividades[0]
+                    else:
+                        print("⚠ No hay actividades para desayuno")
 
             if comidas['almuerzo'] and copia['almuerzo']:
                 if datetime.strptime('12:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('14:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getAlmuerzo()
-                    copia['almuerzo'] = False
-                    return actividades[0]
+                    if actividades:
+                        copia['almuerzo'] = False
+                        return actividades[0]
 
             if comidas['merienda'] and copia['merienda']:
                 if datetime.strptime('17:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('19:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getMerienda()
-                    copia['merienda'] = False
-                    return actividades[0]
+                    if actividades:
+                        copia['merienda'] = False
+                        return actividades[0]
 
             if comidas['cena'] and copia['cena']:
                 if datetime.strptime('20:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('22:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getCena()
-                    copia['cena'] = False
-                    return actividades[0]
+                    if actividades:
+                        copia['cena'] = False
+                        return actividades[0]
 
     def generarAgendaDiaria(self, ubicacion, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte, comidas):
         with Session(getEngine()) as session:
@@ -479,13 +488,15 @@ class AgendaService:
                         if actividad == None:
                             actividad = actividades.get(actividad_id)
     
-                        print("actividad actual: ", actividad)
+                        print("actividad actual: ", actividad.id)
                         lugares = agenda_repo.buscarLugares(actividad.id, destinoID, usuarioID)
+                        print("lugares obtenidos: ", lugares)
 
                         if not (actividad.horainicio <= hora_actual < actividad.horafin) or not lugares:
                             continue
 
                         lugar = self.obtenerLugar(lugares, ubicacion.latitude, ubicacion.longitude)
+                        print("lugar obtenido: ",lugar.id)
 
                         if fecha_actual.date().strftime('%Y-%m-%d') in horariosOcupados:
                             hora_actual = self.calcular_horas_ocupado(fecha_actual, horariosOcupados, hora_actual)
