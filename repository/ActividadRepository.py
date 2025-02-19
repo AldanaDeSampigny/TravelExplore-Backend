@@ -8,6 +8,7 @@ from ..models.Ciudad import Ciudad
 from ..models.AgendaDiaria import AgendaDiaria
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
+from sqlalchemy import or_
 
 class ActividadRepository:
     def __init__(self, db_session): #esto seria un constructor
@@ -103,3 +104,15 @@ class ActividadRepository:
             filter(ActividadCategoria.id_categoria == 136).all()
         
         return cena
+    
+    def getActividadesComidas(self):
+        actividades = self.db_session.query(Actividad.id).\
+        join(ActividadCategoria, ActividadCategoria.id_actividad == Actividad.id).\
+        filter(or_(
+            ActividadCategoria.id_categoria == 136,
+            ActividadCategoria.id_categoria == 90,
+            ActividadCategoria.id_categoria == 55,
+            ActividadCategoria.id_categoria == 89
+        )).all()
+        
+        return [row[0] for row in actividades]

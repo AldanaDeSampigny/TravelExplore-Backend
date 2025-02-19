@@ -36,6 +36,8 @@ class AgendaService:
 
     dias_semana = ["Monday", "Tuesday", "Wednesday",
                     "Thursday", "Friday", "Saturday", "Sunday"]
+
+    con = 0
     
     def __init__(self, modelo_recomendacion, db_session):
         self.modelo_recomendacion = modelo_recomendacion
@@ -409,38 +411,57 @@ class AgendaService:
     def insertarComida(self, comidas, hora_actual, copia):
         with Session(getEngine()) as session:
             actividadRepo = ActividadRepository(session)
+            print(self.con)
 
             if comidas['desayuno'] and copia['desayuno']:
                 if datetime.strptime('06:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('11:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getDesayuno()
                     print("actividades: ",actividades)
                     if actividades:
+                        if self.con == len(actividades):
+                            self.con = 0
+                        else:
+                            self.con += 1
+
                         print("se agrega: ",actividades[0])
                         copia['desayuno'] = False
-                        return actividades[0]
-                    else:
-                        print("⚠ No hay actividades para desayuno")
+                        return actividades[self.con]
 
             if comidas['almuerzo'] and copia['almuerzo']:
                 if datetime.strptime('12:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('14:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getAlmuerzo()
                     if actividades:
+                        if self.con == len(actividades):
+                            self.con = 0
+                        else:
+                            self.con += 1
+
                         copia['almuerzo'] = False
-                        return actividades[0]
+                        return actividades[self.con]
 
             if comidas['merienda'] and copia['merienda']:
                 if datetime.strptime('17:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('19:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getMerienda()
                     if actividades:
+                        if self.con == len(actividades):
+                            self.con = 0
+                        else:
+                            self.con += 1
+
                         copia['merienda'] = False
-                        return actividades[0]
+                        return actividades[self.con]
 
             if comidas['cena'] and copia['cena']:
                 if datetime.strptime('20:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('22:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getCena()
                     if actividades:
+                        if self.con == len(actividades):
+                            self.con = 0
+                        else:
+                            self.con += 1
+
                         copia['cena'] = False
-                        return actividades[0]
+                        return actividades[self.con]
 
     def generarAgendaDiaria(self, ubicacion, usuarioID, destinoID, horariosElegidos, horariosOcupados,fechaDesde, fechaHasta, horaInicio, horaFin, transporte, comidas):
         with Session(getEngine()) as session:
@@ -454,11 +475,14 @@ class AgendaService:
             fecha_hasta = datetime.strptime(fechaHasta, '%Y-%m-%d')
             actividadIds = agenda_repo.buscarActividad(usuarioID, destinoID)
             actividadIds.extend(actividadRepo.getActividadesFavoritas(usuarioID))
-
             actividadIds.extend(self.recomendaciones_IA(usuarioID)) 
+
             actividadIds = [a[0] if isinstance(a, (tuple, list)) else a for a in actividadIds]
 
             malasActividades = actividadRepo.getActividadesOdiadas(usuarioID)
+            malasActividades.extend(actividadRepo.getActividadesComidas())
+            print("malas actividades: ", malasActividades)
+
             actividadIds = [act for act in actividadIds if act not in malasActividades]
             print("Actividad IDs procesados:", actividadIds)
 
