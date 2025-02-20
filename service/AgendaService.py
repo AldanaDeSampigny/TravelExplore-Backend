@@ -417,8 +417,10 @@ class AgendaService:
                 if datetime.strptime('06:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('11:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getDesayuno()
                     print("actividades: ",actividades)
+
                     if actividades:
-                        if self.con == len(actividades):
+                        print(self.con , " tamaño actividades", len(actividades))
+                        if self.con >= len(actividades)-1 :
                             self.con = 0
                         else:
                             self.con += 1
@@ -431,7 +433,9 @@ class AgendaService:
                 if datetime.strptime('12:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('14:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getAlmuerzo()
                     if actividades:
-                        if self.con == len(actividades):
+                        print(self.con , " tamaño actividades", len(actividades))
+
+                        if self.con >= len(actividades)-1:
                             self.con = 0
                         else:
                             self.con += 1
@@ -443,7 +447,9 @@ class AgendaService:
                 if datetime.strptime('17:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('19:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getMerienda()
                     if actividades:
-                        if self.con == len(actividades):
+                        print(self.con , " tamaño actividades", len(actividades))
+                        if self.con >=len(actividades)-1:
+                            
                             self.con = 0
                         else:
                             self.con += 1
@@ -452,10 +458,12 @@ class AgendaService:
                         return actividades[self.con]
 
             if comidas['cena'] and copia['cena']:
-                if datetime.strptime('20:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('22:00:00', '%H:%M:%S').time():
+                if datetime.strptime('19:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('22:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getCena()
                     if actividades:
-                        if self.con == len(actividades):
+                        print(self.con , " tamaño actividades", len(actividades))
+
+                        if self.con >=len(actividades)-1:
                             self.con = 0
                         else:
                             self.con += 1
