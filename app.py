@@ -407,10 +407,23 @@ def generar_y_mostrar_agenda(usuarioID):
         for actividad_data in agenda:
             dia = actividad_data['dia']
             lugar = actividad_data['lugar']
+            print("dia ", dia)
+            print("lugar ", lugar)
+            print(actividad_data['id'])
 
             if lugar not in lugares_por_dia[dia]:  # Verifica si el lugar ya fue agregado
                 agenda_por_dia[dia].append(actividad_data)
                 lugares_por_dia[dia].add(lugar)
+            elif len(actividad_data['lugares']) > 1:
+                actividad_data['lugar'] = actividad_data['lugares'][1].id
+                agenda_por_dia[dia].append(actividad_data)
+                lugares_por_dia[dia].add(actividad_data['lugares'][1].id)
+                print(actividad_data['lugares'][1].id)
+            else:
+                agenda_por_dia[dia].append(actividad_data)
+                lugares_por_dia[dia].add(lugar)
+
+        print("1", agenda_por_dia)
 
         agendaJSON = []
         for dia, actividades in sorted(agenda_por_dia.items()):
@@ -418,7 +431,9 @@ def generar_y_mostrar_agenda(usuarioID):
                 'dia': dia.strftime('%Y-%m-%d'),
                 'actividades': []
             }
+            print("2",actividades)
             for actividad_data in actividades:
+                print("3",actividad_data)
                 actividad_json = {
                     'id': actividad_data['actividad'].id,
                     'actividad': actividad_data['actividad'].nombre,
