@@ -41,6 +41,8 @@ class LugarService:
 
                 session.add(lugarEncontrado)
                 session.commit()
+
+                return lugarEncontrado
             else: 
                 nuevoLugar = Lugar()
                 nuevoLugar.codigo = lugar['id']
@@ -102,7 +104,7 @@ class LugarService:
                                 else:
                                     print("No se encontró un formato de hora válido en:", rangoTiempo)
 
-            return nuevoLugar
+                return nuevoLugar
 
     def guardarCategoria(self, lugar, categoriaNombre):
         with Session(getEngine()) as session:

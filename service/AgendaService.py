@@ -342,10 +342,10 @@ class AgendaService:
         
     def calcularTiempoTraslado(self, transporte):
         tiempos_por_transporte = {
-            "driving": timedelta(minutes=8),
-            "walking": timedelta(minutes=17),
-            "bicycling": timedelta(minutes=13),
-            "transit": timedelta(minutes=14),
+            "driving": timedelta(minutes=5),
+            "walking": timedelta(minutes=20),
+            "bicycling": timedelta(minutes=10),
+            "transit": timedelta(minutes=15),
         }
         return tiempos_por_transporte.get(transporte, timedelta(minutes=5))  # Default si no se encuentra
 
@@ -411,30 +411,24 @@ class AgendaService:
     def insertarComida(self, comidas, hora_actual, copia):
         with Session(getEngine()) as session:
             actividadRepo = ActividadRepository(session)
-            print(self.con)
 
             if comidas['desayuno'] and copia['desayuno']:
-                if datetime.strptime('06:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('11:00:00', '%H:%M:%S').time():
+                if datetime.strptime('06:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('12:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getDesayuno()
                     print("actividades: ",actividades)
-
                     if actividades:
-                        print(self.con , " tamaño actividades", len(actividades))
                         if self.con >= len(actividades)-1 :
                             self.con = 0
                         else:
                             self.con += 1
 
-                        print("se agrega: ",actividades[0])
                         copia['desayuno'] = False
                         return actividades[self.con]
 
             if comidas['almuerzo'] and copia['almuerzo']:
-                if datetime.strptime('12:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('14:00:00', '%H:%M:%S').time():
+                if datetime.strptime('12:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('15:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getAlmuerzo()
                     if actividades:
-                        print(self.con , " tamaño actividades", len(actividades))
-
                         if self.con >= len(actividades)-1:
                             self.con = 0
                         else:
@@ -444,12 +438,10 @@ class AgendaService:
                         return actividades[self.con]
 
             if comidas['merienda'] and copia['merienda']:
-                if datetime.strptime('17:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('19:00:00', '%H:%M:%S').time():
+                if datetime.strptime('17:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('20:00:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getMerienda()
                     if actividades:
-                        print(self.con , " tamaño actividades", len(actividades))
                         if self.con >=len(actividades)-1:
-                            
                             self.con = 0
                         else:
                             self.con += 1
@@ -458,11 +450,9 @@ class AgendaService:
                         return actividades[self.con]
 
             if comidas['cena'] and copia['cena']:
-                if datetime.strptime('19:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('22:00:00', '%H:%M:%S').time():
+                if datetime.strptime('19:00:00', '%H:%M:%S').time() <= hora_actual <= datetime.strptime('23:50:00', '%H:%M:%S').time():
                     actividades = actividadRepo.getCena()
                     if actividades:
-                        print(self.con , " tamaño actividades", len(actividades))
-
                         if self.con >=len(actividades)-1:
                             self.con = 0
                         else:
@@ -507,7 +497,6 @@ class AgendaService:
                 print("original", comidas)
 
                 if actividadIds_set == gustos_agregados:
-                    print("limpiando")
                     gustos_agregados.clear()
 
                 while hora_actual < horario_fin:
@@ -544,7 +533,7 @@ class AgendaService:
                             print("1)hora actual: ", hora_actual)
 
                             agenda.append(resultado['actividad'])
-                            print("Estado actual de comida antes del if:", comida)
+                            print("Estado actual de comida antes del if:", agenda)
                             if not comida:
                                 gustos_agregados.add(resultado['actividad']['id'])
                                 print("gustos ", gustos_agregados)
@@ -552,7 +541,6 @@ class AgendaService:
                             comida = False
                             
                             if actividadIds_set == gustos_agregados:
-                                print("limpiando")
                                 gustos_agregados.clear()
                             break
                     
