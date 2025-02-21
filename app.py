@@ -739,6 +739,7 @@ def lugarEspecifico(id):
 
     place = gmaps.place(place_id=id)
 
+
     if 'result' in place:
         place = place['result']
         photo_reference = place.get('photos', [{}])[0].get('photo_reference', None)
